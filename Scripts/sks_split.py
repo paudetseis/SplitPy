@@ -12,7 +12,7 @@ The data base is provided in stations_db.py as a dictionary.
 
 # Import splitpy, its classes and the conf module
 import splitpy
-from splitpy import Split, SeisPlot, DiagPlot
+from splitpy import Split, PickPlot, DiagPlot
 from splitpy import Pick, Keep, Save, Repeat
 from splitpy import conf as cf
 
@@ -20,7 +20,6 @@ from splitpy import conf as cf
 import sys
 import stdb
 import os.path
-import pickle
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -50,10 +49,9 @@ def main():
     # Load Database
     db = stdb.io.load_db(fname=indb)
 
-    # construct station key loop
+    # Construct station key loop
     allkeys = db.keys()
     sorted(allkeys)
-    # allkeys.sort()
 
     # Extract key subset
     if len(opts.stkeys) > 0:
@@ -78,7 +76,7 @@ def main():
         split = Split(sta)
 
         # Output directory
-        outdir = 'RESULTS/'+ stkey
+        outdir = 'RESULTS/' + stkey
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
 
@@ -157,11 +155,7 @@ def main():
             stalcllist = []
         print("|===============================================|")      
 
-        # Initialize figure and axis handles
-        fp = []
-        fd = []
-
-        # select order of processing
+        # Select order of processing
         if opts.reverse:
             ievs = range(0, nevtT)
         else:
@@ -192,7 +186,7 @@ def main():
                     inum = nevtT - iev + 1
                 print(" ")
                 print("****************************************************")
-                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum,nevtT, split.meta["time"].strftime("%Y%m%d_%H%M%S")))
+                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum, nevtT, split.meta["time"].strftime("%Y%m%d_%H%M%S")))
                 print("*   Origin Time: " + split.meta["time"].strftime("%Y-%m-%d %H:%M:%S"))
                 print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta["lat"], split.meta["lon"]))
                 print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta["dep"]/1000., split.meta["mag"]))
@@ -223,8 +217,8 @@ def main():
                 # Rotate from ZEN to LQT (Longitudinal, Radial, Transverse)
                 split.rotate_ZEN_LQT()
 
-                # Calculate snr over XX seconds 
-                split.calc_snrq()
+                # Calculate snr over 30 seconds 
+                split.calc_snrq(dt=30.)
 
                 # Make sure no processing happens for NaNs
                 if np.isnan(split.snrq): 
@@ -286,8 +280,8 @@ def main():
                     split.get_quality(5)
 
                     # Initialize LQT seismogram figure and plot it
-                    splot = SeisPlot(split)
-                    splot.plot_LQT_phases(tt, opts.dts)
+                    pplot = PickPlot(split)
+                    pplot.plot_LQT_phases(tt, opts.dts)
 
                     # Initialize diagnostic figure and plot it
                     dplot = DiagPlot(split)
@@ -300,7 +294,6 @@ def main():
                         # Call interactive window for picking
                         pick = Pick()
                         ans = pick.reply
-                        # ans = splitpy.gui.pick()
 
                         # If user clicks yes:
                         if ans:
@@ -310,7 +303,6 @@ def main():
                             # Get clicks from LQT figure
                             plt.figure(1)
                             xc = plt.ginput(2, show_clicks=True)
-                            # xc = splot.fp[0].ginput(2, show_clicks=True)
 
                             # Extract times from clicks
                             tp1 = [xx for xx, yy in xc][0]
@@ -329,7 +321,7 @@ def main():
                             t2 = split.meta["time"] + split.ts + tp2
 
                             # Update LQT figure
-                            splot.update_LQT(tp1, tp2)
+                            pplot.update_LQT(tp1, tp2)
 
                             # Re-analyze splits
                             split.analyze(t1=t1, t2=t2)
@@ -356,7 +348,6 @@ def main():
                             # Call interactive window for decision on estimate
                             keep = Keep()
                             ans2 = keep.reply
-                            # ans2 = splitpy.gui.keep()
 
                             # If user keeps estimate:
                             if ans2:
@@ -399,4 +390,3 @@ if __name__ == "__main__":
 
     # Run main program
     main()
-

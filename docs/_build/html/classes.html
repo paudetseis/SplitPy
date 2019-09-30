@@ -1,0 +1,1104 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Classes &#8212; splitpy 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Getting Started" href="api.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="Getting Started"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Classes</a><ul>
+<li><a class="reference internal" href="#split">Split</a></li>
+<li><a class="reference internal" href="#pickplot">PickPlot</a></li>
+<li><a class="reference internal" href="#diagplot">DiagPlot</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="previous chapter">Getting Started</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/classes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-splitpy.classes">
+<span id="classes"></span><h1>Classes<a class="headerlink" href="#module-splitpy.classes" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference internal" href="api.html#module-splitpy" title="splitpy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">splitpy</span></code></a> defines the following base classes:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#splitpy.classes.Split" title="splitpy.classes.Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">Split</span></code></a></p></li>
+<li><p><a class="reference internal" href="#splitpy.classes.PickPlot" title="splitpy.classes.PickPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">PickPlot</span></code></a></p></li>
+<li><p><a class="reference internal" href="#splitpy.classes.DiagPlot" title="splitpy.classes.DiagPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiagPlot</span></code></a></p></li>
+</ul>
+<p>The class <a class="reference internal" href="#splitpy.classes.Split" title="splitpy.classes.Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">Split</span></code></a> contains attributes
+and methods for the analysis of teleseismic shear-wave splitting
+from three-component seismograms.</p>
+<p>The class <a class="reference internal" href="#splitpy.classes.PickPlot" title="splitpy.classes.PickPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">PickPlot</span></code></a> contains figure handles
+for a picking window showing the seismograms and the predicted teleseismic
+shear-wave phase arrivals. This figure is interactive and new picks can
+be generated to refine the analysis.</p>
+<p>The class <a class="reference internal" href="#splitpy.classes.DiagPlot" title="splitpy.classes.DiagPlot"><code class="xref py py-class docutils literal notranslate"><span class="pre">DiagPlot</span></code></a> contains figure handles
+for a diagnostic figure showing a summary of the splitting results. It can
+be called after each application of the <cite>split.analyze</cite> method to show
+the summary of the analysis as a figure. This figure can also be saved as
+a .png file.</p>
+<div class="section" id="split">
+<h2>Split<a class="headerlink" href="#split" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="splitpy.classes.Split">
+<em class="property">class </em><code class="sig-prename descclassname">splitpy.classes.</code><code class="sig-name descname">Split</code><span class="sig-paren">(</span><em class="sig-param">sta</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Split object contains dictionary attributes that associate
+station information with single event (i.e., earthquake)
+metadata, corresponding raw and rotated seismograms and
+splitting results.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The object is initialized with the <cite>sta</cite> field only, and
+other attributes are added to the object on the fly.</p>
+</div>
+<dl class="attribute">
+<dt id="splitpy.classes.Split.sta">
+<code class="sig-name descname">sta</code><a class="headerlink" href="#splitpy.classes.Split.sta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary containing station information - from <code class="xref py py-mod docutils literal notranslate"><span class="pre">stdb</span></code> database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.meta">
+<code class="sig-name descname">meta</code><a class="headerlink" href="#splitpy.classes.Split.meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary of metadata information for single event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.data">
+<code class="sig-name descname">data</code><a class="headerlink" href="#splitpy.classes.Split.data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary blabla</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.RC_res">
+<code class="sig-name descname">RC_res</code><a class="headerlink" href="#splitpy.classes.Split.RC_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary containing results of Rotation-Correlation metnod</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.SC_res">
+<code class="sig-name descname">SC_res</code><a class="headerlink" href="#splitpy.classes.Split.SC_res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dictionary containing results of Silver-Chan metnod</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.err">
+<code class="sig-name descname">err</code><a class="headerlink" href="#splitpy.classes.Split.err" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not the <cite>get_data_NEZ</cite> successfully retrieved waveforms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.null">
+<code class="sig-name descname">null</code><a class="headerlink" href="#splitpy.classes.Split.null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether or not estiamate is null result</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.quality">
+<code class="sig-name descname">quality</code><a class="headerlink" href="#splitpy.classes.Split.quality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quality of estimate (‘good’, ‘fair’, ‘poor’)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.ts">
+<code class="sig-name descname">ts</code><a class="headerlink" href="#splitpy.classes.Split.ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predicted travel time for SKS phase</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.ph">
+<code class="sig-name descname">ph</code><a class="headerlink" href="#splitpy.classes.Split.ph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of SKS phase (‘SKS’)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.snrq">
+<code class="sig-name descname">snrq</code><a class="headerlink" href="#splitpy.classes.Split.snrq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signal-to-noise ratio for radial (Q) component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.Split.snrt">
+<code class="sig-name descname">snrt</code><a class="headerlink" href="#splitpy.classes.Split.snrt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signal-to-noise ratio for tangential (T) component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.add_event">
+<code class="sig-name descname">add_event</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.add_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds event metadata to Split object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>event</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">event</span></code>) – Event metadata</p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta</code></dt>
+<dd><p>Dictionary containing metadata information</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;time&quot;]</code></dt>
+<dd><p>Origin time of earthquake</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;dep&quot;]</code></dt>
+<dd><p>Depth of hypocenter (km)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;lon&quot;]</code></dt>
+<dd><p>Longitude coordinate of epicenter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;lat&quot;]</code></dt>
+<dd><p>Latitude coordinate of epicenter</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;mag&quot;]</code></dt>
+<dd><p>Magnitude of earthquake</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;gac&quot;]</code></dt>
+<dd><p>Great arc circle between station and epicenter (degrees)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;epi_dist&quot;]</code></dt>
+<dd><p>Epicentral distance between station and epicenter (km)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;baz&quot;]</code></dt>
+<dd><p>Back-azimuth - pointing to earthquake from station (degrees)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;az&quot;]</code></dt>
+<dd><p>Azimuth - pointing to station from earthquake (degrees)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.add_phase">
+<code class="sig-name descname">add_phase</code><span class="sig-paren">(</span><em class="sig-param">t</em>, <em class="sig-param">vp</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.add_phase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds phase information for SKS arrival from taup model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">TaupPyModel</span></code>) – Travel-time table metadata</p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">ts</code></dt>
+<dd><p>Travel time between earthquake and station (sec)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">ph</code></dt>
+<dd><p>Phase name (‘SKS’)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;slow&quot;]</code></dt>
+<dd><p>Horizontal slowness of phase</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meta[&quot;inc&quot;]</code></dt>
+<dd><p>Incidence angle of phase at surface</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.add_NEZ">
+<code class="sig-name descname">add_NEZ</code><span class="sig-paren">(</span><em class="sig-param">stream</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.add_NEZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds seismograms from available stream</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>stream</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code>) – Stream container for NEZ seismograms</p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data</code></dt>
+<dd><p>Dictionary containing <code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.Trace</span></code> objects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trN&quot;]</code></dt>
+<dd><p>Trace of North component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trE&quot;]</code></dt>
+<dd><p>Trace of East component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trZ&quot;]</code></dt>
+<dd><p>Trace of Vertical component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.add_LQT">
+<code class="sig-name descname">add_LQT</code><span class="sig-paren">(</span><em class="sig-param">stream</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.add_LQT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds seismograms from available stream</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>stream</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code>) – Stream container for NEZ seismograms</p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data</code></dt>
+<dd><p>Dictionary containing <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> objects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trL&quot;]</code></dt>
+<dd><p>Trace of longitudinal component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trQ&quot;]</code></dt>
+<dd><p>Trace of radial component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trT&quot;]</code></dt>
+<dd><p>Trace of tangential component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.get_data_NEZ">
+<code class="sig-name descname">get_data_NEZ</code><span class="sig-paren">(</span><em class="sig-param">client</em>, <em class="sig-param">dts</em>, <em class="sig-param">stdata</em>, <em class="sig-param">ndval</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.get_data_NEZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Downloads seismograms based on event origin time and
+SKS phase arrival.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>client</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Client</span></code>) – Client object</p></li>
+<li><p><strong>dts</strong> (<em>float</em>) – Time duration (?)</p></li>
+<li><p><strong>stdata</strong> (<em>Dict</em>) – Station metadata</p></li>
+<li><p><strong>ndval</strong> (<em>float</em>) – Fill in value for missing data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data</code></dt>
+<dd><p>Dictionary containing <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> objects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trN&quot;]</code></dt>
+<dd><p>Trace of North component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trE&quot;]</code></dt>
+<dd><p>Trace of East component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trZ&quot;]</code></dt>
+<dd><p>Trace of Vertical component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.rotate_ZEN_LQT">
+<code class="sig-name descname">rotate_ZEN_LQT</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.rotate_ZEN_LQT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotates 3-component seismograms from vertical (Z),
+east (E) and north (N) to longitudinal (L),
+radial (Q) and tangential (T) components of motion</p>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data</code></dt>
+<dd><p>Dictionary containing <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> objects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trL&quot;]</code></dt>
+<dd><p>Trace of longitudinal component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trQ&quot;]</code></dt>
+<dd><p>Trace of radial component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">data[&quot;trT&quot;]</code></dt>
+<dd><p>Trace of tangential component of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.calc_snrq">
+<code class="sig-name descname">calc_snrq</code><span class="sig-paren">(</span><em class="sig-param">t1=None</em>, <em class="sig-param">dt=30.0</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.calc_snrq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates signal-to-noise ration on radial (Q) component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Predicted arrival time of phase</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Duration (sec)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">snrq</code></dt>
+<dd><p>Signal-to-noise ratio  (dB)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.calc_snrt">
+<code class="sig-name descname">calc_snrt</code><span class="sig-paren">(</span><em class="sig-param">t1=None</em>, <em class="sig-param">dt=30.0</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.calc_snrt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates signal-to-noise ration on tangential (T) component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Predicted arrival time of phase</p></li>
+<li><p><strong>dt</strong> (<em>float</em>) – Duration (sec)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">snrt</code></dt>
+<dd><p>Signal-to-noise ratio  (dB)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.analyze">
+<code class="sig-name descname">analyze</code><span class="sig-paren">(</span><em class="sig-param">t1=None</em>, <em class="sig-param">t2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.analyze" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the shear-wave splitting parameters based
+on two alternative method: the Rotation-Correlation (RC)
+method and the Silver-Chan (SC) method. Each set of results
+is stored in a Dictionary as attributes of the split object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Start time of picking window</p></li>
+<li><p><strong>t2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – End time of picking window</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the attributes below, replace <cite>meth_res</cite> by either one of
+<cite>RC_res</cite> of <cite>SC_res</cite> for the corresponding method attribute.</p>
+</div>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;Emat&quot;]</code></dt>
+<dd><p>Error minimization matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;trQ_c&quot;]</code></dt>
+<dd><p>Corrected radial (Q) component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;trT_c&quot;]</code></dt>
+<dd><p>Corrected transverse (T) component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;trFast&quot;]</code></dt>
+<dd><p>Corrected Fast component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;trSlow&quot;]</code></dt>
+<dd><p>Corrected Slow component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;phi&quot;]</code></dt>
+<dd><p>Azimuth of fast axis (deg)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;dtt&quot;]</code></dt>
+<dd><p>Delay time between fast and slow axes (sec)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;phi_min&quot;]</code></dt>
+<dd><p>Azimuth used in plotting method</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;ephi&quot;]</code></dt>
+<dd><p>Error on azimuth of fast axis (deg)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;edtt&quot;]</code></dt>
+<dd><p>Error on delay time between fast and slow axes (sec)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">meth_res[&quot;errc&quot;]</code></dt>
+<dd><p>Error contours on <cite>Emat</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.is_null">
+<code class="sig-name descname">is_null</code><span class="sig-paren">(</span><em class="sig-param">snrTlim=3.0</em>, <em class="sig-param">ds=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.is_null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines if splitting result is a Null result</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>snrTlim</strong> (<em>float</em>) – Threshold for snr on T component</p></li>
+<li><p><strong>ds</strong> (<em>int</em>) – Number of stars to print out to screen (verbiage)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">null</code></dt>
+<dd><p>Boolean for Null result</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.get_quality">
+<code class="sig-name descname">get_quality</code><span class="sig-paren">(</span><em class="sig-param">ds</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.get_quality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the quality of the estimate (either Null or non-Null)
+based on ratio of delay times and difference in fast axis directions
+between Rotation-Correlation and Silver-Chan methods</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ds</strong> (<em>int</em>) – Number of stars to print out to screen (verbiage)</p>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">quality</code></dt>
+<dd><p>String representing quality of estimate (‘Good’, ‘Fair’, ‘Poor’)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.display_results">
+<code class="sig-name descname">display_results</code><span class="sig-paren">(</span><em class="sig-param">ds=0</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.display_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints out best fitting results to screen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ds</strong> (<em>int</em>) – Number of stars to print out to screen (verbiage)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.display_meta">
+<code class="sig-name descname">display_meta</code><span class="sig-paren">(</span><em class="sig-param">ds=0</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.display_meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints out content of metadata to screen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ds</strong> (<em>int</em>) – Number of stars to print out to screen (verbiage)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.display_null_quality">
+<code class="sig-name descname">display_null_quality</code><span class="sig-paren">(</span><em class="sig-param">ds=0</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.display_null_quality" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints out null and quality estimates to screen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ds</strong> (<em>int</em>) – Number of stars to print out to screen (verbiage)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.Split.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves Split object to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>str</em>) – File name for split object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="pickplot">
+<h2>PickPlot<a class="headerlink" href="#pickplot" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="splitpy.classes.PickPlot">
+<em class="property">class </em><code class="sig-prename descclassname">splitpy.classes.</code><code class="sig-name descname">PickPlot</code><span class="sig-paren">(</span><em class="sig-param">split</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.PickPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>A PickPlot object contains figure handles and method to plot
+seismic data for picking/refining the SKS time window.
+The figure displays the LQT seismograms and predicted arrival
+times for common shear-wave arrivals in the time window.
+The figure can be picked to refine the time window for
+calculating the  splitting results.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The object is initialized with a <a class="reference internal" href="#splitpy.classes.Split" title="splitpy.classes.Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">Split</span></code></a> object,
+which is temporarily stored as an attribute. All the split attributes
+are therefore available to the <code class="xref py py-class docutils literal notranslate"><span class="pre">PickPlot</span></code> object
+for plotting.</p>
+</div>
+<dl class="attribute">
+<dt id="splitpy.classes.PickPlot.split">
+<code class="sig-name descname">split</code><a class="headerlink" href="#splitpy.classes.PickPlot.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split object containing attributes after analysis has been carried out.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#splitpy.classes.Split" title="splitpy.classes.Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">Split</span></code></a> object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.PickPlot.fp">
+<code class="sig-name descname">fp</code><a class="headerlink" href="#splitpy.classes.PickPlot.fp" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of figure handles ([fig, ax1, ax2, ax3])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.PickPlot.plot_LQT_phases">
+<code class="sig-name descname">plot_LQT_phases</code><span class="sig-paren">(</span><em class="sig-param">tt</em>, <em class="sig-param">dts</em>, <em class="sig-param">t1=None</em>, <em class="sig-param">t2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.PickPlot.plot_LQT_phases" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots rotated three-components of motion for picking.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tt</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">TauPyModel</span></code>) – Taup object containing travel time and phase info</p></li>
+<li><p><strong>dts</strong> (<em>float</em>) – Time interval (?)</p></li>
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Start time of picking window</p></li>
+<li><p><strong>t2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – End time of picking window</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="splitpy.classes.PickPlot.ll">
+<code class="sig-name descname">ll</code><a class="headerlink" href="#splitpy.classes.PickPlot.ll" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of <code class="xref py py-class docutils literal notranslate"><span class="pre">axvline</span></code> objects for plotting the start and
+end times of the picking window.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.PickPlot.update_LQT">
+<code class="sig-name descname">update_LQT</code><span class="sig-paren">(</span><em class="sig-param">tp1</em>, <em class="sig-param">tp2</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.PickPlot.update_LQT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates LQT figure with newly picked times</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tp1</strong> (<em>float</em>) – New start time of picking window</p></li>
+<li><p><strong>tp2</strong> (<em>float</em>) – New end time of picking window</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="diagplot">
+<h2>DiagPlot<a class="headerlink" href="#diagplot" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="splitpy.classes.DiagPlot">
+<em class="property">class </em><code class="sig-prename descclassname">splitpy.classes.</code><code class="sig-name descname">DiagPlot</code><span class="sig-paren">(</span><em class="sig-param">split</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.DiagPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>A DiagPlot object contains figure handles and methods to plot
+the diagnostic figure, which displays the LQT seismograms,
+the corrected/un-corrected seismograms, the particle motions,
+the minimization matrix and a text box with a summary of the
+analysis - for each of the two analysis methods (‘RC’ or ‘SC’)</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The object is initialized with a <a class="reference internal" href="#splitpy.classes.Split" title="splitpy.classes.Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">Split</span></code></a> object,
+which is temporarily stored as an attribute. All the split attributes
+are therefore available to the <code class="xref py py-class docutils literal notranslate"><span class="pre">DiagPlot</span></code> object
+for plotting.</p>
+</div>
+<dl class="attribute">
+<dt id="splitpy.classes.DiagPlot.split">
+<code class="sig-name descname">split</code><a class="headerlink" href="#splitpy.classes.DiagPlot.split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split object containing attributes after analysis has been carried out.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#splitpy.classes.Split" title="splitpy.classes.Split"><code class="xref py py-class docutils literal notranslate"><span class="pre">Split</span></code></a> object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="splitpy.classes.DiagPlot.fd">
+<code class="sig-name descname">fd</code><a class="headerlink" href="#splitpy.classes.DiagPlot.fd" title="Permalink to this definition">¶</a></dt>
+<dd><p>List of figure handles ([fig, ax0, axt, axRC1, axRC2, axRC3, axRC4,                axSC1, axSC2, axSC3, axSC4])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.DiagPlot.plot_diagnostic">
+<code class="sig-name descname">plot_diagnostic</code><span class="sig-paren">(</span><em class="sig-param">t1=None</em>, <em class="sig-param">t2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.DiagPlot.plot_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots diagnostic window with estimates from both ‘RC’ and ‘SC’ methods</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Start time of picking window</p></li>
+<li><p><strong>t2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – End time of picking window</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="splitpy.classes.DiagPlot.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.DiagPlot.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves current figure into file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>file</strong> (<em>str</em>) – File name for diagnostic figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api.html" title="Getting Started"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Pascal Audet &amp; Andrew Schaeffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

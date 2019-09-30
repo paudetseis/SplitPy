@@ -1,0 +1,263 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Module calc &#8212; splitpy 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Module utils" href="utils.html" />
+    <link rel="prev" title="Module conf" href="conf.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Module utils"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="conf.html" title="Module conf"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="conf.html"
+                        title="previous chapter">Module conf</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="utils.html"
+                        title="next chapter">Module utils</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/calc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-splitpy.calc">
+<span id="module-calc"></span><h1>Module calc<a class="headerlink" href="#module-splitpy.calc" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="splitpy.calc.split_SilverChan">
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_SilverChan</code><span class="sig-paren">(</span><em class="sig-param">trQ</em>, <em class="sig-param">trT</em>, <em class="sig-param">baz</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_SilverChan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates splitting based on the minimization of energy on
+the corrected transverse component (Silver and Chan, 1990)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trQ</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Radial component seismogram</p></li>
+<li><p><strong>trT</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Tangential component seismogram</p></li>
+<li><p><strong>baz</strong> (<em>float</em>) – Back-azimuth - pointing to earthquake from station (degrees)</p></li>
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Start time of picking window</p></li>
+<li><p><strong>t2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – End time of picking window</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Ematrix</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Matrix of T component energy</p></li>
+<li><p><strong>trQ_c</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected radial component of motion</p></li>
+<li><p><strong>trT_c</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected tangential component of motion</p></li>
+<li><p><strong>trFast</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected fast direction of motion</p></li>
+<li><p><strong>trSlow</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected slow direction of motion    phiSC : float
+Azimuth of fast axis (deg)</p></li>
+<li><p><strong>dttSC</strong> (<em>foat</em>) – Delay time between fast and slow axes (sec)</p></li>
+<li><p><strong>phi_min</strong> (<em>float</em>) – Azimuth used in plotting routine</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="splitpy.calc.split_RotCorr">
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_RotCorr</code><span class="sig-paren">(</span><em class="sig-param">trQ</em>, <em class="sig-param">trT</em>, <em class="sig-param">baz</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_RotCorr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates splitting based on the maximum correlation between corrected
+radial and tangential components of motion</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trQ</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Radial component seismogram</p></li>
+<li><p><strong>trT</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Tangential component seismogram</p></li>
+<li><p><strong>baz</strong> (<em>float</em>) – Back-azimuth - pointing to earthquake from station (degrees)</p></li>
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Start time of picking window</p></li>
+<li><p><strong>t2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – End time of picking window</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>Ematrix</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Matrix of T component energy</p></li>
+<li><p><strong>trQ_c</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected radial component of motion</p></li>
+<li><p><strong>trT_c</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected tangential component of motion</p></li>
+<li><p><strong>trFast</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected fast direction of motion</p></li>
+<li><p><strong>trSlow</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Trace of corrected slow direction of motion    phiSC : float
+Azimuth of fast axis (deg)</p></li>
+<li><p><strong>dttSC</strong> (<em>foat</em>) – Delay time between fast and slow axes (sec)</p></li>
+<li><p><strong>phi_min</strong> (<em>float</em>) – Azimuth used in plotting routine</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="splitpy.calc.tshift">
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">tshift</code><span class="sig-paren">(</span><em class="sig-param">trace</em>, <em class="sig-param">tt</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.tshift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shifts a <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trace</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Seismogram to apply shift</p></li>
+<li><p><strong>tt</strong> (<em>float</em>) – Lag time for shifting</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>rtrace</strong> – Shifted version of trace</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="splitpy.calc.split_dof">
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_dof</code><span class="sig-paren">(</span><em class="sig-param">tr</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_dof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines the degrees of freedom to calculate the
+confidence region of the misfit function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Seismogram</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>dof</strong> (<em>float</em>) – Degrees of freedom</p></li>
+<li><p><em>From Walsh, JGR, 2013</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="splitpy.calc.split_errorSC">
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_errorSC</code><span class="sig-paren">(</span><em class="sig-param">tr</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em>, <em class="sig-param">q</em>, <em class="sig-param">Emat</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_errorSC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate error bars based on a F-test and
+a given confidence interval q</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Seismogram</p></li>
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Start time of picking window</p></li>
+<li><p><strong>t2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – End time of picking window</p></li>
+<li><p><strong>q</strong> (<em>float</em>) – Confidence level</p></li>
+<li><p><strong>Emat</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Energy minimization matrix</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>err_dtt</strong> (<em>float</em>) – Error in dt estimate (sec)</p></li>
+<li><p><strong>err_phi</strong> (<em>float</em>) – Error in phi estimate (degrees)</p></li>
+<li><p><strong>err_contour</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Error contour for plotting</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="splitpy.calc.split_errorRC">
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_errorRC</code><span class="sig-paren">(</span><em class="sig-param">tr</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em>, <em class="sig-param">q</em>, <em class="sig-param">Emat</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_errorRC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates error bars based on a F-test and
+a given confidence interval q.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This version uses a Fisher transformation for
+correlation-type misfit.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Seismogram</p></li>
+<li><p><strong>t1</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – Start time of picking window</p></li>
+<li><p><strong>t2</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">UTCDateTime</span></code>) – End time of picking window</p></li>
+<li><p><strong>q</strong> (<em>float</em>) – Confidence level</p></li>
+<li><p><strong>Emat</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Energy minimization matrix</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>err_dtt</strong> (<em>float</em>) – Error in dt estimate (sec)</p></li>
+<li><p><strong>err_phi</strong> (<em>float</em>) – Error in phi estimate (degrees)</p></li>
+<li><p><strong>err_contour</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>) – Error contour for plotting</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Module utils"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="conf.html" title="Module conf"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Pascal Audet &amp; Andrew Schaeffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>
