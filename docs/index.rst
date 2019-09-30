@@ -9,7 +9,7 @@ SplitPy Project documentation
 SplitPy is a teleseismic shear-wave (SKS) Splitting Toolbox based on the 
 Matlab Tool SplitLab, but with modifications from Wustefeld et al (2008). 
 Additional error surface implementation has been added, however these error 
-surfaces have not been fully tested (as of 1.1.4).
+surfaces have not been fully tested.
 
 Quick links
 """""""""""

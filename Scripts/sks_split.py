@@ -203,7 +203,7 @@ def main():
                     # Extract SKS arrival
                     if t.name == 'SKS':
 
-                        # Add SKS phase to Split
+                        # Add SKS phase to Split object
                         split.add_phase(t, opts.vp)
 
                         # Break out of loop 
