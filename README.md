@@ -116,6 +116,8 @@ Two Figure windows will pop up. `Figure 1` is the three components for the wavef
 LQT, along with lines representing the SKS, SKKS, S and ScS arrivals. Red vertical 
 lines denote the window. This figure is interactive and the picksin red can be refined.
 
+![](./splitpy/examples/figures/Figure_1.png)
+
 `Figure 2` summarizes the results of the splitting calculation. The top left "Q,T" 
 frame shows the un-corrected radial (Q) and tangential (T) components within 
 the time window. The second 
@@ -126,6 +128,8 @@ Q and T components, the third column the *before* and *after* particle motion, a
 the fourth column the map of the error surfaces. A text box prints out the summary
 of the results, including whether or not the estimate is a *Null*, and the quality
 of the estimate ('good', 'fair', 'poor').
+
+![](./splitpy/examples/figures/Figure_2.png)
 
 A message box will pop up asking whether to Re-pick the window. This can be done 
 to refine the signal window in which the measurements are made in order to
@@ -155,6 +159,10 @@ average splits are then saved in a text file for future use.
 - Audet, P., Sole, C., and Schaeffer, A.J. (2016). Control of lithospheric
   inheritance on neotectonic activity in northwestern Canada? Geology,
   44, 807-810, https://doi.org/10.1130/G38118.1
+
+- Wustefeld, A., and Bokelmann, G. (2007). Null detection in shear-wave splitting 
+  measurements. Bulletin of the Seismological Society of America, 97, 1204-1211,
+  https://doi.org/10.1785/0120060190
 
 - Wustefeld, A., Bokelmann, G., Zeroli, C., and Barruol, G. (2008). SplitLab: 
   A shear-wave splitting environment in Matlab. Computers & Geoscience, 34, 

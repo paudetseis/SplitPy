@@ -693,7 +693,7 @@ class PickPlot(object):
             ax.set_ylim((-1.1, 1.1))
             return ax
 
-        if RC_res not in split:
+        if not hasattr(split, 'RC_res'):
             raise(Exception("analysis has not yet been performed on split object. Aborting"))
 
         # Make sure to clear figure if it already exists at initialization
@@ -964,7 +964,7 @@ class DiagPlot(object):
 
             return ax
 
-        if RC_res not in split:
+        if not hasattr(split, 'RC_res'):
             raise(Exception("analysis has not yet been performed on split object. Aborting"))
 
         # Make sure to clear figure if it already exists at initialization
