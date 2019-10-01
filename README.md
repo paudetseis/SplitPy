@@ -2,7 +2,15 @@
 
 ![](./splitpy/examples/figures/SplitPy_logo.png)
 
-SplitPy is a teleseismic shear-wave (SKS) Splitting Toolbox based on the 
+Seismic anisotropy refers to the property of seismic waves to propagate
+at different wavespeeds depending on the direction of propagation. This
+property can be related to the coherent alignment of rock-forming minerals,
+which is thought to reflect the current dynamics or fossilized structure of Earth
+materials due to tectonic deformation. In the upper mantle, seismic anisotropy 
+is most easily determined using the distortion of teleseismic body waves with a 
+known initial polarity, typically core-refracted shear-waves (SKS, SKKS). 
+
+SplitPy is a teleseismic shear-wave Splitting Toolbox based on the 
 Matlab Tool [`SplitLab`](http://splitting.gm.univ-montp2.fr), 
 but with modifications from [Wustefeld et al (2008)](#references). 
 Additional error surface implementation has been added, however these error 
@@ -17,7 +25,7 @@ The current version was developed using **Python3.7** \
 Also, the following packages are required:
 
 - [`obspy`](https://github.com/obspy/obspy/wiki)
-- [`stdb`](https://github.com/paudetseis/StDb)
+- [`stdb`](https://github.com/schaefferaj/StDb)
 - [`dill`](https://pypi.org/project/dill/)
 - [`PyQt5`](https://pypi.org/project/PyQt5/)
 
