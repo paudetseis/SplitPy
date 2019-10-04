@@ -33,7 +33,7 @@ from numpy import nan,isnan
 
 def get_options():
     """
-    Get Options from `~optparse.OptionParser` objects.
+    Get Options from :class:`~optparse.OptionParser` objects.
 
     This function is used for data processing on-the-fly (requires web connection)
 
@@ -122,7 +122,7 @@ def get_options():
         help="Reverse order of events. Default behaviour starts at oldest event and works towards most recent. " \
         "Specify reverse order and instead the program will start with the most recent events and work towards older")
     EventGroup.add_option("--min-mag", action="store", type="float", dest="minmag", default=6.0, \
-        help="Specify the minimum magnitude of event for which to search. [Default 5.8]")
+        help="Specify the minimum magnitude of event for which to search. [Default 6.0]")
     EventGroup.add_option("--max-mag", action="store", type="float", dest="maxmag", default=None, \
         help="Specify the maximum magnitude of event for which to search. [Default None, i.e. no limit]")
 
@@ -139,7 +139,7 @@ def get_options():
     parser.add_option_group(EventGroup)
     parser.add_option_group(GeomGroup)
     parser.add_option_group(ConstGroup)
-    (opts,args) = parser.parse_args()
+    (opts, args) = parser.parse_args()
 
     # Check inputs
     if len(args) != 1: parser.error("Need station database file")
@@ -198,9 +198,9 @@ def get_options():
 
     return (opts, indb)
 
-def get_options_prep_offline():
+def get_options_prep():
     """
-    Get Options from `~optparse.OptionParser` objects.
+    Get Options from :class:`~optparse.OptionParser` objects.
 
     This function is used for preparation of SKS data for offline processing
 
@@ -270,11 +270,15 @@ def get_options_prep_offline():
     EventGroup.add_option("--start-time", action="store", type="string", dest="startT", default="", \
         help="Specify a UTCDateTime compatible string representing the start time for the event search. " \
         "This will override any station start times. [Default more recent start date for each station pair]")
+    EventGroup.add_option("--reverse-order", "-R", action="store_true", dest="reverse", default=False, \
+        help="Reverse order of events. Default behaviour starts at oldest event and works towards most " \
+        "recent. Specify reverse order and instead the program will start with the most recent events and " \
+        "work towards older")
     EventGroup.add_option("--end-time", action="store", type="string", dest="endT", default="", \
         help="Specify a UTCDateTime compatible string representing the start time for the event search. " \
         "This will override any station end times [Default older end date for each the pair of stations]")
-    EventGroup.add_option("--min-mag", action="store", type="float", dest="minmag", default=5.8, \
-        help="Specify the minimum magnitude of event for which to search. [Default 5.8]")
+    EventGroup.add_option("--min-mag", action="store", type="float", dest="minmag", default=6.0, \
+        help="Specify the minimum magnitude of event for which to search. [Default 6.0]")
     EventGroup.add_option("--max-mag", action="store", type="float", dest="maxmag", default=None, \
         help="Specify the maximum magnitude of event for which to search. [Default None, ie no limit]")
 
@@ -344,9 +348,9 @@ def get_options_prep_offline():
 
     return (opts, indb)
 
-def get_options_OL_proc():
+def get_options_offline():
     """
-    Get Options from `~optparse.OptionParser` objects.
+    Get Options from :class:`~optparse.OptionParser` objects.
 
     This function is used for processing SKS data offline 
 
@@ -399,8 +403,8 @@ def get_options_OL_proc():
         help="Reverse order of events. Default behaviour starts at oldest event and works towards most " \
         "recent. Specify reverse order and instead the program will start with the most recent events and " \
         "work towards older")
-    EventGroup.add_option("--min-mag", action="store", type="float", dest="minmag", default=5.8, \
-        help="Specify the minimum magnitude of event for which to search. [Default 5.8]")
+    EventGroup.add_option("--min-mag", action="store", type="float", dest="minmag", default=6.0, \
+        help="Specify the minimum magnitude of event for which to search. [Default 6.0]")
     EventGroup.add_option("--max-mag", action="store", type="float", dest="maxmag", default=None, \
         help="Specify the maximum magnitude of event for which to search. [Default None, ie no limit]")
 
@@ -415,7 +419,7 @@ def get_options_OL_proc():
     parser.add_option_group(EventGroup)
     parser.add_option_group(GeomGroup)
     parser.add_option_group(ConstGroup)
-    (opts,args) = parser.parse_args()
+    (opts, args) = parser.parse_args()
 
     # Check inputs
     if len(args) != 1: parser.error("Need Data Folder")

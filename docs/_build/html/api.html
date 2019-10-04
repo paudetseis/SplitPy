@@ -4,18 +4,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Getting Started &#8212; splitpy 0.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <title>Licence &#8212; splitpy 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/style.css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Classes" href="classes.html" />
+    <link rel="next" title="SplitPy Classes" href="classes.html" />
     <link rel="prev" title="SplitPy Project documentation" href="index.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -28,27 +29,115 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="classes.html" title="Classes"
+          <a href="classes.html" title="SplitPy Classes"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="SplitPy Project documentation"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
       </ul>
-    </div>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-splitpy"></span><p>SplitPy is a software for estimating teleseismic shear-wave splitting parameters
+based on the Matlab Tool SplitLab, but with modifications from Wustefeld et al (2008).
+Additional error surface implementation has been added, however these error
+surfaces have not been fully tested.</p>
+<div class="section" id="licence">
+<h1>Licence<a class="headerlink" href="#licence" title="Permalink to this headline">¶</a></h1>
+<p>Copyright 2019 Pascal Audet &amp; Andrew Schaeffer</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the “Software”), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</p>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>The current version was developed using <strong>Python3.7</strong> Also, the following packages are required:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">obspy</span></code> (<a class="reference external" href="https://github.com/obspy/obspy/wiki">https://github.com/obspy/obspy/wiki</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stdb</span></code> (<a class="reference external" href="https://github.com/paudetseis/StDb">https://github.com/paudetseis/StDb</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dill</span></code> (<a class="reference external" href="https://pypi.org/project/dill/">https://pypi.org/project/dill/</a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PyQt5</span></code> (<a class="reference external" href="https://pypi.org/project/PyQt5/">https://pypi.org/project/PyQt5/</a>)</p></li>
+</ul>
+<p>See below for full installation details.</p>
+</div>
+<div class="section" id="download-the-software">
+<h2>Download the software<a class="headerlink" href="#download-the-software" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Clone the repository:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/paudetseis/SplitPy.git
+<span class="nb">cd</span> SplitPy
+</pre></div>
+</div>
+</div>
+<div class="section" id="conda-environment">
+<h2>Conda environment<a class="headerlink" href="#conda-environment" title="Permalink to this headline">¶</a></h2>
+<p>We recommend creating a custom <code class="docutils literal notranslate"><span class="pre">conda</span></code> environment
+where <code class="docutils literal notranslate"><span class="pre">SplitPy</span></code> can be installed along with its dependencies.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n split <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 obspy dill -c conda-forge
+</pre></div>
+</div>
+<p>Activate the newly created environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate split
+</pre></div>
+</div>
+<p>Install remaining dependencies using <code class="docutils literal notranslate"><span class="pre">pip</span></code> inside the <code class="docutils literal notranslate"><span class="pre">split</span></code> environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/paudetseis/StDb.git
+<span class="nb">cd</span> StDb
+pip install .
+pip install PyQt5
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-using-pip">
+<h2>Installing using pip<a class="headerlink" href="#installing-using-pip" title="Permalink to this headline">¶</a></h2>
+<p>Once the previous steps are performed, you can install <code class="docutils literal notranslate"><span class="pre">splitpy</span></code> using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install .
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please note, if you are actively working on the code, or making frequent edits, it is advisable
+to perform the pip installation with the <code class="docutils literal notranslate"><span class="pre">-e</span></code> flag. This enables an editable installation, where
+symbolic links are used rather than straight copies. This means that any changes made in the
+local folders will be reflected in the packages available on the system.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Getting Started</a><ul>
-<li><a class="reference internal" href="#licence">Licence</a></li>
+<li><a class="reference internal" href="#">Licence</a></li>
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#dependencies">Dependencies</a></li>
 <li><a class="reference internal" href="#download-the-software">Download the software</a></li>
 <li><a class="reference internal" href="#conda-environment">Conda environment</a></li>
 <li><a class="reference internal" href="#installing-using-pip">Installing using pip</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
@@ -58,7 +147,7 @@
                         title="previous chapter">SplitPy Project documentation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="classes.html"
-                        title="next chapter">Classes</a></p>
+                        title="next chapter">SplitPy Classes</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -78,103 +167,6 @@
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
-  <div class="figure align-center">
-<img alt="_images/SplitPy_logo.png" src="_images/SplitPy_logo.png" />
-</div>
-<div class="section" id="module-splitpy">
-<span id="getting-started"></span><h1>Getting Started<a class="headerlink" href="#module-splitpy" title="Permalink to this headline">¶</a></h1>
-<p>SplitPy is a software for estimating teleseismic shear-wave splitting parameters
-based on the Matlab Tool SplitLab, but with modifications from Wustefeld et al (2008).
-Additional error surface implementation has been added, however these error
-surfaces have not been fully tested.</p>
-<div class="section" id="licence">
-<h2>Licence<a class="headerlink" href="#licence" title="Permalink to this headline">¶</a></h2>
-<p>Copyright 2019 Pascal Audet &amp; Andrew Schaeffer</p>
-<p>Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the “Software”), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:</p>
-<p>The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.</p>
-<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.</p>
-</div>
-<div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="dependencies">
-<h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h3>
-<p>The current version was developed using <strong>Python3.7</strong> Also, the following packages are required:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">obspy</span></code> (<a class="reference external" href="https://github.com/obspy/obspy/wiki">https://github.com/obspy/obspy/wiki</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">stdb</span></code> (<a class="reference external" href="https://github.com/paudetseis/StDb">https://github.com/paudetseis/StDb</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">dill</span></code> (<a class="reference external" href="https://pypi.org/project/dill/">https://pypi.org/project/dill/</a>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">PyQt5</span></code> (<a class="reference external" href="https://pypi.org/project/PyQt5/">https://pypi.org/project/PyQt5/</a>)</p></li>
-</ul>
-<p>See below for full installation details.</p>
-</div>
-<div class="section" id="download-the-software">
-<h3>Download the software<a class="headerlink" href="#download-the-software" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><p>Clone the repository:</p></li>
-</ul>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/paudetseis/SplitPy.git
-<span class="nb">cd</span> SplitPy
-</pre></div>
-</div>
-</div>
-<div class="section" id="conda-environment">
-<h3>Conda environment<a class="headerlink" href="#conda-environment" title="Permalink to this headline">¶</a></h3>
-<p>We recommend creating a custom <code class="docutils literal notranslate"><span class="pre">conda</span></code> environment
-where <code class="docutils literal notranslate"><span class="pre">SplitPy</span></code> can be installed along with its dependencies.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n split <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 obspy dill -c conda-forge
-</pre></div>
-</div>
-<p>Activate the newly created environment:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda activate split
-</pre></div>
-</div>
-<p>Install remaining dependencies using <code class="docutils literal notranslate"><span class="pre">pip</span></code> inside the <code class="docutils literal notranslate"><span class="pre">split</span></code> environment:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/paudetseis/StDb.git
-<span class="nb">cd</span> StDb
-pip install .
-pip install PyQt5
-</pre></div>
-</div>
-</div>
-<div class="section" id="installing-using-pip">
-<h3>Installing using pip<a class="headerlink" href="#installing-using-pip" title="Permalink to this headline">¶</a></h3>
-<p>Once the previous steps are performed, you can install <code class="docutils literal notranslate"><span class="pre">splitpy</span></code> using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install .
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Please note, if you are actively working on the code, or making frequent edits, it is advisable
-to perform the pip installation with the <code class="docutils literal notranslate"><span class="pre">-e</span></code> flag. This enables an editable installation, where
-symbolic links are used rather than straight copies. This means that any changes made in the
-local folders will be reflected in the packages available on the system.</p>
-</div>
-</div>
-</div>
-</div>
-
-
-          </div>
-        </div>
-      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -187,7 +179,7 @@ local folders will be reflected in the packages available on the system.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="classes.html" title="Classes"
+          <a href="classes.html" title="SplitPy Classes"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="SplitPy Project documentation"

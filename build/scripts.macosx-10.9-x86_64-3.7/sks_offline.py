@@ -1,15 +1,40 @@
+# Copyright 2019 Pascal Audet & Andrew Schaeffer
+#
+# This file is part of SplitPy.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 #!/usr/bin/env python
 
 
-'''
-PROGRAM sks_split.py
+"""
+PROGRAM sks_OL_proc.py
+----------------------
 
-Calculates single station SKS splitting results.
-Station selection is specified by a network and station code.
-The data base is provided in stations_db.py as a dictionary.
+Calculates single station SKS splitting results using and offline process
+where data exists on disk. Station selection is specified by a network and 
+station code. The data base is provided in stations_db.pkl as a 
+`StDb` dictionary.
 
-'''
+"""
 
+# -*- coding: utf-8 -*-
 # Import splitpy, its classes and the conf module
 import splitpy
 from splitpy import Split, PickPlot, DiagPlot
@@ -19,7 +44,8 @@ from splitpy import conf as cf
 # Import miscellaneous
 import sys
 import stdb
-import os.path
+import dill
+from os import path, listdir
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -100,7 +126,7 @@ def main():
 
             # Event Data
             ll = dill.load(open(path.join(indr, stkey, evSTR, "Event_Data.pkl"),"rb"))
-            ev = ll[0]; tstart=ll[1]; tend=ll[2]; tt=ll[3]
+            ev = ll[0]; tt=ll[1]
             split.add_event(ev)
 
             # Trace Filenames
@@ -120,9 +146,9 @@ def main():
                 makedirs(outdir)
 
             # Define time stamp
-            yr = str(time.year).zfill(4)
-            jd = str(time.julday).zfill(3)
-            hr = str(time.hour).zfill(2)
+            yr = str(split.meta["time"].year).zfill(4)
+            jd = str(split.meta["time"].julday).zfill(3)
+            hr = str(split.meta["time"].hour).zfill(2)
 
             # If distance between 85 and 120 deg:
             if (split.meta["gac"] > opts.mindist and split.meta["gac"] < opts.maxdist):
@@ -132,10 +158,10 @@ def main():
                 if opts.reverse:
                     inum = iev + 1
                 else:
-                    inum = nevtT - iev + 1
+                    inum = nevs - iev + 1
                 print(" ")
                 print("****************************************************")
-                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum, nevtT, split.meta["time"].strftime("%Y%m%d_%H%M%S")))
+                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum, nevs, split.meta["time"].strftime("%Y%m%d_%H%M%S")))
                 print("*   Origin Time: " + split.meta["time"].strftime("%Y-%m-%d %H:%M:%S"))
                 print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta["lat"], split.meta["lon"]))
                 print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta["dep"]/1000., split.meta["mag"]))
@@ -229,8 +255,8 @@ def main():
                                 tp1 = tp11
 
                             # Re-define time window
-                            t1 = sp_meta.time + ts + tp1
-                            t2 = sp_meta.time + ts + tp2
+                            t1 = split.meta["time"] + split.ts + tp1
+                            t2 = split.meta["time"] + split.ts + tp2
 
                             # Update LQT figure
                             pplot.update_LQT(tp1, tp2)

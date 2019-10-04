@@ -65,8 +65,8 @@ class Split(object):
 
     Note
     ----
-    The object is initialized with the `sta` field only, and
-    other attributes are added to the object on the fly.
+    The object is initialized with the ``sta`` field only, and
+    other attributes are added to the object as the analysis proceeds.
 
     Attributes
     ----------

@@ -1,12 +1,86 @@
+# Copyright 2019 Pascal Audet & Andrew Schaeffer
+#
+# This file is part of SplitPy.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 #!/usr/bin/env python
 
-'''
+"""
 Program sks_plot_results.py
+---------------------------
 
-Plots the results for a given station based on pkl files present in the
+Plots the results for a given station based on ``.pkl`` files present in the
 running directory.
-'''
 
+Usage
+-----
+
+.. code-block::
+
+   $ sks_plot_results.py -h
+    Usage: sks_plot_results.py [options] <Folder> [Folder 2]
+
+    Script to plot the average splitting results for a given station. Loads the
+    available pkl files in the specified Station Directory.
+
+    Options:
+      -h, --help            show this help message and exit
+      --no-figure           Specify to prevent plots from opening during
+                            processing; they are still saved to disk. [Default
+                            plots open and save]
+
+      Null Selection Settings:
+        Settings associated with selecting which Null or Non-Null data is
+        included
+
+        --nulls, --Nulls    Specify this flag to include Null Values in the
+                            average. [Default Non-Nulls only]
+        --no-nons, --No-Nons
+                            Specify this flag to exclude Non-Nulls from the
+                            average [Default False]
+
+      Quality Selection Settings:
+        Settings associated with selecting the qualities to include in the
+        selection.
+
+        --No-Good, --no-good
+                            Specify to exclude 'Good' measurements from the
+                            average. [Default Good + Fair]
+        --No-Fair, --no-fair
+                            Specify to exclude 'Fair' measurements from the
+                            average [Default Good + Fair]
+        --Poor, --poor      Specify to include 'Poor' measurements in the average
+                            [Default No Poors]
+
+      Split Type Settings:
+        Settings to Select which Split types are included in the selection.
+
+        --RC-Only, --rc-only, --RC-only
+                            Specify to only include RC splits in the average.
+                            [Default RC + SC]
+        --SC-Only, --sc-only, --SC-only
+                            Specify to only include SC splits in the average.
+                            [Default RC + SC]
+"""
+
+# -*- coding: utf-8 -*-
 import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.gridspec as gspec
@@ -143,7 +217,7 @@ def process(sta,opts):
 
         # Get Pickle File Contents
         ic += 1
-        print("  {0:d}) {1:s}".format(ic, picklef))
+        print(("  {0:d}) {1:s}".format(ic, picklef)))
         try:
             fpkl = open(picklef, 'rb')
         except:
@@ -159,18 +233,18 @@ def process(sta,opts):
         if opts.nons and opts.nulls:
             Naccept = True
         elif opts.nons and not opts.nulls:
-            if not sp_res.null:Naccept = True
+            if not split.null: Naccept = True
         elif not opts.nons and opts.nulls:
-            if sp_res.null: Naccept = True
+            if split.null: Naccept = True
 
         # Determine whether to accept based on Quality Selected
         Qaccept = False
         QGaccept = False
         QFaccept = False
         QPaccept = False
-        if opts.goods and sp_res.quality == "Good": QGaccept = True
-        if opts.fairs and sp_res.quality == "Fair": QFaccept = True
-        if opts.poors and sp_res.quality == "Poor": QPaccept = True
+        if opts.goods and split.quality == "Good": QGaccept = True
+        if opts.fairs and split.quality == "Fair": QFaccept = True
+        if opts.poors and split.quality == "Poor": QPaccept = True
         if QGaccept or QFaccept or QPaccept: Qaccept = True
 
         # Accept Event?
@@ -178,9 +252,9 @@ def process(sta,opts):
         if Qaccept and Naccept:
 
             if split.null:
-                print "      {0} Null -> Retained".format(split.quality)
+                print("      {0} Null -> Retained".format(split.quality))
             else:
-                print "      {0} Non-Null -> Retained".format(split.quality)
+                print("      {0} Non-Null -> Retained".format(split.quality))
 
             # BAZ, null and quality
             baz.append(split.meta["baz"])
@@ -199,16 +273,16 @@ def process(sta,opts):
             dtSC.append(split.SC_res["dtt"])
             DdtSC.append(split.SC_res["edtt"])
 
-            stlat = split.sta.lat
-            stlon = split.sta.lon
+            stlat = split.sta.latitude
+            stlon = split.sta.longitude
             sta = split.sta.station
 
         else:
 
             if split.null:
-                print "      {0} Null -> Skipped".format(split.quality)
+                print("      {0} Null -> Skipped".format(split.quality))
             else:
-                print "      {0} Non-Null -> Skipped".format(split.quality)
+                print("      {0} Non-Null -> Skipped".format(split.quality))
 
 
     if not baz: return
@@ -236,12 +310,12 @@ def process(sta,opts):
     ax1.set_theta_zero_location('N')
     ax1.set_theta_direction(-1)
 
-    # Add Bazs to Plot
-    ax1.plot(baz*np.pi/180., np.ones(len(baz))*dtmax, 'co', alpha=0.5)
+    # # Add Bazs to Plot
+    # ax1.plot(baz*np.pi/180., np.ones(len(baz))*dtmax, 'co', alpha=0.5)
 
     # Add RC results to plot
     if opts.RCinc:
-        ax1.plot(phi*np.pi/180., dt, 'bo')
+        ax1.scatter(phi*np.pi/180., dt, c='b')
         ax1.plot(np.array([meanphiRC, meanphiRC])*np.pi/180., [0, meandtRC], 'b', linewidth=2)
 
     # Convert SC results to floats
@@ -255,8 +329,8 @@ def process(sta,opts):
     
     # Add SC results to plot
     if opts.SCinc:
-        ax1.plot(phi*np.pi/180., dt, 'go')
-        ax1.plot(np.array([meanphiSC, meanphiSC])*np.pi/180., [0, meandtSC], 'g', linewidth=2)
+        ax1.scatter(phi*np.pi/180., dt, c='coral')
+        ax1.plot(np.array([meanphiSC, meanphiSC])*np.pi/180., [0, meandtSC], 'coral', linewidth=2)
 
     ax1.set_rmax(dtmax)
 
@@ -287,11 +361,11 @@ def process(sta,opts):
     # Plot shaded box with SC uncertainty
     if opts.SCinc:
 
-        ax2.axhspan(meanphiSC + stdphiSC, meanphiSC - stdphiSC, facecolor='g', alpha=0.2)
-        ax2.axhline(meanphiSC, c='g')
+        ax2.axhspan(meanphiSC + stdphiSC, meanphiSC - stdphiSC, facecolor='orange', alpha=0.2)
+        ax2.axhline(meanphiSC, c='coral')
 
         # Plot individual SC results
-        ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='g', label='SC')
+        ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='orange', label='SC')
 
     ax2.set_title('Station: ' + sta)
     ax2.set_ylabel(r'Fast axis, $\phi$ (degree)')
@@ -318,11 +392,11 @@ def process(sta,opts):
     # Plot shaded box with SC uncertainty
     if opts.SCinc:
 
-        ax3.axhspan(meandtSC + stddtSC, meandtSC - stddtSC, facecolor='g', alpha=0.2)
-        ax3.axhline(meandtSC, c='g')
+        ax3.axhspan(meandtSC + stddtSC, meandtSC - stddtSC, facecolor='orange', alpha=0.2)
+        ax3.axhline(meandtSC, c='coral')
 
         # Plot individual SC results
-        ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='g', label='SC')
+        ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='orange', label='SC')
 
     ax3.set_ylabel(r'Delay time, $\delta t$ (seconds)')
     ax3.set_ylim(0, dtmax)
@@ -345,12 +419,12 @@ def process(sta,opts):
         dPHI = (stdphiRC + stdphiSC)/2.
         dDT = (stddtRC + stddtSC)/2.
         ax1.plot(np.array([PHI, PHI])*np.pi/180.,[0, DT],'r',linewidth=2,alpha=0.8)
-        ax2.axhline(PHI, c='r', alpha=0.5, linewidth=2)
-        ax2.axhline(PHI - dPHI, c='r', linestyle='--', linewidth=1, alpha=0.5)
-        ax2.axhline(PHI + dPHI, c='r', linestyle='--', linewidth=1, alpha=0.5)
-        ax3.axhline(DT, c='r', alpha=0.5, linewidth=2)
-        ax3.axhline(DT - dDT, c='r', linestyle='--', linewidth=1, alpha=0.5)
-        ax3.axhline(DT + dDT, c='r', linestyle='--', linewidth=1, alpha=0.5)
+        ax2.axhline(PHI, c='coral', alpha=0.5, linewidth=2)
+        ax2.axhline(PHI - dPHI, c='coral', linestyle='--', linewidth=1, alpha=0.5)
+        ax2.axhline(PHI + dPHI, c='coral', linestyle='--', linewidth=1, alpha=0.5)
+        ax3.axhline(DT, c='coral', alpha=0.5, linewidth=2)
+        ax3.axhline(DT - dDT, c='coral', linestyle='--', linewidth=1, alpha=0.5)
+        ax3.axhline(DT + dDT, c='coral', linestyle='--', linewidth=1, alpha=0.5)
 
     elif not opts.RCinc and opts.SCinc:
         PHI = meanphiSC
@@ -363,23 +437,23 @@ def process(sta,opts):
         dPHI = stdphiRC
         dDT = stddtRC
 
-    print ""
-    print "*** Station Average from {0} measurements ***".format(len(baz))
-    print "   " + arg
-    print "   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat)
-    print "   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI)
-    print "   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT)
-    print "   Saved to: "+join(arg, outname)
-    print ""
+    print("")
+    print("*** Station Average from {0} measurements ***".format(len(baz)))
+    print("   " + arg)
+    print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
+    print("   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI))
+    print("   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT))
+    print("   Saved to: "+join(outname))
+    print("")
 
     # Write out Final Results
-    fid = open(join(arg, outname) + ".dat",'w')
+    fid = open(join(outname) + ".dat",'w')
     fid.writelines("{0}  {1:8.4f}  {2:7.4f}   {3:7.3f} {4:7.3f}   {5:5.3f} {6:5.3f}".format(\
         arg, stlon, stlat, PHI, dPHI, DT, dDT))
     fid.close()
 
     # Save Plot
-    plt.savefig(join(arg, outname)+'.png')
+    plt.savefig(join(outname)+'.png')
 
     # Display Plot
     if opts.showfig: plt.show()
@@ -389,26 +463,26 @@ if __name__ == "__main__":
 
     args, opts = get_options()
 
-    print "---------------------------"
-    print "Selection Criteria "
-    print " Null Value: "
-    print "    Non Nulls:", opts.nons
-    print "    Nulls:    ", opts.nulls
-    print " Quality Value: "
-    print "    Goods: ", opts.goods
-    print "    Fairs: ", opts.fairs
-    print "    Poors: ", opts.poors
-    print "---------------------------"
+    print("---------------------------")
+    print("Selection Criteria ")
+    print(" Null Value: ")
+    print("    Non Nulls:", opts.nons)
+    print("    Nulls:    ", opts.nulls)
+    print(" Quality Value: ")
+    print("    Goods: ", opts.goods)
+    print("    Fairs: ", opts.fairs)
+    print("    Poors: ", opts.poors)
+    print("---------------------------")
 
 
     for arg in args:
 
         # Check Folder Exists
         if not exists(arg):
-            print("Warning: " + arg + " does not exist")
+            print(("Warning: " + arg + " does not exist"))
             continue
 
-        print("Working on Station: " + arg)
+        print(("Working on Station: " + arg))
 
         # Process the Folder
         process(arg, opts)

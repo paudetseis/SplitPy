@@ -1,0 +1,222 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Plotting Average results &#8212; splitpy 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="SKS splitting offline" href="offline.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="offline.html" title="SKS splitting offline"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="plotting-average-results">
+<span id="plot"></span><h1>Plotting Average results<a class="headerlink" href="#plotting-average-results" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="program-sks-plot-results-py">
+<h2>Program <code class="docutils literal notranslate"><span class="pre">sks_plot_results.py</span></code><a class="headerlink" href="#program-sks-plot-results-py" title="Permalink to this headline">¶</a></h2>
+<p>Plots the results for a given station based on <code class="docutils literal notranslate"><span class="pre">.pkl</span></code> files present in the
+running directory.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sks_plot_results.py -h
+ Usage: sks_plot_results.py [options] &lt;Folder&gt; [Folder 2]
+
+ Script to plot the average splitting results for a given station. Loads the
+ available pkl files in the specified Station Directory.
+
+ Options:
+   -h, --help            show this help message and exit
+   --no-figure           Specify to prevent plots from opening during
+                         processing; they are still saved to disk. [Default
+                         plots open and save]
+
+   Null Selection Settings:
+     Settings associated with selecting which Null or Non-Null data is
+     included
+
+     --nulls, --Nulls    Specify this flag to include Null Values in the
+                         average. [Default Non-Nulls only]
+     --no-nons, --No-Nons
+                         Specify this flag to exclude Non-Nulls from the
+                         average [Default False]
+
+   Quality Selection Settings:
+     Settings associated with selecting the qualities to include in the
+     selection.
+
+     --No-Good, --no-good
+                         Specify to exclude &#39;Good&#39; measurements from the
+                         average. [Default Good + Fair]
+     --No-Fair, --no-fair
+                         Specify to exclude &#39;Fair&#39; measurements from the
+                         average [Default Good + Fair]
+     --Poor, --poor      Specify to include &#39;Poor&#39; measurements in the average
+                         [Default No Poors]
+
+   Split Type Settings:
+     Settings to Select which Split types are included in the selection.
+
+     --RC-Only, --rc-only, --RC-only
+                         Specify to only include RC splits in the average.
+                         [Default RC + SC]
+     --SC-Only, --sc-only, --SC-only
+                         Specify to only include SC splits in the average.
+                         [Default RC + SC]
+</pre></div>
+</div>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>In this example we rapidly analyzed SKS data for station EPYK for approximately
+1 year of data. To view the aggregate results and obtain vector averages
+of the fast axis direction, simply execute the program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sks_plot_results.py ./RESULTS/TA.EPYK
+
+---------------------------
+ Selection Criteria
+  Null Value:
+     Non Nulls: True
+     Nulls:     False
+  Quality Value:
+     Goods:  True
+     Fairs:  True
+     Poors:  False
+ ---------------------------
+ Working on Station: ./RESULTS/TA.EPYK
+   Processing 10 Events...
+   1) ./RESULTS/TA.EPYK/Split.EPYK.2012.294.230032.pkl
+       Good Null -&gt; Skipped
+   2) ./RESULTS/TA.EPYK/Split.EPYK.2012.345.165309.pkl
+       Poor Null -&gt; Skipped
+   3) ./RESULTS/TA.EPYK/Split.EPYK.2013.096.044236.pkl
+       Good Non-Null -&gt; Retained
+   4) ./RESULTS/TA.EPYK/Split.EPYK.2013.106.225527.pkl
+       Good Non-Null -&gt; Retained
+   5) ./RESULTS/TA.EPYK/Split.EPYK.2013.116.065328.pkl
+       Good Non-Null -&gt; Retained
+   6) ./RESULTS/TA.EPYK/Split.EPYK.2013.185.171557.pkl
+       Good Null -&gt; Skipped
+   7) ./RESULTS/TA.EPYK/Split.EPYK.2013.187.050506.pkl
+       Good Null -&gt; Skipped
+   8) ./RESULTS/TA.EPYK/Split.EPYK.2013.213.200142.pkl
+       Good Non-Null -&gt; Retained
+   9) ./RESULTS/TA.EPYK/Split.EPYK.2013.284.212459.pkl
+       Good Non-Null -&gt; Retained
+   10) ./RESULTS/TA.EPYK/Split.EPYK.2013.327.074832.pkl
+       Good Non-Null -&gt; Retained
+
+ *** Station Average from 6 measurements ***
+    ./RESULTS/TA.EPYK
+    Loc: -136.7191, 66.3701
+    PHI:  60.655 d +- 28.987
+    DT:    0.907 s +- 0.664
+    Saved to: ./RESULTS/TA.EPYK_RC-SC_Nons_G-F_results
+</pre></div>
+</div>
+<p>This produces a summary to prompt, and generates a Figure as in the example below</p>
+<div class="figure align-center">
+<img alt="_images/Figure_3.png" src="_images/Figure_3.png" />
+</div>
+<p>This Figure shows the fast axis directions and delay times
+between the fast and slow components as a function
+of the event back-azimuths (panels <strong>A</strong> and <strong>B</strong>).
+The program calculates a vector average of the spliting
+results (panel <strong>C</strong>) and estimates uncertainties, shown in
+the prompt (above).</p>
+<p>The results and Figure are saved to disk in the files with prefix
+<code class="docutils literal notranslate"><span class="pre">./RESULTS/TA.EPYK_RC-SC_Nons_G-F_results</span></code> and suffix <code class="docutils literal notranslate"><span class="pre">.dat</span></code>
+or <code class="docutils literal notranslate"><span class="pre">.png</span></code>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Plotting Average results</a><ul>
+<li><a class="reference internal" href="#program-sks-plot-results-py">Program <code class="docutils literal notranslate"><span class="pre">sks_plot_results.py</span></code></a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="offline.html"
+                        title="previous chapter">SKS splitting offline</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/plot.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="offline.html" title="SKS splitting offline"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2019, Pascal Audet &amp; Andrew Schaeffer.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -5,16 +5,18 @@
   <head>
     <meta charset="utf-8" />
     <title>Module utils &#8212; splitpy 0.0.1 documentation</title>
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/style.css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SKS splitting on the fly" href="split.html" />
     <link rel="prev" title="Module calc" href="calc.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -27,35 +29,14 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
+          <a href="split.html" title="SKS splitting on the fly"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
           <a href="calc.html" title="Module calc"
              accesskey="P">previous</a> |</li>
         <li class="nav-item nav-item-0"><a href="index.html">splitpy 0.0.1 documentation</a> &#187;</li> 
       </ul>
-    </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="calc.html"
-                        title="previous chapter">Module calc</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/utils.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
-      </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
@@ -69,21 +50,21 @@ that accompany this package.</p>
 <dl class="function">
 <dt id="splitpy.utils.get_options">
 <code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get Options from <cite>~optparse.OptionParser</cite> objects.</p>
+<dd><p>Get Options from <code class="xref py py-class docutils literal notranslate"><span class="pre">OptionParser</span></code> objects.</p>
 <p>This function is used for data processing on-the-fly (requires web connection)</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="splitpy.utils.get_options_prep_offline">
-<code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options_prep_offline</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options_prep_offline" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get Options from <cite>~optparse.OptionParser</cite> objects.</p>
+<dt id="splitpy.utils.get_options_prep">
+<code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options_prep</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options_prep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Options from <code class="xref py py-class docutils literal notranslate"><span class="pre">OptionParser</span></code> objects.</p>
 <p>This function is used for preparation of SKS data for offline processing</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="splitpy.utils.get_options_OL_proc">
-<code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options_OL_proc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options_OL_proc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get Options from <cite>~optparse.OptionParser</cite> objects.</p>
+<dt id="splitpy.utils.get_options_offline">
+<code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options_offline</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options_offline" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Options from <code class="xref py py-class docutils literal notranslate"><span class="pre">OptionParser</span></code> objects.</p>
 <p>This function is used for processing SKS data offline</p>
 </dd></dl>
 
@@ -151,6 +132,33 @@ given data is already available locally.</p>
           </div>
         </div>
       </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="calc.html"
+                        title="previous chapter">Module calc</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="split.html"
+                        title="next chapter">SKS splitting on the fly</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utils.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
       <div class="clearer"></div>
     </div>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -162,6 +170,9 @@ given data is already available locally.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="split.html" title="SKS splitting on the fly"
+             >next</a> |</li>
         <li class="right" >
           <a href="calc.html" title="Module calc"
              >previous</a> |</li>

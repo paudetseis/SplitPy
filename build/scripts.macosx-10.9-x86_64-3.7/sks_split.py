@@ -1,25 +1,172 @@
-#!/Users/pascalaudet/anaconda3/envs/split/bin/python
+# Copyright 2019 Pascal Audet & Andrew Schaeffer
+#
+# This file is part of SplitPy.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
+#!/usr/bin/env python
 
-'''
-PROGRAM sks_split.py
+"""
+Program sks_split.py
+--------------------
 
-Calculates single station SKS splitting results.
-Station selection is specified by a network and station code.
-The data base is provided in stations_db.py as a dictionary.
+Calculates single station SKS splitting results on the fly using
+an FDSN client. Station selection is specified by a network and 
+station code. The data base is provided in stations_db.pkl as a 
+`StDb` dictionary.
 
-'''
+Usage
+-----
 
+.. code-block::
+
+    $ sks_split.py -h
+    Usage: sks_split.py [options] <station database>
+
+    Script wrapping together the python-based implementation of SplitLab by
+    Wustefeld and others. This version requests data on the fly for a given date
+    range. Data is requested from the internet using the client services framework
+    or from data provided on a local disk. The stations are processed one by one
+    with the SKS Splitting parameters measured individually using both the
+    Rotation-Correlation (RC) and Silver & Chan (SC) methods.
+
+    Options:
+      -h, --help            show this help message and exit
+      --keys=STKEYS         Specify a comma separated list of station keys for
+                            which to perform the analysis. These must be contained
+                            within the station database. Partial keys will be used
+                            to match against those in the dictionary. For
+                            instance, providing IU will match with all stations in
+                            the IU network [Default processes all stations in the
+                            database]
+      -v, -V, --verbose     Specify to increase verbosity.
+      -O, --overwrite       Force the overwriting of pre-existing Split results.
+                            Default behaviour prompts for those that already
+                            exist. Selecting overwrite and skip (ie, both flags)
+                            negate each other, and both are set to false (every
+                            repeat is prompted). [Default False]
+      -K, --skip-existing   Skip any event for which existing splitting results
+                            are saved to disk. Default behaviour prompts for each
+                            event. Selecting skip and overwrite (ie, both flags)
+                            negate each other, and both are set to False (every
+                            repeat is prompted). [Default False]
+
+      Server Settings:
+        Settings associated with which datacenter to log into.
+
+        -S SERVER, --Server=SERVER
+                            Specify the server to connect to. Options include:
+                            BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU,
+                            NCEDC, NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS,
+                            USP. [Default IRIS]
+        -U USERAUTH, --User-Auth=USERAUTH
+                            Enter your IRIS Authentification Username and Password
+                            (--User-Auth='username:authpassword') to access and
+                            download restricted data. [Default no user and
+                            password]
+
+      Local Data Settings:
+        Settings associated with defining and using a local data base of pre-
+        downloaded day-long SAC files.
+
+        --local-data=LOCALDATA
+                            Specify a comma separated list of paths containing
+                            day-long sac files of data already downloaded. If data
+                            exists for a seismogram is already present on disk, it
+                            is selected preferentially over downloading the data
+                            using the Client interface
+        --no-data-zero      Specify to force missing data to be set as zero,
+                            rather than default behaviour which sets to nan.
+        --no-local-net      Specify to prevent using the Network code in the
+                            search for local data (sometimes for CN stations the
+                            dictionary name for a station may disagree with that
+                            in the filename. [Default Network used]
+
+      Event Settings:
+        Settings associated with refining the events to include in matching
+        station pairs
+
+        --start-time=STARTT
+                            Specify a UTCDateTime compatible string representing
+                            the start time for the event search. This will
+                            override any station start times. [Default more recent
+                            start date for each station pair]
+        --end-time=ENDT     Specify a UTCDateTime compatible string representing
+                            the start time for the event search. This will
+                            override any station end times [Default older end date
+                            for each the pair of stations]
+        -R, --reverse-order
+                            Reverse order of events. Default behaviour starts at
+                            oldest event and works towards most recent. Specify
+                            reverse order and instead the program will start with
+                            the most recent events and work towards older
+        --min-mag=MINMAG    Specify the minimum magnitude of event for which to
+                            search. [Default 6.0]
+        --max-mag=MAXMAG    Specify the maximum magnitude of event for which to
+                            search. [Default None, i.e. no limit]
+
+      Geometry Settings:
+        Settings associatd with the event-station geometries
+
+        --min-dist=MINDIST  Specify the minimum great circle distance (degrees)
+                            between the station and event. [Default 85]
+        --max-dist=MAXDIST  Specify the maximum great circle distance (degrees)
+                            between the station and event. [Default 120]
+
+      Parameter Settings:
+        Miscellaneous default values and settings
+
+        --Vp=VP             Specify default P velocity value. [Default 6.0 km/s]
+        --SNR=MSNR          Specify the SNR threshold used to determine whether
+                            events are processedc. [Default 7.5]
+        --window=DTS        Specify time window length before and after the SKS
+                            arrival. The total window length is 2*dst. [Default
+                            120 s]
+        --max-delay=MAXDT   Specify the maximum delay time. [Default 4 s]
+        --time-increment=DDT
+                            Specify the time increment. [Default 0.1 s]
+        --angle-increment=DPHI
+                            Specify the angle increment. [Default 1 d]
+        --transverse-SNR=SNRTLIM
+                            Specify the minimum SNR Threshold for the Transverse
+                            component to be considered Non-Null. [Default 1.]
+"""
+
+# -*- coding: utf-8 -*-
 # Import splitpy, its classes and the conf module
 import splitpy
-from splitpy import Split, SeisPlot, DiagPlot
+from splitpy import Split, PickPlot, DiagPlot
+from splitpy import Pick, Keep, Save, Repeat
 from splitpy import conf as cf
 
 # Import miscellaneous
-import StDb
+import sys
+import stdb
 import os.path
-import pickle
 import numpy as np
+import matplotlib
+matplotlib.use('Qt5Agg')
+import matplotlib.pyplot as plt
+
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import pyqtSlot
 
 # Import Obspy Modules
 from obspy.taup import TauPyModel
@@ -27,6 +174,8 @@ from obspy.clients.fdsn import Client
 
 # Main function
 def main():
+
+    app = QApplication([])
 
     # Run Input Parser
     (opts, indb) = splitpy.utils.get_options()
@@ -37,35 +186,35 @@ def main():
     cf.dphi = opts.dphi   #   dphi is angle increment
 
     # Load Database
-    db = StDb.io.load_db(fname=indb)
+    db = stdb.io.load_db(fname=indb)
 
-    # construct station key loop
+    # Construct station key loop
     allkeys = db.keys()
-    allkeys.sort()
+    sorted(allkeys)
 
     # Extract key subset
     if len(opts.stkeys) > 0:
         stkeys = []
         for skey in opts.stkeys:
-            stkeys.extend([s for s in allkeys if skey in s] )
+            stkeys.extend([s for s in allkeys if skey in s])
     else:
         stkeys = db.keys()
-        stkeys.sort()
+        sorted(stkeys)
 
     # Initialize Taup Model
     tpmodel = TauPyModel(model='iasp91')
 
     # Loop over station keys
-    for ik in range(len(stkeys)):
+    for stkey in list(stkeys):
 
         # Extract station information from dictionary
-        sta = db[stkeys[ik]]
+        sta = db[stkey]
 
         # Initialize Split object
         split = Split(sta)
 
         # Output directory
-        outdir = 'RESULTS/'+ stkeys[ik]
+        outdir = 'RESULTS/' + stkey
         if not os.path.isdir(outdir):
             os.makedirs(outdir)
 
@@ -136,7 +285,7 @@ def main():
                 stalcllist = splitpy.io.list_local_data_stn(lcldrs=opts.localdata, sta=sta.station, \
                                  net=sta.network, altnet=sta.altnet)
                 print("|   {0:>2s}.{1:5s}: {2:6d} files                      |".format( \
-                    sta.network, sta.station,len(stalcllist)))
+                    sta.network, sta.station, len(stalcllist)))
             else:
                 stalcllist = splitpy.io.list_local_data_stn(lcldrs=opts.localdata, sta=sta.station)
                 print("|   {0:5s}: {1:6d} files                         |".format(sta.station, len(stalcllist)))
@@ -144,11 +293,7 @@ def main():
             stalcllist = []
         print("|===============================================|")      
 
-        # Initialize figure and axis handles
-        fp = []
-        fd = []
-
-        # select order of processing
+        # Select order of processing
         if opts.reverse:
             ievs = range(0, nevtT)
         else:
@@ -164,12 +309,12 @@ def main():
             split.add_event(ev)
 
             # Define time stamp
-            yr = str(time.year).zfill(4)
-            jd = str(time.julday).zfill(3)
-            hr = str(time.hour).zfill(2)
+            yr = str(split.meta["time"].year).zfill(4)
+            jd = str(split.meta["time"].julday).zfill(3)
+            hr = str(split.meta["time"].hour).zfill(2)
 
             # If distance between 85 and 120 deg:
-            if (split.gac > opts.mindist and split.gac < opts.maxdist):
+            if (split.meta["gac"] > opts.mindist and split.meta["gac"] < opts.maxdist):
 
                 # Display Event Info
                 nevK = nevK + 1
@@ -179,15 +324,15 @@ def main():
                     inum = nevtT - iev + 1
                 print(" ")
                 print("****************************************************")
-                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum,nevtT, time.strftime("%Y%m%d_%H%M%S")))
-                print("*   Origin Time: " + time.strftime("%Y-%m-%d %H:%M:%S"))
-                print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(lat, lon))
-                print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(dep/1000.,mag))
+                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum, nevtT, split.meta["time"].strftime("%Y%m%d_%H%M%S")))
+                print("*   Origin Time: " + split.meta["time"].strftime("%Y-%m-%d %H:%M:%S"))
+                print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta["lat"], split.meta["lon"]))
+                print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta["dep"]/1000., split.meta["mag"]))
                 print("*     {0:5s} -> Ev: {1:7.2f} km; {2:7.2f} deg; {3:6.2f}; {4:6.2f}".format(\
-                    sta.station, split.epi_dist, split.gac, split.baz, split.az))
+                    split.sta.station, split.meta["epi_dist"], split.meta["gac"], split.meta["baz"], split.meta["az"]))
 
                 # Get Travel times (Careful: here dep is in meters)
-                tt = TTmod.get_travel_times(distance_in_degree=split.meta["gac"], \
+                tt = tpmodel.get_travel_times(distance_in_degree=split.meta["gac"], \
                     source_depth_in_km=split.meta["dep"]/1000.)
 
                 # Loop over all times in tt
@@ -196,7 +341,7 @@ def main():
                     # Extract SKS arrival
                     if t.name == 'SKS':
 
-                        # Add SKS phase to Split
+                        # Add SKS phase to Split object
                         split.add_phase(t, opts.vp)
 
                         # Break out of loop 
@@ -210,8 +355,8 @@ def main():
                 # Rotate from ZEN to LQT (Longitudinal, Radial, Transverse)
                 split.rotate_ZEN_LQT()
 
-                # Calculate snr over XX seconds 
-                split.calc_snrq()
+                # Calculate snr over 30 seconds 
+                split.calc_snrq(dt=30.)
 
                 # Make sure no processing happens for NaNs
                 if np.isnan(split.snrq): 
@@ -221,8 +366,7 @@ def main():
 
                 # SNR below threshold
                 elif split.snrq < opts.msnr:
-                    print("* SNR Failed: {0:.2f} < {1:.2f}...Skipping".format( \
-                                                                                                                                                 sp_meta.snr,opts.msnr))
+                    print("* SNR Failed: {0:.2f} < {1:.2f}...Skipping".format(split.snrq, opts.msnr))
                     print("****************************************************")
 
                 # If SNR is higher than threshold
@@ -243,7 +387,9 @@ def main():
                     # Should we Re-Pick
                     if splitExists:
                         if (not opts.ovr and not opts.skip) or (opts.ovr and opts.skip):
-                            if not splitpy.gui.repeat():
+                            repeat = Repeat()
+                            if not repeat.reply:
+                            # if not splitpy.gui.repeat():
                                 print("* Split Results Exist --> Skipping")
                                 print("****************************************************")
                                 continue
@@ -269,22 +415,23 @@ def main():
                     # Determine is Null and quality of estimate
                     split.calc_snrt()
                     split.is_null(opts.snrTlim, 5)
-                    split.quality(5)
+                    split.get_quality(5)
 
                     # Initialize LQT seismogram figure and plot it
-                    splot = SeisPlot(split)
-                    splot.plot_LQT_phases(tt, opts.dts)
+                    pplot = PickPlot(split)
+                    pplot.plot_LQT_phases(tt, opts.dts)
 
                     # Initialize diagnostic figure and plot it
                     dplot = DiagPlot(split)
-                    dplot.plot.diagnostic()
+                    dplot.plot_diagnostic()
 
                     # Choose whether to re-pick window times
                     iselect = 'a'
                     while iselect == 'a':
 
                         # Call interactive window for picking
-                        ans = splitpy.gui.pick()
+                        pick = Pick()
+                        ans = pick.reply
 
                         # If user clicks yes:
                         if ans:
@@ -292,8 +439,8 @@ def main():
                             print("* Refine Window in Figure 1")
 
                             # Get clicks from LQT figure
-                            # plt.figure(1)
-                            xc = splot.fp[0].ginput(2, show_clicks=True)
+                            plt.figure(1)
+                            xc = plt.ginput(2, show_clicks=True)
 
                             # Extract times from clicks
                             tp1 = [xx for xx, yy in xc][0]
@@ -312,7 +459,7 @@ def main():
                             t2 = split.meta["time"] + split.ts + tp2
 
                             # Update LQT figure
-                            splot.update_LQT(tp1, tp2)
+                            pplot.update_LQT(tp1, tp2)
 
                             # Re-analyze splits
                             split.analyze(t1=t1, t2=t2)
@@ -326,7 +473,7 @@ def main():
                             # Determine if estimate is Null and quality of estimate
                             split.calc_snrt(t1, t2 - t1)
                             split.is_null(opts.snrTlim, 5)
-                            split.quality(5)
+                            split.get_quality(5)
 
                             # Re-initialize diagnostic figure and plot
                             dplot = DiagPlot(split)
@@ -337,7 +484,8 @@ def main():
                             iselect = 'c'
 
                             # Call interactive window for decision on estimate
-                            ans2 = splitpy.gui.keep()
+                            keep = Keep()
+                            ans2 = keep.reply
 
                             # If user keeps estimate:
                             if ans2:
@@ -351,8 +499,10 @@ def main():
                                 writeSplit = True
                                 if splitExists:
                                     if not opts.ovr:
-                                        ans = splitpy.gui.save()
-                                        if not ans:
+                                        save_obj = Save()
+                                        ans3 = save_obj.reply
+                                        # ans = splitpy.gui.save()
+                                        if not ans3:
                                             writeSplit = False
 
                                 # Write Output
@@ -378,4 +528,3 @@ if __name__ == "__main__":
 
     # Run main program
     main()
-

@@ -1,5 +1,5 @@
-Classes
-=======
+SplitPy Classes
+===============
 
 .. automodule:: splitpy.classes
 

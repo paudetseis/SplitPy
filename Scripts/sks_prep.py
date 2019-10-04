@@ -1,16 +1,144 @@
+# Copyright 2019 Pascal Audet & Andrew Schaeffer
+#
+# This file is part of SplitPy.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 #!/usr/bin/env python
 
+"""
+Program sks_prep.py
+-------------------
 
-'''
-PROGRAM sks_prep.py
+Downloads seismic waveforms for SKS splitting analysis, performs
+component rotation and determines whether or not to save the
+waveforms to disk for subsequent analysis offline (see program
+:ref:`offline`). Station selection is specified by a network and 
+station code. The data base is provided in a pickled file as a 
+`StDb` dictionary.
 
-First of 2 programs for SKS Split to prepare data for later offline 
-calculation. This script downloads the event catalogue for a given 
-station and downloads the viable data. The second code 
-sks_offline_split.py processes the prepared data.
+Usage
+-----
 
-'''
+.. code-block::
 
+    $ sks_prep.py -h
+    Usage: sks_prep.py [options] <station database>
+
+    Script to download and prepare datasets for SKS splitting processing. This
+    script downloads and prepares event and station data, so that splitting can
+    then be calculated offline.
+
+    Options:
+      -h, --help            show this help message and exit
+      --keys=STKEYS         Specify a comma separated list of station keys for
+                            which to perform analysis. These must be contained
+                            within the station database. Partial keys will be used
+                            to match against those in the dictionary. For
+                            instance, providing IU will match with all stations in
+                            the IU network [Default processes all stations in the
+                            database]
+      -v, -V, --verbose     Specify to increase verbosity.
+      --local-data=LOCALDATA
+                            Specify a comma separated list of paths containing
+                            day-long sac files of data already downloaded. If data
+                            exists for a seismogram is already present on disk, it
+                            is selected preferentially over downloading the data
+                            using the Client interface
+      --no-data-zero        Specify to force missing data to be set as zero,
+                            rather than default behaviour which sets to nan.
+      --no-local-net        Specify to prevent using the Network code in the
+                            search for local data (sometimes for CN stations the
+                            dictionary name for a station may disagree with that
+                            in the filename. [Default Network used]
+      -D DATADIR, --data-directory=DATADIR
+                            Specify the directory prefix in which the prepared
+                            data is stored. [Default 'DATA']. The start and end
+                            time and date as well as min and max magnitudes are
+                            included in the final folder name.
+
+      Server Settings:
+        Settings associated with which datacenter to log into.
+
+        -S SERVER, --Server=SERVER
+                            Specify the server to connect to. Options include:
+                            BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU,
+                            NCEDC, NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS,
+                            USP. [Default IRIS]
+        -U USERAUTH, --User-Auth=USERAUTH
+                            Enter your IRIS Authentification Username and Password
+                            (--User-Auth='username:authpassword') to access and
+                            download restricted data. [Default no user and
+                            password]
+
+  Event Settings:
+    Settings associated with refining the events to include in matching
+    station pairs
+
+    --start-time=STARTT
+                        Specify a UTCDateTime compatible string representing
+                        the start time for the event search. This will
+                        override any station start times. [Default more recent
+                        start date for each station pair]
+    -R, --reverse-order
+                        Reverse order of events. Default behaviour starts at
+                        oldest event and works towards most recent. Specify
+                        reverse order and instead the program will start with
+                        the most recent events and work towards older
+    --end-time=ENDT     Specify a UTCDateTime compatible string representing
+                        the start time for the event search. This will
+                        override any station end times [Default older end date
+                        for each the pair of stations]
+    --min-mag=MINMAG    Specify the minimum magnitude of event for which to
+                        search. [Default 6.0]
+    --max-mag=MAXMAG    Specify the maximum magnitude of event for which to
+                        search. [Default None, ie no limit]
+
+  Geometry Settings:
+    Settings associatd with the event-station geometries
+
+    --min-dist=MINDIST  Specify the minimum great circle distance (degrees)
+                        between the station and event. [Default 85]
+    --max-dist=MAXDIST  Specify the maximum great circle distance (degrees)
+                        between the station and event. [Default 120]
+
+  Parameter Settings:
+    Miscellaneous default values and settings
+
+    --Vp=VP             Specify default P velocity value. [Default 6.0 km/s]
+    --SNR=MSNR          Specify the SNR threshold used to determine whether
+                        events are processedc. [Default 7.5]
+    --window=DTS        Specify time window length before and after the SKS
+                        arrival. The total window length is 2*dst. [Default
+                        120 s]
+    --max-delay=MAXDT   Specify the maximum delay time. [Default 4 s]
+    --time-increment=DDT
+                        Specify the time increment. [Default 0.1 s]
+    --angle-increment=DPHI
+                        Specify the angle increment. [Default 1 d]
+    --transverse-SNR=SNRTLIM
+                        Specify the minimum SNR Threshold for the Transverse
+                        component to be considered Non-Null. [Default 1.]
+
+"""
+
+# -*- coding: utf-8 -*-
 # Import splitpy, its classes and the conf module
 import splitpy
 from splitpy import Split
@@ -19,6 +147,7 @@ from splitpy import conf as cf
 # Import miscellaneous
 import sys
 import stdb
+import dill
 import os.path
 import numpy as np
 import matplotlib
@@ -37,7 +166,7 @@ from obspy.clients.fdsn import Client
 def main():
 
     # Run Input Parser
-    (opts, indb) = splitpy.utils.get_options_prep_offline()
+    (opts, indb) = splitpy.utils.get_options_prep()
 
     # Set Global Search Variables
     cf.maxdt = opts.maxdt #   maxdt is Max delay time
@@ -186,9 +315,9 @@ def main():
             split.add_event(ev)
 
             # Define time stamp
-            yr = str(time.year).zfill(4)
-            jd = str(time.julday).zfill(3)
-            hr = str(time.hour).zfill(2)
+            yr = str(split.meta["time"].year).zfill(4)
+            jd = str(split.meta["time"].julday).zfill(3)
+            hr = str(split.meta["time"].hour).zfill(2)
 
             # If distance between 85 and 120 deg:
             if (split.meta["gac"] > opts.mindist and split.meta["gac"] < opts.maxdist):
@@ -251,19 +380,19 @@ def main():
                     print("* SNR Passed: {0:4.2f} >= {1:3.1f}".format(split.snrq, opts.msnr))
 
                     # Create Event Folder
-                    evtdir = outdir + "/" + time.strftime("%Y%m%d_%H%M%S")
+                    evtdir = outdir + "/" + split.meta["time"].strftime("%Y%m%d_%H%M%S")
 
                     # Create Folder
                     if not os.path.isdir(evtdir): os.makedirs(evtdir)
 
                     # Event Data
-                    dill.dump([ev, tstart, tend, tt],open(evtdir + "/Event_Data.pkl","wb"))
+                    dill.dump([ev, tt], open(evtdir + "/Event_Data.pkl","wb"))
 
                     # Station Data
                     dill.dump(sta, open(evtdir + "/Station_Data.pkl","wb"))
 
                     # Trace Filenames
-                    trpref=time.strftime("%Y%m%d_%H%M%S") + "_" + sta.network + "." + sta.station
+                    trpref = split.meta["time"].strftime("%Y%m%d_%H%M%S") + "_" + sta.network + "." + sta.station
 
                     # Raw Trace files
                     dill.dump([split.data["trN"], split.data["trE"], split.data["trZ"]], \
@@ -286,13 +415,8 @@ def main():
 
 
 
-
-###############################
-# Choose one station to process
-
 if __name__ == "__main__":
 
     # Run main program
     main()
 
-###################

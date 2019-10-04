@@ -9,7 +9,7 @@ scripts = ['Scripts/' + i for i in listdir('Scripts/')]
 
 setup(
     name                = 'splitpy',
-    version             = 0.1.0,
+    version             = '0.1.0',
     description         = 'Software for teleseismic shear-wave splitting analysis',
     author              = 'Pascal Audet, Andrew Schaeffer',
     maintainer          = 'Pascal Audet, Andrew Schaeffer',
