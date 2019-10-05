@@ -4,7 +4,6 @@ import setuptools
 from numpy.distutils.core import setup, Extension
 from os import listdir
 
-# version = open('version.txt').read().split()[0]
 scripts = ['Scripts/' + i for i in listdir('Scripts/')]
 
 setup(

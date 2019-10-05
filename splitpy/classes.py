@@ -423,8 +423,10 @@ class Split(object):
                         self.meta["baz"], t1, t2)
 
         # Calculate error
-        edtt, ephi, errc = splitpy.calc.split_errorRC(self.data["trT"], \
+        edtt, ephi, errc = splitpy.calc.split_errorRC(trT_c, \
                         t1, t2, 0.05, Emat)
+        # edtt, ephi, errc = splitpy.calc.split_errorRC(self.data["trT"], \
+        #                 t1, t2, 0.05, Emat)
 
         # Store dictionary as attribute
         self.RC_res = {
@@ -440,8 +442,10 @@ class Split(object):
                         self.meta["baz"], t1, t2)
         
         # Calculate errors
-        edtt, ephi, errc = splitpy.calc.split_errorSC(self.data["trT"], \
+        edtt, ephi, errc = splitpy.calc.split_errorSC(trT_c, \
                         t1, t2, 0.05, Emat)
+        # edtt, ephi, errc = splitpy.calc.split_errorSC(self.data["trT"], \
+        #                 t1, t2, 0.05, Emat)
 
         self.SC_res = {
             "Emat": Emat, "trQ_c": trQ_c, "trT_c": trT_c, "trFast": trFast,

@@ -22,7 +22,8 @@
 """
 
 SplitPy is a software for estimating teleseismic shear-wave splitting parameters
-based on the Matlab Tool SplitLab, but with modifications from Wustefeld et al (2008). 
+based on the Matlab Tool SplitLab, but with modifications from 
+`Wustefeld et al (2008) <https://doi.org/doi:10.1016/j.cageo.2007.08.002>`_.
 Additional error surface implementation has been added, however these error 
 surfaces have not been fully tested.
 
@@ -58,28 +59,17 @@ Dependencies
 The current version was developed using **Python3.7** \
 Also, the following packages are required:
 
-- ``obspy`` (https://github.com/obspy/obspy/wiki)
-- ``stdb`` (https://github.com/paudetseis/StDb)
-- ``dill`` (https://pypi.org/project/dill/)
-- ``PyQt5`` (https://pypi.org/project/PyQt5/)
+- `stdb <https://github.com/paudetseis/StDb>`_
+- `dill <https://pypi.org/project/dill/>`_
 
-See below for full installation details. 
-
-Download the software
-+++++++++++++++++++++
-
-- Clone the repository:
-
-.. sourcecode:: bash
-
-   git clone https://github.com/paudetseis/SplitPy.git
-   cd SplitPy
+Other required packages (e.g., ``obspy``, ``PyQt5``)
+will be automatically installed by ``stdb``.
 
 Conda environment
 +++++++++++++++++
 
 We recommend creating a custom ``conda`` environment
-where ``SplitPy`` can be installed along with its dependencies.
+where ``SplitPy`` can be installed along with some of its dependencies.
 
 .. sourcecode:: bash
 
@@ -95,26 +85,30 @@ Install remaining dependencies using ``pip`` inside the ``split`` environment:
 
 .. sourcecode:: bash
 
-   git clone https://github.com/paudetseis/StDb.git
-   cd StDb
-   pip install .
-   pip install PyQt5
+   pip install stdb
 
-Installing using pip
+Installing from Pypi
 ++++++++++++++++++++
 
-Once the previous steps are performed, you can install ``splitpy`` using ``pip``:
+.. sourcecode:: bash
+
+   pip install splitpy
+
+Installing from source
+++++++++++++++++++++++
+
+- Clone the repository:
+
+.. sourcecode:: bash
+
+   git clone https://github.com/paudetseis/SplitPy.git
+   cd SplitPy
+
+- Install using pip:
 
 .. sourcecode:: bash
 
    pip install .
-
-.. note::
-
-   Please note, if you are actively working on the code, or making frequent edits, it is advisable
-   to perform the pip installation with the ``-e`` flag. This enables an editable installation, where
-   symbolic links are used rather than straight copies. This means that any changes made in the
-   local folders will be reflected in the packages available on the system.
 
 """
 

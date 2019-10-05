@@ -24,10 +24,12 @@ those in [Audet et al. (2016)](#references)
 The current version was developed using **Python3.7** \
 Also, the following packages are required:
 
-- [`obspy`](https://github.com/obspy/obspy/wiki)
 - [`stdb`](https://github.com/schaefferaj/StDb)
 - [`dill`](https://pypi.org/project/dill/)
-- [`PyQt5`](https://pypi.org/project/PyQt5/)
+
+Other required packages (e.g., [`obspy`](https://github.com/obspy/obspy/wiki),
+[`PyQt5`](https://pypi.org/project/PyQt5/)) will be automatically installed by 
+[`stdb`](https://github.com/schaefferaj/StDb)
 
 #### Conda environment
 
@@ -46,25 +48,27 @@ Activate the newly created environment:
 ```
 
 Install remaining dependencies using `pip` inside the `split` environment. 
-Note that you need to install `StDb` from source at this time:
 
 ```bash
-   git clone https://github.com/paudetseis/StDb.git
-   cd StDb
-   pip install .
-   pip install PyQt5
+   pip install stdb
 ```
+
+### Installing from Pypi
+
+```bash
+pip install splitpy
+``` 
 
 ### Installing from source
 
-Download or clone the repository:
+- Clone the repository:
+
 ```bash
 git clone https://github.com/paudetseis/SplitPy.git
 cd SplitPy
 ```
 
-Next we recommend following the steps for creating a `conda` environment 
-(see [above](#conda-environment)). Then install using `pip`:
+- Install using `pip`:
 
 ```bash
 pip install .

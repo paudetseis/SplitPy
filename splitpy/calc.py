@@ -351,14 +351,15 @@ def split_dof(tr):
     
     """
 
-    ft = np.fft.fft(tr.data)[0:int(len(tr.data)/2)+1]
-    ai = np.ones(len(ft))
-    ai[0] = 0.5; ai[-1] = 0.5
+    F = np.abs(np.fft.fft(tr.data)[0:int(len(tr.data)/2) + 1])
 
-    E2 = np.sum(np.dot(ai, np.abs(ft)**2))
-    E4 = np.sum(np.dot(ai, np.abs(ft)**4))
+    E2 = np.sum(F**2)
+    E2 -= (F[0]**2 + F[-1]**2)/2.
+    E4 = (1./3.)*(F[0]**4 + F[-1]**4)
+    for i in range(1,len(F) - 1):
+        E4 += (4./3.)*F[i]**4
 
-    dof = 2.*(2.*E2**2/E4 - 1.)
+    dof = int(4.*E2**2/E4 - 2.)
 
     return dof
 
@@ -403,6 +404,9 @@ def split_errorSC(tr, t1, t2, q, Emat):
     
     # Get degrees of freedom
     dof = split_dof(tr_tmp)
+    if dof < 3:
+        dof = 3
+        print("Degrees of freedom < 3. Fixing to DOF = 3, which may result in accurate errors")
     n_par = 2
 
     # Error contour
@@ -415,8 +419,8 @@ def split_errorSC(tr, t1, t2, q, Emat):
     err = np.where(Emat<err_contour)
     if len(err) == 0:
       return False, False, False
-    err_phi = 0.5*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi
-    err_dtt = 0.5*(dtt[max(err[1])] - dtt[min(err[1])])
+    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*cf.dphi)
+    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*cf.ddt)
 
     return err_dtt, err_phi, err_contour
 
@@ -465,8 +469,9 @@ def split_errorRC(tr, t1, t2, q, Emat):
     
     # Get degrees of freedom
     dof = split_dof(tr_tmp)
-    if dof < 3:
-      return None, None, None
+    if dof <= 3:
+        dof = 3.01
+        print("Degrees of freedom < 3. Fixing to DOF = 3, which may result in accurate errors")
     n_par = 2
 
     # Fisher transformation
@@ -482,7 +487,7 @@ def split_errorRC(tr, t1, t2, q, Emat):
 
     # Estimate uncertainty (q confidence interval)
     err = np.where(Emat<err_contour)
-    err_phi = 0.5*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi
-    err_dtt = 0.5*(dtt[max(err[1])] - dtt[min(err[1])])
+    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*cf.dphi)
+    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*cf.ddt)
 
     return err_dtt, err_phi, err_contour
