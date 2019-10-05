@@ -35,18 +35,20 @@ Quick links
 * `SplitPy Git repository <https://github.com/paudetseis/SplitPy>`_
 * `SplitLab <http://splitting.gm.univ-montp2.fr>`_
 
-Getting Started
-"""""""""""""""
+.. Getting Started
+.. """""""""""""""
 
 .. toctree::
    :maxdepth: 1
+   :caption: Getting Started
 
    api
 
-Content
-"""""""
+.. Content
+.. """""""
 .. toctree::
    :maxdepth: 1
+   :caption: Content
 
    classes
    gui
@@ -54,11 +56,12 @@ Content
    calc
    utils
 
-Programs & Tutorials
-""""""""""""""""""""
+.. Programs & Tutorials
+.. """"""""""""""""""""
 
 .. toctree::
    :maxdepth: 1
+   :caption: Programs & Tutorials
 
    split
    prep
