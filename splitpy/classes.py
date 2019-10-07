@@ -47,13 +47,140 @@ a .png file.
 # -*- coding: utf-8 -*-
 import numpy as np
 import splitpy
-from splitpy import conf as cf
 from obspy.core import Trace
 from obspy.geodetics.base import gps2dist_azimuth as epi
 from obspy.geodetics import kilometer2degrees as k2d
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
+
+class Meta(object):
+    """
+    A Result object contains attributes associated with the result
+    of a single splitting analysis. These are equally applicable
+    to the RC or SC method - see :func:`~splitpy.classes.analyze`.
+    
+    Attributes
+    ----------
+    time : :class:`~obspy.core.UTCDateTime`
+        Origin time of earthquake
+    dep : float
+        Depth of hypocenter (km)
+    lon : float
+        Longitude coordinate of epicenter
+    lat : float
+        Latitude coordinate of epicenter
+    mag : float
+        Magnitude of earthquake
+    gac : float
+        Great arc circle between station and epicenter (degrees)
+    epi_dist : float
+        Epicentral distance between station and epicenter (km)
+    baz : float
+        Back-azimuth - pointing to earthquake from station (degrees)
+    az : float
+        Azimuth - pointing to station from earthquake (degrees)
+    slow : float
+        Horizontal slowness of phase
+    inc : float
+        Incidence angle of phase at surface
+
+    """
+
+    def __init__(self, time, dep, lon, lat, mag, gac, epi_dist, baz, az):
+
+        self.time = time
+        self.dep = dep
+        self.lon = lon
+        self.lat = lat
+        self.mag = mag
+        self.gac = gac
+        self.epi_dist = epi_dist
+        self.baz = baz
+        self.az = az
+        self.slow = None
+        self.inc = None
+
+class Data(object):
+    """
+    A Data object contains three-component raw (NEZ) and rotated (LQT) 
+    waveforms centered on the arrival time of interest.
+    
+    Attributes
+    ----------
+
+    trN : :class:`~obspy.core.Trace`
+        Trace of North component of motion
+    trE : :class:`~obspy.core.Trace`
+        Trace of East component of motion
+    trZ : :class:`~obspy.core.Trace` 
+        Trace of Vertical component of motion
+    trL : :class:`~obspy.core.Trace`
+        Trace of longitudinal component of motion
+    trQ : :class:`~obspy.core.Trace`
+        Trace of radial component of motion
+    trT : :class:`~obspy.core.Trace`
+        Trace of tangential component of motion
+
+    """
+
+    def __init__(self, trE, trN, trZ):
+
+        self.trE = trE
+        self.trN = trN
+        self.trZ = trZ
+        self.trL = None
+        self.trQ = None
+        self.trT = None
+
+class Result(object):
+    """
+    A Result object contains attributes associated with the result
+    of a single splitting analysis. These are equally applicable
+    to the RC or SC method - see :func:`~splitpy.classes.analyze`.
+    
+    Attributes
+    ----------
+
+    Emat: :class:`~numpy.ndarray`
+        Error minimization matrix
+    trQ_c: :class:`~obspy.core.Trace`
+        Corrected radial (Q) component
+    trT_c: :class:`~obspy.core.Trace`
+        Corrected transverse (T) component
+    trFast: :class:`~obspy.core.Trace`
+        Corrected Fast component
+    trSlow: :class:`~obspy.core.Trace`
+        Corrected Slow component
+    phi: float
+        Azimuth of fast axis (deg)
+    dtt: float
+        Delay time between fast and slow axes (sec)
+    phi_min: float  
+        Azimuth used in plotting method
+    ephi: float
+        Error on azimuth of fast axis (deg)
+    edtt: float
+        Error on delay time between fast and slow axes (sec)
+    errc: float  
+        Error contours on `Emat`
+    """
+
+
+    def __init__(self, Emat, trQ_c, trT_c, trFast, 
+        trSlow, phi, dtt, phi_min, edtt, ephi, errc):
+
+        self.Emat = Emat
+        self.trQ_c = trQ_c
+        self.trT_c = trT_c
+        self.trFast = trFast
+        self.trSlow = trSlow
+        self.phi = phi
+        self.dtt = dtt
+        self.phi_min = phi_min
+        self.edtt = edtt
+        self.ephi = ephi
+        self.errc = errc
 
 
 class Split(object):
@@ -70,16 +197,16 @@ class Split(object):
 
     Attributes
     ----------
-    sta : Dict
-        Dictionary containing station information - from :mod:`~stdb` database.
-    meta : Dict
-        Dictionary of metadata information for single event.
-    data : Dict
-        Dictionary blabla
-    RC_res : Dict
-        Dictionary containing results of Rotation-Correlation metnod
-    SC_res : Dict
-        Dictionary containing results of Silver-Chan metnod
+    sta : object
+        Object containing station information - from :mod:`~stdb` database.
+    meta : :class:`~splitpy.classes.Meta`
+        Object of metadata information for single event.
+    data : :class:`~splitpy.classes.Data`
+        Object containing trace data in :class:`~obspy.core.Trace` format
+    RC_res : :class:`~splitpy.classes.Result`
+        Object containing results of Rotation-Correlation metnod
+    SC_res : :class:`~splitpy.classes.Result`
+        Object containing results of Silver-Chan metnod
     err : bool
         Whether or not the `get_data_NEZ` successfully retrieved waveforms
     null : bool
@@ -94,12 +221,21 @@ class Split(object):
         Signal-to-noise ratio for radial (Q) component
     snrt : float
         Signal-to-noise ratio for tangential (T) component
+    maxdt : float
+        Max delay time between slow and fast axes in search
+    ddt : float
+        Sampling distance (in sec) for delay time search
+    dphi : float
+        Sampling distance (in degrees) for azimuth search 
 
     """
 
-    def __init__(self, sta):
+    def __init__(self, sta, maxdt, ddt, dphi):
 
         self.sta = sta
+        self.maxdt = maxdt
+        self.ddt = ddt
+        self.dphi = dphi
 
     def add_event(self, event):
         """
@@ -113,25 +249,7 @@ class Split(object):
         Attributes
         ----------
         meta :
-            Dictionary containing metadata information
-        meta["time"] : :class:`~obspy.core.UTCDateTime`
-            Origin time of earthquake
-        meta["dep"] : float
-            Depth of hypocenter (km)
-        meta["lon"] : float
-            Longitude coordinate of epicenter
-        meta["lat"] : float
-            Latitude coordinate of epicenter
-        meta["mag"] : float
-            Magnitude of earthquake
-        meta["gac"] : float
-            Great arc circle between station and epicenter (degrees)
-        meta["epi_dist"] : float
-            Epicentral distance between station and epicenter (km)
-        meta["baz"] : float
-            Back-azimuth - pointing to earthquake from station (degrees)
-        meta["az"] : float
-            Azimuth - pointing to station from earthquake (degrees)
+            Object containing metadata information
 
         """
 
@@ -149,9 +267,8 @@ class Split(object):
         epi_dist /= 1000
         gac = k2d(epi_dist)
 
-        # Store as dictionary attribute
-        self.meta = {"time": time, "dep": dep, "lon": lon, "lat": lat, \
-                    "mag": mag, "gac": gac, "epi_dist": epi_dist, "baz": baz, "az": az}
+        # Store as object attributes
+        self.meta = Meta(time, dep, lon, lat, mag, gac, epi_dist, baz, az)
 
     def add_phase(self, t, vp):
         """
@@ -168,9 +285,9 @@ class Split(object):
             Travel time between earthquake and station (sec)
         ph : str
             Phase name ('SKS')
-        meta["slow"] : float
+        meta.slow : float
             Horizontal slowness of phase
-        meta["inc"] : float
+        meta.inc : float
             Incidence angle of phase at surface
 
         """
@@ -178,8 +295,8 @@ class Split(object):
         # Store as attributes
         self.ts = t.time
         self.ph = t.name
-        self.meta["slow"] = t.ray_param_sec_degree/111.
-        self.meta["inc"] = np.arcsin(vp*self.meta["slow"])*180./np.pi
+        self.meta.slow = t.ray_param_sec_degree/111.
+        self.meta.inc = np.arcsin(vp*self.meta.slow)*180./np.pi
 
     def add_NEZ(self, stream):
         """
@@ -192,18 +309,12 @@ class Split(object):
 
         Attributes
         ----------
-        data : Dict
-            Dictionary containing :class:`obspy.core.Trace` objects
-        data["trN"] : :class:`~obspy.core.Trace`
-            Trace of North component of motion
-        data["trE"] : :class:`~obspy.core.Trace`
-            Trace of East component of motion
-        data["trZ"] : :class:`~obspy.core.Trace` 
-            Trace of Vertical component of motion
+        data : :class:`~splitpy.classes.Data`
+            Object containing :class:`obspy.core.Trace` objects
 
         """
 
-        self.data = {"trN": stream[0], "trE": stream[1], "trZ": stream[2]}
+        self.data = Data(stream[0], stream[1], stream[2])
 
     def add_LQT(self, stream):
         """
@@ -217,20 +328,14 @@ class Split(object):
         Attributes
         ----------
 
-        data : Dict
-            Dictionary containing :class:`~obspy.core.Trace` objects
-        data["trL"] : :class:`~obspy.core.Trace`
-            Trace of longitudinal component of motion
-        data["trQ"] : :class:`~obspy.core.Trace`
-            Trace of radial component of motion
-        data["trT"] : :class:`~obspy.core.Trace`
-            Trace of tangential component of motion
+        data : :class:`~splitpy.classes.Data`
+            Object containing :class:`~obspy.core.Trace` objects
 
         """
 
-        self.data["trL"] = stream[0]
-        self.data["trQ"] = stream[1]
-        self.data["trT"] = stream[2]
+        self.data.trL = stream[0]
+        self.data.trQ = stream[1]
+        self.data.trT = stream[2]
 
     def get_data_NEZ(self, client, dts, stdata, ndval):
         """
@@ -243,7 +348,7 @@ class Split(object):
             Client object
         dts : float
             Time duration (?)
-        stdata : Dict
+        stdata : :class:`stdb.classes.StDbElement`
             Station metadata
         ndval : float
             Fill in value for missing data
@@ -251,20 +356,14 @@ class Split(object):
         Attributes
         ----------
 
-        data : Dict
-            Dictionary containing :class:`~obspy.core.Trace` objects
-        data["trN"] : :class:`~obspy.core.Trace`
-            Trace of North component of motion
-        data["trE"] : :class:`~obspy.core.Trace`
-            Trace of East component of motion
-        data["trZ"] : :class:`~obspy.core.Trace` 
-            Trace of Vertical component of motion
+        data : :class:`~splitpy.classes.Data`
+            Object containing :class:`~obspy.core.Trace` objects
 
         """
 
         # Define start and end times for requests
-        tstart = self.meta["time"] + self.ts - dts
-        tend = self.meta["time"] + self.ts + dts
+        tstart = self.meta.time + self.ts - dts
+        tend = self.meta.time + self.ts + dts
 
         # Get waveforms
         print ("* Requesting Waveforms: ")
@@ -277,7 +376,7 @@ class Split(object):
 
         # Store as attributes with traces in dictionay
         self.err = err
-        self.data = {"trN": trN, "trE": trE, "trZ": trZ}
+        self.data = Data(trN, trE, trZ)
 
     def rotate_ZEN_LQT(self):
         """
@@ -288,19 +387,13 @@ class Split(object):
         Attributes
         ----------
 
-        data : Dict
-            Dictionary containing :class:`~obspy.core.Trace` objects
-        data["trL"] : :class:`~obspy.core.Trace`
-            Trace of longitudinal component of motion
-        data["trQ"] : :class:`~obspy.core.Trace`
-            Trace of radial component of motion
-        data["trT"] : :class:`~obspy.core.Trace`
-            Trace of tangential component of motion
+        data : :class:`~splitpy.classes.Data`
+            Object containing :class:`~obspy.core.Trace` objects
 
         """
 
-        inc = self.meta["inc"]*np.pi/180.
-        baz = self.meta["baz"]*np.pi/180.
+        inc = self.meta.inc*np.pi/180.
+        baz = self.meta.inc*np.pi/180.
 
         M = np.zeros((3,3))
         M[0,0] = np.cos(inc)
@@ -315,12 +408,12 @@ class Split(object):
 
         # Perform 3-D rotation
         LQT = np.dot(np.array(M), np.array(\
-            [self.data["trZ"].data, self.data["trE"].data, self.data["trN"].data]))
+            [self.data.trZ.data, self.data.trE.data, self.data.trN.data]))
 
         # Store into traces and add as new items in attribute dictionary
-        self.data["trL"] = Trace(data=LQT[0], header=self.data["trZ"].stats)
-        self.data["trQ"] = Trace(data=LQT[1], header=self.data["trN"].stats)
-        self.data["trT"] = Trace(data=LQT[2], header=self.data["trE"].stats)
+        self.data.trL = Trace(data=LQT[0], header=self.data.trZ.stats)
+        self.data.trQ = Trace(data=LQT[1], header=self.data.trN.stats)
+        self.data.trT = Trace(data=LQT[2], header=self.data.trE.stats)
 
     def calc_snrq(self, t1=None, dt=30.):
         """
@@ -341,8 +434,8 @@ class Split(object):
         """
 
         if t1 is None:
-            t1 = self.meta["time"] + self.ts - 5.
-        self.snrq = _calc_snr(self.data["trQ"], t1=t1, dt=dt)
+            t1 = self.meta.time + self.ts - 5.
+        self.snrq = _calc_snr(self.data.trQ, t1=t1, dt=dt)
 
     def calc_snrt(self, t1=None, dt=30.):
         """
@@ -363,8 +456,8 @@ class Split(object):
         """
 
         if t1 is None:
-            t1 = self.meta["time"] + self.ts - 5.
-        self.snrt = _calc_snr(self.data["trT"], t1=t1, dt=dt)
+            t1 = self.meta.time + self.ts - 5.
+        self.snrt = _calc_snr(self.data.trT, t1=t1, dt=dt)
 
     def analyze(self, t1=None, t2=None):
         """
@@ -380,78 +473,45 @@ class Split(object):
         t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`
             End time of picking window
 
-        Note
-        ----
-        In the attributes below, replace `meth_res` by either one of
-        `RC_res` of `SC_res` for the corresponding method attribute.
-
         Attributes
         ----------
-        meth_res["Emat"]: :class:`~numpy.ndarray`
-            Error minimization matrix
-        meth_res["trQ_c"]: :class:`~obspy.core.Trace`
-            Corrected radial (Q) component
-        meth_res["trT_c"]: :class:`~obspy.core.Trace`
-            Corrected transverse (T) component
-        meth_res["trFast"]: :class:`~obspy.core.Trace`
-            Corrected Fast component
-        meth_res["trSlow"]: :class:`~obspy.core.Trace`
-            Corrected Slow component
-        meth_res["phi"]: float
-            Azimuth of fast axis (deg)
-        meth_res["dtt"]: float
-            Delay time between fast and slow axes (sec)
-        meth_res["phi_min"]: float  
-            Azimuth used in plotting method
-        meth_res["ephi"]: float
-            Error on azimuth of fast axis (deg)
-        meth_res["edtt"]: float
-            Error on delay time between fast and slow axes (sec)
-        meth_res["errc"]: float  
-            Error contours on `Emat`
+        RC_res : :class:`~splitpy.classes.Result`
+            Object containing results of Rotation-Correlation method
+        SC_res : :class:`~splitpy.classes.Result`
+            Object containing results of Silver-Chan method
 
         """
 
         if t1 is None and t2 is None:
-            t1 = self.meta["time"] + self.ts - 5.
-            t2 = self.meta["time"] + self.ts + 25.
+            t1 = self.meta.time + self.ts - 5.
+            t2 = self.meta.time + self.ts + 25.
 
         # Calculate Silver and Chan splitting estimate
         print ("* --> Calculating Rotation-Correlation (RC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
-                        splitpy.calc.split_RotCorr(self.data["trQ"], self.data["trT"], \
-                        self.meta["baz"], t1, t2)
+                        splitpy.calc.split_RotCorr(self.data.trQ, self.data.trT, \
+                        self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
 
         # Calculate error
         edtt, ephi, errc = splitpy.calc.split_errorRC(trT_c, \
-                        t1, t2, 0.05, Emat)
-        # edtt, ephi, errc = splitpy.calc.split_errorRC(self.data["trT"], \
-        #                 t1, t2, 0.05, Emat)
+                        t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
 
         # Store dictionary as attribute
-        self.RC_res = {
-            "Emat": Emat, "trQ_c": trQ_c, "trT_c": trT_c, "trFast": trFast,
-            "trSlow": trSlow, "phi": phi, "dtt": dtt, "phi_min": phi_min, \
-            "edtt": edtt, "ephi": ephi, "errc": errc
-            }
+        self.RC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow, 
+            phi, dtt, phi_min, edtt, ephi, errc)
 
         # Calculate Silver and Chan splitting estimate
         print ("* --> Calculating Silver-Chan (SC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
-                        splitpy.calc.split_SilverChan(self.data["trQ"], self.data["trT"], \
-                        self.meta["baz"], t1, t2)
+                        splitpy.calc.split_SilverChan(self.data.trQ, self.data.trT, \
+                        self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
         
         # Calculate errors
         edtt, ephi, errc = splitpy.calc.split_errorSC(trT_c, \
-                        t1, t2, 0.05, Emat)
-        # edtt, ephi, errc = splitpy.calc.split_errorSC(self.data["trT"], \
-        #                 t1, t2, 0.05, Emat)
+                        t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
 
-        self.SC_res = {
-            "Emat": Emat, "trQ_c": trQ_c, "trT_c": trT_c, "trFast": trFast,
-            "trSlow": trSlow, "phi": phi, "dtt": dtt, "phi_min": phi_min, \
-            "edtt": edtt, "ephi": ephi, "errc": errc
-            }
+        self.SC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow, 
+            phi, dtt, phi_min, edtt, ephi, errc)
 
 
     def is_null(self, snrTlim=3., ds=-1):
@@ -475,8 +535,8 @@ class Split(object):
         self.null = False
 
         # Calculate Angular Difference for Null Measurement
-        dphi = max(abs(self.RC_res["phi"] - self.SC_res["phi"]), \
-            abs(self.SC_res["phi"] - self.RC_res["phi"]))
+        dphi = max(abs(self.RC_res.phi - self.SC_res.phi), \
+            abs(self.SC_res.phi - self.RC_res.phi))
         if dphi > 90.: dphi = 180. - dphi
 
         # Summarize Null Measurement
@@ -518,11 +578,11 @@ class Split(object):
         """
 
         # Ratio of delay times
-        rho = self.RC_res["dtt"]/self.SC_res["dtt"]
+        rho = self.RC_res.dtt/self.SC_res.dtt
        
         # Test based on difference in fast axis directions
-        dphi = max(abs(self.RC_res["phi"] - self.SC_res["phi"]), \
-            abs(self.SC_res["phi"] - self.RC_res["phi"]))
+        dphi = max(abs(self.RC_res.phi - self.SC_res.phi), \
+            abs(self.SC_res.phi - self.RC_res.phi))
         if dphi > 90.: dphi = 180. - dphi
 
         # If estimate is Null
@@ -570,17 +630,17 @@ class Split(object):
         print() 
         print(" "*ds + ' Best fit values: RC method')
         print(" "*ds + ' Phi = ' + \
-                str("{:3d}").format(int(self.RC_res["phi"])) + \
-                ' degrees +/- ' + str("{:2d}").format(int(self.RC_res["ephi"])))
-        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.RC_res["dtt"]) + \
-                ' seconds +/- ' + str("{:.1f}").format(self.RC_res["edtt"]))
+                str("{:3d}").format(int(self.RC_res.phi)) + \
+                ' degrees +/- ' + str("{:2d}").format(int(self.RC_res.ephi)))
+        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.RC_res.dtt) + \
+                ' seconds +/- ' + str("{:.1f}").format(self.RC_res.edtt))
         print()
         print(" "*ds + ' Best fit values: SC method')
         print(" "*ds + ' Phi = '+\
-                str("{:3d}").format(int(self.SC_res["phi"])) + \
-                ' degrees +/- ' + str("{:2d}").format(int(self.SC_res["ephi"])))
-        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.SC_res["dtt"]) + \
-                ' seconds +/- ' + str("{:.1f}").format(self.SC_res["edtt"]))
+                str("{:3d}").format(int(self.SC_res.phi)) + \
+                ' degrees +/- ' + str("{:2d}").format(int(self.SC_res.ephi)))
+        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.SC_res.dtt) + \
+                ' seconds +/- ' + str("{:.1f}").format(self.SC_res.edtt))
         print()
         
     def display_meta(self,  ds=0):
@@ -598,14 +658,14 @@ class Split(object):
         print()
         print(" "*ds + 'SNR (dB):            ' + str("{:.0f}").format(self.snrq))
         print(" "*ds + 'Station:             ' + self.sta.station)
-        print(" "*ds + 'Time:                ' + str(self.meta["time"]))
-        print(" "*ds + 'Event depth (km):    ' + str("{:.0f}").format(self.meta["dep"]/1000.))
-        print(" "*ds + 'Magnitude (Mw):      ' + str("{:.1f}").format(self.meta["mag"]))
-        print(" "*ds + 'Longitude (deg):     ' + str("{:.2f}").format(self.meta["lon"]))
-        print(" "*ds + 'Latitude (deg):      ' + str("{:.2f}").format(self.meta["lat"]))
-        print(" "*ds + 'GAC (deg):           ' + str("{:.2f}").format(self.meta["gac"]))
-        print(" "*ds + 'Backazimuth deg):    ' + str("{:.2f}").format(self.meta["baz"]))
-        print(" "*ds + 'Incidence(deg):      ' + str("{:.2f}").format(self.meta["inc"]))
+        print(" "*ds + 'Time:                ' + str(self.meta.time))
+        print(" "*ds + 'Event depth (km):    ' + str("{:.0f}").format(self.meta.dep/1000.))
+        print(" "*ds + 'Magnitude (Mw):      ' + str("{:.1f}").format(self.meta.mag))
+        print(" "*ds + 'Longitude (deg):     ' + str("{:.2f}").format(self.meta.lon))
+        print(" "*ds + 'Latitude (deg):      ' + str("{:.2f}").format(self.meta.lat))
+        print(" "*ds + 'GAC (deg):           ' + str("{:.2f}").format(self.meta.gac))
+        print(" "*ds + 'Backazimuth deg):    ' + str("{:.2f}").format(self.meta.baz))
+        print(" "*ds + 'Incidence(deg):      ' + str("{:.2f}").format(self.meta.inc))
         print()
 
     def display_null_quality(self, ds=0):
@@ -759,24 +819,24 @@ class PickPlot(object):
 
         # Default start and end times
         if t1 is None and t2 is None:
-            t1 = self.split.meta["time"] + self.split.ts - 5.
-            t2 = self.split.meta["time"] + self.split.ts + 25.
+            t1 = self.split.meta.time + self.split.ts - 5.
+            t2 = self.split.meta.time + self.split.ts + 25.
 
         # Define time axis
-        taxis = np.arange(self.split.data["trL"].stats.npts)/ \
-            self.split.data["trL"].stats.sampling_rate - dts
-        tstart = self.split.data["trL"].stats.starttime
+        taxis = np.arange(self.split.data.trL.stats.npts)/ \
+            self.split.data.trL.stats.sampling_rate - dts
+        tstart = self.split.data.trL.stats.starttime
 
         # Set uniform vertical scale
-        maxL = np.abs(self.split.data["trL"].data).max()
-        maxQ = np.abs(self.split.data["trQ"].data).max()
-        maxT = np.abs(self.split.data["trT"].data).max()
+        maxL = np.abs(self.split.data.trL.data).max()
+        maxQ = np.abs(self.split.data.trQ.data).max()
+        maxT = np.abs(self.split.data.trT.data).max()
         max = np.amax([maxL, maxQ, maxT])
 
         # Plot traces
-        self.fp[1].plot(taxis, self.split.data["trL"].data/max)
-        self.fp[2].plot(taxis, self.split.data["trQ"].data/max)
-        self.fp[3].plot(taxis, self.split.data["trT"].data/max)
+        self.fp[1].plot(taxis, self.split.data.trL.data/max)
+        self.fp[2].plot(taxis, self.split.data.trQ.data/max)
+        self.fp[3].plot(taxis, self.split.data.trT.data/max)
 
         # Set tight limits
         self.fp[1].set_xlim((taxis[0], taxis[-1]))
@@ -988,7 +1048,6 @@ class DiagPlot(object):
         axt = fig.add_axes([0.45, 0.73, 0.3, 0.2])
         axt.axis('off')
 
-        #
         # Corrected Fast, Slow window for Rotation-Correlation
         axRC1 = fig.add_axes([0.05, 0.4, 0.2, 0.25])
         axRC1 = init_splitw(ax=axRC1, title='Corrected Fast, Slow')
@@ -1044,8 +1103,8 @@ class DiagPlot(object):
         """
 
         if t1 is None and t2 is None:
-            t1 = self.split.meta["time"] + self.split.ts - 5.
-            t2 = self.split.meta["time"] + self.split.ts + 25.
+            t1 = self.split.meta.time + self.split.ts - 5.
+            t2 = self.split.meta.time + self.split.ts + 25.
 
         def rot3D(inc, baz):
             """
@@ -1077,25 +1136,25 @@ class DiagPlot(object):
             return M
 
         # Copy traces to avoid overridding 
-        trL_tmp = self.split.data["trL"].copy()
+        trL_tmp = self.split.data.trL.copy()
         trL_tmp.trim(t1, t2)
-        trQ_tmp = self.split.data["trQ"].copy()
+        trQ_tmp = self.split.data.trQ.copy()
         trQ_tmp.trim(t1, t2)
-        trT_tmp = self.split.data["trT"].copy()
+        trT_tmp = self.split.data.trT.copy()
         trT_tmp.trim(t1, t2)
-        trE_tmp = self.split.data["trE"].copy()
+        trE_tmp = self.split.data.trE.copy()
         trE_tmp.trim(t1, t2)
-        trN_tmp = self.split.data["trN"].copy()
+        trN_tmp = self.split.data.trN.copy()
         trN_tmp.trim(t1, t2)
 
         # Rotate seismograms for plots
-        M = rot3D(self.split.meta["inc"], self.split.meta["baz"])
+        M = rot3D(self.split.meta.inc, self.split.meta.baz)
         ZEN_RC = np.dot(np.transpose(M),
-                [trL_tmp.data, self.split.RC_res["trQ_c"].data, self.split.RC_res["trT_c"].data])
+                [trL_tmp.data, self.split.RC_res.trQ_c.data, self.split.RC_res.trT_c.data])
         E_RC = ZEN_RC[1,:]
         N_RC = ZEN_RC[2,:]
         ZEN_SC = np.dot(np.transpose(M),
-                [trL_tmp.data, self.split.SC_res["trQ_c"].data, self.split.SC_res["trT_c"].data])
+                [trL_tmp.data, self.split.SC_res.trQ_c.data, self.split.SC_res.trT_c.data])
         E_SC = ZEN_SC[1,:]
         N_SC = ZEN_SC[2,:]
 
@@ -1109,45 +1168,45 @@ class DiagPlot(object):
         self.fd[1].plot(taxis, trT_tmp.data/max, 'r')
 
         # Text box
-        self.fd[2].text(0.5, 0.9, 'Event: '+self.split.meta["time"].ctime()+'     '+\
-            str(self.split.meta["lat"])+'N  '+str(self.split.meta["lon"])+'E   '+\
-            str(np.int(self.split.meta["dep"]/1000.))+'km   '+'Mw='+\
-            str(self.split.meta["mag"]), horizontalalignment='center')
+        self.fd[2].text(0.5, 0.9, 'Event: '+self.split.meta.time.ctime()+'     '+\
+            str(self.split.meta.lat)+'N  '+str(self.split.meta.lon)+'E   '+\
+            str(np.int(self.split.meta.dep/1000.))+'km   '+'Mw='+\
+            str(self.split.meta.mag), horizontalalignment='center')
         self.fd[2].text(0.5, 0.7, 'Station: '+self.split.sta.station+'   Backazimuth: '+\
-            str("{:.2f}").format(self.split.meta["baz"])+'   Distance: '+\
-            str("{:.2f}").format(self.split.meta["gac"]), horizontalalignment='center')
+            str("{:.2f}").format(self.split.meta.baz)+'   Distance: '+\
+            str("{:.2f}").format(self.split.meta.gac), horizontalalignment='center')
         self.fd[2].text(0.5, 0.5, r'Best fit RC values: $\phi$='+\
-            str(np.int(self.split.RC_res["phi"]))+r'$\pm$'+\
-            str("{:.2f}").format(self.split.RC_res["ephi"])+r'   $\delta t$='+\
-            str(self.split.RC_res["dtt"])+r'$\pm$'+\
-            str("{:.2f}").format(self.split.RC_res["edtt"])+'s', horizontalalignment='center')
+            str(np.int(self.split.RC_res.phi))+r'$\pm$'+\
+            str("{:.2f}").format(self.split.RC_res.ephi)+r'   $\delta t$='+\
+            str(self.split.RC_res.dtt)+r'$\pm$'+\
+            str("{:.2f}").format(self.split.RC_res.edtt)+'s', horizontalalignment='center')
         self.fd[2].text(0.5, 0.3, r'Best fit SC values: $\phi$='+\
-            str(np.int(self.split.SC_res["phi"]))+r'$\pm$'+\
-            str("{:.2f}").format(self.split.SC_res["ephi"])+r'   $\delta t$='+\
-            str(self.split.SC_res["dtt"])+r'$\pm$'+\
-            str("{:.2f}").format(self.split.SC_res["edtt"])+'s', horizontalalignment='center')
+            str(np.int(self.split.SC_res.phi))+r'$\pm$'+\
+            str("{:.2f}").format(self.split.SC_res.ephi)+r'   $\delta t$='+\
+            str(self.split.SC_res.dtt)+r'$\pm$'+\
+            str("{:.2f}").format(self.split.SC_res.edtt)+'s', horizontalalignment='center')
         self.fd[2].text(0.5, 0.1, 'Is Null? '+str(self.split.null)+'    Quality? '+\
             str(self.split.quality), horizontalalignment='center')
 
         # Rotation-correlation
         # Corrected Fast and Slow
-        sum1 = np.sum(np.abs(self.split.RC_res["trFast"].data - self.split.RC_res["trSlow"].data))
-        sum2 = np.sum(np.abs(-self.split.RC_res["trFast"].data - self.split.RC_res["trSlow"].data))
+        sum1 = np.sum(np.abs(self.split.RC_res.trFast.data - self.split.RC_res.trSlow.data))
+        sum2 = np.sum(np.abs(-self.split.RC_res.trFast.data - self.split.RC_res.trSlow.data))
         if sum1 < sum2: 
             sig = 1. 
         else: 
             sig = -1.
-        taxis = np.arange(self.split.RC_res["trFast"].stats.npts)/self.split.RC_res["trFast"].stats.sampling_rate
-        max1 = np.abs(self.split.RC_res["trFast"].data).max()
-        max2 = np.abs(self.split.RC_res["trSlow"].data).max()
+        taxis = np.arange(self.split.RC_res.trFast.stats.npts)/self.split.RC_res.trFast.stats.sampling_rate
+        max1 = np.abs(self.split.RC_res.trFast.data).max()
+        max2 = np.abs(self.split.RC_res.trSlow.data).max()
         max = np.amax([max1, max2])
 
-        self.fd[3].plot(taxis, self.split.RC_res["trFast"].data/max, 'b--')
-        self.fd[3].plot(taxis, sig*self.split.RC_res["trSlow"].data/max, 'r')
+        self.fd[3].plot(taxis, self.split.RC_res.trFast.data/max, 'b--')
+        self.fd[3].plot(taxis, sig*self.split.RC_res.trSlow.data/max, 'r')
 
         # Corrected Q and T
-        self.fd[4].plot(taxis, self.split.RC_res["trQ_c"].data/max, 'b--')
-        self.fd[4].plot(taxis, self.split.RC_res["trT_c"].data/max, 'r')
+        self.fd[4].plot(taxis, self.split.RC_res.trQ_c.data/max, 'b--')
+        self.fd[4].plot(taxis, self.split.RC_res.trT_c.data/max, 'r')
 
         # Prticle motion
         self.fd[5].plot(trE_tmp.data/max, trN_tmp.data/max, 'b--')
@@ -1155,15 +1214,15 @@ class DiagPlot(object):
 
         # Map of energy
         plt.sca(self.fd[6])
-        dt = np.arange(0., cf.maxdt, cf.ddt)
-        phi = np.arange(-90., 90., cf.dphi)
+        dt = np.arange(0., self.maxdt, self.ddt)
+        phi = np.arange(-90., 90., self.dphi)
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X,Y = np.meshgrid(dt, phi)
-        E2 = np.roll(self.split.RC_res["Emat"], np.int(self.split.RC_res["phi"] - self.split.RC_res["phi_min"]), axis=0)
+        E2 = np.roll(self.split.RC_res.Emat, np.int(self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
 
-        Emin = self.split.RC_res["Emat"].min()
-        Emax = self.split.RC_res["Emat"].max()
+        Emin = self.split.RC_res.Emat.min()
+        Emax = self.split.RC_res.Emat.max()
         dE = (Emax - Emin)/16.
         levels = np.arange(Emin, Emax, dE)
         cmap = plt.cm.RdYlBu_r
@@ -1171,32 +1230,32 @@ class DiagPlot(object):
                 cmap=plt.cm.get_cmap(cmap, len(levels)))
 
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
-        errc = self.split.RC_res["errc"]
+        errc = self.split.RC_res.errc
         ecset = plt.contour(X, Y, E2, (errc, ), colors='magenta',\
                 linewidths=2)
 
-        self.fd[6].axvline(self.split.RC_res["dtt"])
-        self.fd[6].axhline(self.split.RC_res["phi"])
+        self.fd[6].axvline(self.split.RC_res.dtt)
+        self.fd[6].axhline(self.split.RC_res.phi)
 
         # Silver-Chan
         # Corrected Fast and Slow
-        sum1 = np.sum(np.abs(self.split.SC_res["trFast"].data - self.split.SC_res["trSlow"].data))
-        sum2 = np.sum(np.abs(-self.split.SC_res["trFast"].data - self.split.SC_res["trSlow"].data))
+        sum1 = np.sum(np.abs(self.split.SC_res.trFast.data - self.split.SC_res.trSlow.data))
+        sum2 = np.sum(np.abs(-self.split.SC_res.trFast.data - self.split.SC_res.trSlow.data))
         if sum1 < sum2: 
             sig = 1. 
         else: 
             sig = -1.
-        taxis = np.arange(self.split.SC_res["trFast"].stats.npts)/self.split.SC_res["trFast"].stats.sampling_rate
-        max1 = np.abs(self.split.SC_res["trFast"].data).max()
-        max2 = np.abs(self.split.SC_res["trSlow"].data).max()
+        taxis = np.arange(self.split.SC_res.trFast.stats.npts)/self.split.SC_res.trFast.stats.sampling_rate
+        max1 = np.abs(self.split.SC_res.trFast.data).max()
+        max2 = np.abs(self.split.SC_res.trSlow.data).max()
         max = np.amax([max1, max2])
 
-        self.fd[7].plot(taxis, self.split.SC_res["trFast"].data/max, 'b--')
-        self.fd[7].plot(taxis, sig*self.split.SC_res["trSlow"].data/max, 'r')
+        self.fd[7].plot(taxis, self.split.SC_res.trFast.data/max, 'b--')
+        self.fd[7].plot(taxis, sig*self.split.SC_res.trSlow.data/max, 'r')
 
         # Corrected Q and T
-        self.fd[8].plot(taxis, self.split.SC_res["trQ_c"].data/max, 'b--')
-        self.fd[8].plot(taxis, self.split.SC_res["trT_c"].data/max, 'r')
+        self.fd[8].plot(taxis, self.split.SC_res.trQ_c.data/max, 'b--')
+        self.fd[8].plot(taxis, self.split.SC_res.trT_c.data/max, 'r')
 
         # Particle motion
         self.fd[9].plot(trE_tmp.data/max, trN_tmp.data/max, 'b--')
@@ -1204,28 +1263,28 @@ class DiagPlot(object):
 
         # Map of energy
         plt.sca(self.fd[10])
-        dt = np.arange(0., cf.maxdt, cf.ddt)
-        phi = np.arange(-90., 90., cf.dphi)
+        dt = np.arange(0., self.maxdt, self.ddt)
+        phi = np.arange(-90., 90., self.dphi)
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X,Y = np.meshgrid(dt, phi)
 
-        E2 = np.roll(self.split.SC_res["Emat"], np.int(self.split.SC_res["phi"]-self.split.SC_res["phi_min"]),axis=0)
+        E2 = np.roll(self.split.SC_res.Emat, np.int(self.split.SC_res.phi-self.split.SC_res.phi_min),axis=0)
 
-        Emin = self.split.SC_res["Emat"].min()
-        Emax = self.split.SC_res["Emat"].max()
+        Emin = self.split.SC_res.Emat.min()
+        Emax = self.split.SC_res.Emat.max()
         dE = (Emax - Emin)/16.
         levels = np.arange(Emin, Emax, dE)
         cmap = plt.cm.RdYlBu_r
         cset1 = plt.contour(X, Y, E2, levels, \
                 cmap=plt.cm.get_cmap(cmap, len(levels)))
 
-        errc = self.split.SC_res["errc"]
+        errc = self.split.SC_res.errc
         ecset = plt.contour(X, Y, E2, (errc,), colors='magenta',\
                 linewidths=2)
 
-        self.fd[10].axvline(self.split.SC_res["dtt"])
-        self.fd[10].axhline(self.split.SC_res["phi"])
+        self.fd[10].axvline(self.split.SC_res.dtt)
+        self.fd[10].axhline(self.split.SC_res.phi)
 
         self.fd[0].canvas.draw()
 

@@ -257,21 +257,21 @@ def process(sta,opts):
                 print("      {0} Non-Null -> Retained".format(split.quality))
 
             # BAZ, null and quality
-            baz.append(split.meta["baz"])
+            baz.append(split.meta.baz)
             Qual.append(split.quality)
             Null.append(split.null)
 
             # RC Results
-            phiRC.append(split.RC_res["phi"])
-            DphiRC.append(split.RC_res["ephi"])
-            dtRC.append(split.RC_res["dtt"])
-            DdtRC.append(split.RC_res["edtt"])
+            phiRC.append(split.RC_res.phi)
+            DphiRC.append(split.RC_res.ephi)
+            dtRC.append(split.RC_res.dtt)
+            DdtRC.append(split.RC_res.edtt)
 
             # SC Results
-            phiSC.append(split.SC_res["phi"])
-            DphiSC.append(split.SC_res["ephi"])
-            dtSC.append(split.SC_res["dtt"])
-            DdtSC.append(split.SC_res["edtt"])
+            phiSC.append(split.SC_res.phi)
+            DphiSC.append(split.SC_res.ephi)
+            dtSC.append(split.SC_res.dtt)
+            DdtSC.append(split.SC_res.edtt)
 
             stlat = split.sta.latitude
             stlon = split.sta.longitude

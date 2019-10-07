@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'splitpy'
+project = 'SplitPy'
 copyright = '2019, Pascal Audet & Andrew Schaeffer'
 author = 'Pascal Audet & Andrew Schaeffer'
 

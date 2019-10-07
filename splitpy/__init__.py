@@ -116,6 +116,6 @@ Installing from source
 __author__ = "Pascal Audet & Andrew Schaeffer"
 
 # -*- coding: utf-8 -*-
-from . import conf, io, calc, utils
+from . import io, calc, utils
 from .classes import Split, PickPlot, DiagPlot
 from .gui import Pick, Keep, Save, Repeat

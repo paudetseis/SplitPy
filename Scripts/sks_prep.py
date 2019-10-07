@@ -142,7 +142,6 @@ Usage
 # Import splitpy, its classes and the conf module
 import splitpy
 from splitpy import Split
-from splitpy import conf as cf
 
 # Import miscellaneous
 import sys
@@ -167,11 +166,6 @@ def main():
 
     # Run Input Parser
     (opts, indb) = splitpy.utils.get_options_prep()
-
-    # Set Global Search Variables
-    cf.maxdt = opts.maxdt #   maxdt is Max delay time
-    cf.ddt = opts.ddt     #   ddt is time increment
-    cf.dphi = opts.dphi   #   dphi is angle increment
 
     # Load Database
     db = stdb.io.load_db(fname=indb)
@@ -218,7 +212,7 @@ def main():
         sta = db[stkey]
 
         # Initialize Split object
-        split = Split(sta)
+        split = Split(sta, opts.maxdt, opts.ddt, opts.dphi)
 
         # Create Station Data Folder
         outdir = dtdir + "/" + stkey
@@ -315,12 +309,12 @@ def main():
             split.add_event(ev)
 
             # Define time stamp
-            yr = str(split.meta["time"].year).zfill(4)
-            jd = str(split.meta["time"].julday).zfill(3)
-            hr = str(split.meta["time"].hour).zfill(2)
+            yr = str(split.meta.time.year).zfill(4)
+            jd = str(split.meta.time.julday).zfill(3)
+            hr = str(split.meta.time.hour).zfill(2)
 
             # If distance between 85 and 120 deg:
-            if (split.meta["gac"] > opts.mindist and split.meta["gac"] < opts.maxdist):
+            if (split.meta.gac > opts.mindist and split.meta.gac < opts.maxdist):
 
                 # Display Event Info
                 nevK = nevK + 1
@@ -330,16 +324,16 @@ def main():
                     inum = nevtT - iev + 1
                 print(" ")
                 print("****************************************************")
-                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum,nevtT, split.meta["time"].strftime("%Y%m%d_%H%M%S")))
-                print("*   Origin Time: " + split.meta["time"].strftime("%Y-%m-%d %H:%M:%S"))
-                print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta["lat"], split.meta["lon"]))
-                print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta["dep"]/1000., split.meta["mag"]))
+                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum,nevtT, split.meta.time.strftime("%Y%m%d_%H%M%S")))
+                print("*   Origin Time: " + split.meta.time.strftime("%Y-%m-%d %H:%M:%S"))
+                print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta.lat, split.meta.lon))
+                print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta.dep/1000., split.meta.mag))
                 print("*     {0:5s} -> Ev: {1:7.2f} km; {2:7.2f} deg; {3:6.2f}; {4:6.2f}".format(\
-                    split.sta.station, split.meta["epi_dist"], split.meta["gac"], split.meta["baz"], split.meta["az"]))
+                    split.sta.station, split.meta.epi_dist, split.meta.gac, split.meta.baz, split.meta.az))
 
                 # Get Travel times (Careful: here dep is in meters)
-                tt = tpmodel.get_travel_times(distance_in_degree=split.meta["gac"], \
-                    source_depth_in_km=split.meta["dep"]/1000.)
+                tt = tpmodel.get_travel_times(distance_in_degree=split.meta.gac, \
+                    source_depth_in_km=split.meta.dep/1000.)
 
                 # Loop over all times in tt
                 for t in tt:
@@ -380,7 +374,7 @@ def main():
                     print("* SNR Passed: {0:4.2f} >= {1:3.1f}".format(split.snrq, opts.msnr))
 
                     # Create Event Folder
-                    evtdir = outdir + "/" + split.meta["time"].strftime("%Y%m%d_%H%M%S")
+                    evtdir = outdir + "/" + split.meta.time.strftime("%Y%m%d_%H%M%S")
 
                     # Create Folder
                     if not os.path.isdir(evtdir): os.makedirs(evtdir)
@@ -392,21 +386,21 @@ def main():
                     dill.dump(sta, open(evtdir + "/Station_Data.pkl","wb"))
 
                     # Trace Filenames
-                    trpref = split.meta["time"].strftime("%Y%m%d_%H%M%S") + "_" + sta.network + "." + sta.station
+                    trpref = split.meta.time.strftime("%Y%m%d_%H%M%S") + "_" + sta.network + "." + sta.station
 
                     # Raw Trace files
-                    dill.dump([split.data["trN"], split.data["trE"], split.data["trZ"]], \
+                    dill.dump([split.data.trN, split.data.trE, split.data.trZ], \
                         open(evtdir + "/NEZ_Data.pkl","wb"))
-                    split.data["trN"].write(os.path.join(evtdir, trpref + ".N.mseed"), format='MSEED')
-                    split.data["trE"].write(os.path.join(evtdir, trpref + ".E.mseed"), format='MSEED')
-                    split.data["trZ"].write(os.path.join(evtdir, trpref + ".Z.mseed"), format='MSEED')
+                    split.data.trN.write(os.path.join(evtdir, trpref + ".N.mseed"), format='MSEED')
+                    split.data.trE.write(os.path.join(evtdir, trpref + ".E.mseed"), format='MSEED')
+                    split.data.trZ.write(os.path.join(evtdir, trpref + ".Z.mseed"), format='MSEED')
 
                     # LQT Traces
-                    dill.dump([split.data["trL"], split.data["trQ"], split.data["trT"]], \
+                    dill.dump([split.data.trL, split.data.trQ, split.data.trT], \
                         open(evtdir + "/LQT_Data.pkl","wb"))
-                    split.data["trL"].write(os.path.join(evtdir, trpref + ".L.mseed"), format='MSEED')
-                    split.data["trQ"].write(os.path.join(evtdir, trpref + ".Q.mseed"), format='MSEED')
-                    split.data["trT"].write(os.path.join(evtdir, trpref + ".T.mseed"), format='MSEED')
+                    split.data.trL.write(os.path.join(evtdir, trpref + ".L.mseed"), format='MSEED')
+                    split.data.trQ.write(os.path.join(evtdir, trpref + ".Q.mseed"), format='MSEED')
+                    split.data.trT.write(os.path.join(evtdir, trpref + ".T.mseed"), format='MSEED')
 
                     # Update
                     print ("* Wrote Output Files to: ")

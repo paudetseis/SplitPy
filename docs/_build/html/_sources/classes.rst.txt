@@ -9,6 +9,24 @@ Split
 .. autoclass:: splitpy.classes.Split
    :members:
 
+Meta
+----
+
+.. autoclass:: splitpy.classes.Meta
+   :members:
+
+Data
+----
+
+.. autoclass:: splitpy.classes.Data
+   :members:
+
+Result
+------
+
+.. autoclass:: splitpy.classes.Result
+   :members:
+
 PickPlot
 --------
 

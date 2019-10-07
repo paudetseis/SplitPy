@@ -153,7 +153,6 @@ Usage
 import splitpy
 from splitpy import Split, PickPlot, DiagPlot
 from splitpy import Pick, Keep, Save, Repeat
-from splitpy import conf as cf
 
 # Import miscellaneous
 import sys
@@ -179,11 +178,6 @@ def main():
 
     # Run Input Parser
     (opts, indb) = splitpy.utils.get_options()
-
-    # Set Global Search Variables
-    cf.maxdt = opts.maxdt #   maxdt is Max delay time
-    cf.ddt = opts.ddt     #   ddt is time increment
-    cf.dphi = opts.dphi   #   dphi is angle increment
 
     # Load Database
     db = stdb.io.load_db(fname=indb)
@@ -211,7 +205,7 @@ def main():
         sta = db[stkey]
 
         # Initialize Split object
-        split = Split(sta)
+        split = Split(sta, opts.maxdt, opts.ddt, opts.dphi)
 
         # Output directory
         outdir = 'RESULTS/' + stkey
@@ -309,12 +303,12 @@ def main():
             split.add_event(ev)
 
             # Define time stamp
-            yr = str(split.meta["time"].year).zfill(4)
-            jd = str(split.meta["time"].julday).zfill(3)
-            hr = str(split.meta["time"].hour).zfill(2)
+            yr = str(split.meta.time.year).zfill(4)
+            jd = str(split.meta.time.julday).zfill(3)
+            hr = str(split.meta.time.hour).zfill(2)
 
             # If distance between 85 and 120 deg:
-            if (split.meta["gac"] > opts.mindist and split.meta["gac"] < opts.maxdist):
+            if (split.meta.gac > opts.mindist and split.meta.gac < opts.maxdist):
 
                 # Display Event Info
                 nevK = nevK + 1
@@ -324,16 +318,16 @@ def main():
                     inum = nevtT - iev + 1
                 print(" ")
                 print("****************************************************")
-                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum, nevtT, split.meta["time"].strftime("%Y%m%d_%H%M%S")))
-                print("*   Origin Time: " + split.meta["time"].strftime("%Y-%m-%d %H:%M:%S"))
-                print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta["lat"], split.meta["lon"]))
-                print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta["dep"]/1000., split.meta["mag"]))
+                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum, nevtT, split.meta.time.strftime("%Y%m%d_%H%M%S")))
+                print("*   Origin Time: " + split.meta.time.strftime("%Y-%m-%d %H:%M:%S"))
+                print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta.lat, split.meta.lon))
+                print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta.dep/1000., split.meta.mag))
                 print("*     {0:5s} -> Ev: {1:7.2f} km; {2:7.2f} deg; {3:6.2f}; {4:6.2f}".format(\
-                    split.sta.station, split.meta["epi_dist"], split.meta["gac"], split.meta["baz"], split.meta["az"]))
+                    split.sta.station, split.meta.epi_dist, split.meta.gac, split.meta.baz, split.meta.az))
 
                 # Get Travel times (Careful: here dep is in meters)
-                tt = tpmodel.get_travel_times(distance_in_degree=split.meta["gac"], \
-                    source_depth_in_km=split.meta["dep"]/1000.)
+                tt = tpmodel.get_travel_times(distance_in_degree=split.meta.gac, \
+                    source_depth_in_km=split.meta.dep/1000.)
 
                 # Loop over all times in tt
                 for t in tt:
@@ -375,9 +369,9 @@ def main():
 
                     # Output file
                     outfile = outdir + '/Split' + '.' + split.sta.station + '.' + \
-                                    split.meta["time"].strftime("%Y.%j.%H%M%S") + '.pkl'
+                                    split.meta.time.strftime("%Y.%j.%H%M%S") + '.pkl'
                     outfig = outdir + '/Split' + '.' + split.sta.station + '.' + \
-                                    split.meta["time"].strftime("%Y.%j.%H%M%S") + '.png'
+                                    split.meta.time.strftime("%Y.%j.%H%M%S") + '.png'
 
                     # Check if result exists already
                     splitExists = False
@@ -407,7 +401,7 @@ def main():
                     split.analyze()
 
                     # Continue if problem with analysis
-                    if split.RC_res["edtt"] is None or split.SC_res["edtt"] is None:
+                    if split.RC_res.edtt is None or split.SC_res.edtt is None:
                         print("* !!! DOF Error. --> Skipping...")
                         print("****************************************************")
                         continue
@@ -455,8 +449,8 @@ def main():
                             print("*   Time Range: {0:.2f}, {1:.2f}".format(tp1, tp2))
 
                             # Re-define time window
-                            t1 = split.meta["time"] + split.ts + tp1
-                            t2 = split.meta["time"] + split.ts + tp2
+                            t1 = split.meta.time + split.ts + tp1
+                            t2 = split.meta.time + split.ts + tp2
 
                             # Update LQT figure
                             pplot.update_LQT(tp1, tp2)
@@ -465,7 +459,7 @@ def main():
                             split.analyze(t1=t1, t2=t2)
 
                             # Check for fault result
-                            if split.RC_res["edtt"] is None or split.SC_res["edtt"] is None:
+                            if split.RC_res.edtt is None or split.SC_res.edtt is None:
                                 print("* !!! DOF Error. --> Skipping...")
                                 print("****************************************************")
                                 continue
@@ -501,7 +495,6 @@ def main():
                                     if not opts.ovr:
                                         save_obj = Save()
                                         ans3 = save_obj.reply
-                                        # ans = splitpy.gui.save()
                                         if not ans3:
                                             writeSplit = False
 

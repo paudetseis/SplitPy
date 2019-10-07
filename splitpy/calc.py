@@ -23,10 +23,9 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from obspy.core import Trace, Stream
-from splitpy import conf as cf
 from numpy.linalg import inv
 
-def split_SilverChan(trQ, trT, baz, t1, t2):
+def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     """
     Calculates splitting based on the minimization of energy on 
     the corrected transverse component (Silver and Chan, 1990)
@@ -65,8 +64,8 @@ def split_SilverChan(trQ, trT, baz, t1, t2):
 
     """
 
-    phi = np.arange(-90.0, 90.0, cf.dphi)*np.pi/180.
-    dtt = np.arange(0., cf.maxdt, cf.ddt)
+    phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
+    dtt = np.arange(0., maxdt, ddt)
 
     M = np.zeros((2,2,len(phi)))
     M[0,0,:] = np.cos(phi)
@@ -145,7 +144,7 @@ def split_SilverChan(trQ, trT, baz, t1, t2):
             phiSC, shift, phiSC_min
 
 
-def split_RotCorr(trQ, trT, baz, t1, t2):
+def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     """
     Calculates splitting based on the maximum correlation between corrected 
     radial and tangential components of motion 
@@ -184,8 +183,8 @@ def split_RotCorr(trQ, trT, baz, t1, t2):
 
     """
 
-    phi = np.arange(-90.0, 90.0, cf.dphi)*np.pi/180.
-    dtt = np.arange(0., cf.maxdt, cf.ddt)
+    phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
+    dtt = np.arange(0., maxdt, ddt)
 
     M = np.zeros((2,2,len(phi)))
     M[0,0,:] = np.cos(phi)
@@ -363,7 +362,7 @@ def split_dof(tr):
 
     return dof
 
-def split_errorSC(tr, t1, t2, q, Emat):
+def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     """
     Calculate error bars based on a F-test and 
     a given confidence interval q
@@ -395,8 +394,8 @@ def split_errorSC(tr, t1, t2, q, Emat):
     from scipy import stats
 
     # Bounds on search
-    phi = np.arange(-90.0, 90.0, cf.dphi)*np.pi/180.
-    dtt = np.arange(0., cf.maxdt, cf.ddt)
+    phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
+    dtt = np.arange(0., maxdt, ddt)
 
     # Copy trace to avoid overriding
     tr_tmp = tr.copy()
@@ -419,13 +418,13 @@ def split_errorSC(tr, t1, t2, q, Emat):
     err = np.where(Emat<err_contour)
     if len(err) == 0:
       return False, False, False
-    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*cf.dphi)
-    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*cf.ddt)
+    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
+    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)
 
     return err_dtt, err_phi, err_contour
 
 
-def split_errorRC(tr, t1, t2, q, Emat):
+def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     """
     Calculates error bars based on a F-test and 
     a given confidence interval q.
@@ -460,8 +459,8 @@ def split_errorRC(tr, t1, t2, q, Emat):
     """
     from scipy import stats
 
-    phi = np.arange(-90.0, 90.0, cf.dphi)*np.pi/180.
-    dtt = np.arange(0., cf.maxdt, cf.ddt)
+    phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
+    dtt = np.arange(0., maxdt, ddt)
 
     # Copy trace to avoid overriding
     tr_tmp = tr.copy()
@@ -487,7 +486,7 @@ def split_errorRC(tr, t1, t2, q, Emat):
 
     # Estimate uncertainty (q confidence interval)
     err = np.where(Emat<err_contour)
-    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*cf.dphi)
-    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*cf.ddt)
+    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
+    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)
 
     return err_dtt, err_phi, err_contour
