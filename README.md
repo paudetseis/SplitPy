@@ -53,12 +53,12 @@ Install remaining dependencies using `pip` inside the `split` environment.
    pip install stdb
 ```
 
-### Installing from Pypi
+<!-- ### Installing from Pypi
 
 ```bash
 pip install splitpy
 ``` 
-
+ -->
 ### Installing from source
 
 - Clone the repository:

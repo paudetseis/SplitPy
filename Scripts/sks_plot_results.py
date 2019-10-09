@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Copyright 2019 Pascal Audet & Andrew Schaeffer
 #
 # This file is part of SplitPy.
@@ -19,8 +21,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
-#!/usr/bin/env python
 
 """
 Program sks_plot_results.py

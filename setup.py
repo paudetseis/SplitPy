@@ -20,10 +20,9 @@ setup(
                             'Programming Language :: Python :: 3.6',
                             'Programming Language :: Python :: 3.7'
                             ],
-    install_requires    = ['obspy', 'dill', 'PyQt5'],
+    install_requires    = ['stdb', 'obspy', 'dill', 'PyQt5'],
     python_requires     = '>=3.5',
     packages            = ['splitpy'],
-    package_dir         = {'SplitPy': 'SplitPy'},
     scripts             = scripts,
     url                 = 'https://github.com/paudetseis/SplitPy'
     )
