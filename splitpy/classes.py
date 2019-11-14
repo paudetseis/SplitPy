@@ -263,7 +263,7 @@ class Split(object):
         if mag is None: mag = -9.
 
         # Calculate epicentral distance
-        epi_dist, az, baz = epi(lat, lon, self.sta.stla, self.sta.stlo)
+        epi_dist, az, baz = epi(lat, lon, self.sta.latitude, self.sta.longitude)
         epi_dist /= 1000
         gac = k2d(epi_dist)
 
@@ -393,7 +393,7 @@ class Split(object):
         """
 
         inc = self.meta.inc*np.pi/180.
-        baz = self.meta.inc*np.pi/180.
+        baz = self.meta.baz*np.pi/180.
 
         M = np.zeros((3,3))
         M[0,0] = np.cos(inc)
