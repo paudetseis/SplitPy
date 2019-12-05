@@ -43,7 +43,7 @@ Quick links
 
 .. toctree::
    :maxdepth: 1
-   :caption: Content
+   :caption: API Documentation
 
    classes
    calc
@@ -52,16 +52,10 @@ Quick links
 
 .. toctree::
    :maxdepth: 1
-   :caption: Programs & Tutorials
+   :caption: Scripts & Tutorials
 
    split
    prep
    offline
    plot
 
-.. Indices and tables
-.. """"""""""""""""""
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
