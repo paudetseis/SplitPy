@@ -111,7 +111,7 @@ Installing from source
 Citing SplitPy
 --------------
 
-If you use SplitPy in your work, please cite the Zenodo DOI: https:/doi.org/10.5281/zenodo.3564780
+If you use SplitPy in your work, please cite the Zenodo DOI: https://doi.org/10.5281/zenodo.3564780
 
 """
 
