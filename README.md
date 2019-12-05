@@ -19,6 +19,7 @@ those in [Audet et al. (2016)](#references)
 
 [![DOI](https://zenodo.org/badge/204565459.svg)](https://zenodo.org/badge/latestdoi/204565459)
 
+
 ## Documentation 
 Installation, Usage, API documentation and tutorials are described at 
 https://paudetseis.github.io/SplitPy/.
