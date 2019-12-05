@@ -28,6 +28,9 @@ USArray Transportable Array network.
     database for processing. Check out `StDb <https://github.com/schaefferaj/StDb>`_ 
     for more details. An example is shown in the program :ref:`split`.
 
+.. image:: https://zenodo.org/badge/211722700.svg
+   :target: https://zenodo.org/badge/latestdoi/211722700
+
 Quick links
 """""""""""
 

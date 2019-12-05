@@ -17,6 +17,7 @@ Additional error surface implementation has been added, however these error
 surfaces have not been fully tested. The code produces output identical to
 those in [Audet et al. (2016)](#references)
 
+[![DOI](https://zenodo.org/badge/204565459.svg)](https://zenodo.org/badge/latestdoi/204565459)
 
 ## Documentation 
 Installation, Usage, API documentation and tutorials are described at 
