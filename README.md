@@ -21,7 +21,7 @@ those in [Audet et al. (2016)](#references)
 
 ## Citing
 
-If you use `SplitPy` in your work, please cite the Zenodo DOI (https://zenodo.org/badge/latestdoi/211722700)
+If you use `SplitPy` in your work, please cite the Zenodo DOI above.
 
 ## Documentation 
 Installation, Usage, API documentation and tutorials are described at 
