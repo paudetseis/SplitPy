@@ -90,7 +90,7 @@ Install remaining dependencies using ``pip`` inside the ``split`` environment:
 Installing from Pypi
 ++++++++++++++++++++
 
-**This option is not available yet - install from source only**
+*This option is not available yet - install from source only*
 
 Installing from source
 ++++++++++++++++++++++
