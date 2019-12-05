@@ -17,70 +17,10 @@ Additional error surface implementation has been added, however these error
 surfaces have not been fully tested. The code produces output identical to
 those in [Audet et al. (2016)](#references)
 
-## Installation
 
-### Dependencies
-
-The current version was developed using **Python3.7** \
-Also, the following packages are required:
-
-- [`stdb`](https://github.com/schaefferaj/StDb)
-- [`dill`](https://pypi.org/project/dill/)
-
-Other required packages (e.g., [`obspy`](https://github.com/obspy/obspy/wiki),
-[`PyQt5`](https://pypi.org/project/PyQt5/)) will be automatically installed by 
-[`stdb`](https://github.com/schaefferaj/StDb)
-
-#### Conda environment
-
-We recommend creating a custom 
-[conda environment](https://conda.io/docs/user-guide/tasks/manage-environments.html)
-where `SplitPy` can be installed along with its dependencies.
-
-```bash
-   conda create -n split python=3.7 obspy dill -c conda-forge
-```
-
-Activate the newly created environment:
-
-```bash
-   conda activate split
-```
-
-Install remaining dependencies using `pip` inside the `split` environment. 
-
-```bash
-   pip install stdb
-```
-
-<!-- ### Installing from Pypi
-
-```bash
-pip install splitpy
-``` 
- -->
-### Installing from source
-
-- Clone the repository:
-
-```bash
-git clone https://github.com/paudetseis/SplitPy.git
-cd SplitPy
-```
-
-- Install using `pip`:
-
-```bash
-pip install .
-``` 
-
-## Usage 
-
-### Documentation & Tutorials
-
-The documentation for all classes and functions in `splitpy` and some tutorials
-on how to use the python scripts bundled with the package can be accessed 
-from https://paudetseis.github.io/SplitPy/.
+## Documentation 
+Installation, Usage, API documentation and tutorials are described at 
+https://paudetseis.github.io/SplitPy/.
 
 ## References
 

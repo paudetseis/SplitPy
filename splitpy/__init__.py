@@ -90,9 +90,7 @@ Install remaining dependencies using ``pip`` inside the ``split`` environment:
 Installing from Pypi
 ++++++++++++++++++++
 
-.. sourcecode:: bash
-
-   pip install splitpy
+**This option is not available yet - install from source only**
 
 Installing from source
 ++++++++++++++++++++++
