@@ -19,7 +19,7 @@ before_install:
       DEP="";
     fi
   - conda create -q -n testenv
-      python=$PYTHON_VERSION obspy dill PyQt5 $DEP
+      python=$PYTHON_VERSION dill $DEP
   - conda activate testenv
   - conda list
 install:
