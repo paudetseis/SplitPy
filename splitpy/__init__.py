@@ -115,7 +115,8 @@ If you use SplitPy in your work, please cite the Zenodo DOI: https://doi.org/10.
 
 """
 
-#__version__=0.1
+__version__= "0.1.0"
+
 __author__ = "Pascal Audet & Andrew Schaeffer"
 
 # -*- coding: utf-8 -*-
