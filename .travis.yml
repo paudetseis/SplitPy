@@ -17,8 +17,7 @@ before_install:
     else
       DEP="";
     fi
-  - conda create -q -n testenv
-      python=$PYTHON_VERSION obspy dill $DEP
+  - conda create -q -n testenv python=$PYTHON_VERSION obspy dill $DEP
   - conda activate testenv
   - conda list
 install:
