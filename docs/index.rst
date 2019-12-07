@@ -30,6 +30,8 @@ USArray Transportable Array network.
 
 .. image:: https://zenodo.org/badge/211722700.svg
    :target: https://zenodo.org/badge/latestdoi/211722700
+.. image:: https://travis-ci.org/paudetseis/SplitPy.svg?branch=master
+    :target: https://travis-ci.org/paudetseis/SplitPy
 
 Quick links
 """""""""""

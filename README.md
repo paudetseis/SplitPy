@@ -18,6 +18,7 @@ surfaces have not been fully tested. The code produces output identical to
 those in [Audet et al. (2016)](#references)
 
 [![DOI](https://zenodo.org/badge/211722700.svg)](https://zenodo.org/badge/latestdoi/211722700)
+[![Build Status](https://travis-ci.org/paudetseis/SplitPy.svg?branch=master)](https://travis-ci.org/paudetseis/SplitPy)
 
 ## Citing
 
