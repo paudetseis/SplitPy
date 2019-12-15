@@ -9,8 +9,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -26,11 +26,12 @@ that accompany this package.
 
 """
 
+
 def list_local_data_stn(lcldrs=list, sta=None, net=None, altnet=[]):
     """
     Function to take the list of local directories and recursively 
     find all data that matches the station name
-    
+
     Parameters
     ----------
     lcldrs : List
@@ -51,7 +52,7 @@ def list_local_data_stn(lcldrs=list, sta=None, net=None, altnet=[]):
     from fnmatch import filter
     from os import walk
     from os.path import join
-    
+
     if sta is None:
         return []
     else:
@@ -62,17 +63,17 @@ def list_local_data_stn(lcldrs=list, sta=None, net=None, altnet=[]):
             if len(altnet) > 0:
                 for anet in altnet:
                     sstrings.append('*.{0:s}.{1:s}.*.SAC'.format(anet, sta))
-    
+
     fpathmatch = []
     # Loop over all local data directories
     for lcldr in lcldrs:
         # Recursiely walk through directory
-        for root,dirnames, filenames in walk(lcldr):
+        for root, dirnames, filenames in walk(lcldr):
             # Keep paths only for those matching the station
             for sstring in sstrings:
                 for filename in filter(filenames, sstring):
                     fpathmatch.append(join(root, filename))
-            
+
     fpathmatch.sort()
-    
+
     return fpathmatch
