@@ -9,8 +9,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -53,14 +53,17 @@ class Pick(QWidget):
         self.width = 520
         self.height = 200
         self.initUI()
-        
+
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        buttonReply = QMessageBox.question(self, 'Pick window', "Re/Pick window? (Click no to continue)", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        buttonReply = QMessageBox.question(
+            self, 'Pick window', "Re/Pick window? (Click no to continue)",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         self.reply = buttonReply == QMessageBox.Yes
         self.show()
         self.close()
+
 
 class Keep(QWidget):
     """
@@ -76,14 +79,17 @@ class Keep(QWidget):
         self.width = 520
         self.height = 200
         self.initUI()
-        
+
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        buttonReply = QMessageBox.question(self, 'Keep estimates', "Keep estimates?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        buttonReply = QMessageBox.question(
+            self, 'Keep estimates', "Keep estimates?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         self.reply = buttonReply == QMessageBox.Yes
         self.show()
         self.close()
+
 
 class Save(QWidget):
     """
@@ -99,14 +105,17 @@ class Save(QWidget):
         self.width = 520
         self.height = 200
         self.initUI()
-        
+
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        buttonReply = QMessageBox.question(self, 'Save Split Result', "Split Result Exists. Overwrite?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        buttonReply = QMessageBox.question(
+            self, 'Save Split Result', "Split Result Exists. Overwrite?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         self.reply = buttonReply == QMessageBox.Yes
         self.show()
         self.close()
+
 
 class Repeat(QWidget):
     """
@@ -122,11 +131,13 @@ class Repeat(QWidget):
         self.width = 520
         self.height = 200
         self.initUI()
-        
+
     def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        buttonReply = QMessageBox.question(self, 'Repeat Saved Split', "Split Results Exist. Repeat?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        buttonReply = QMessageBox.question(
+            self, 'Repeat Saved Split', "Split Results Exist. Repeat?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         self.reply = buttonReply == QMessageBox.Yes
         self.show()
         self.close()
