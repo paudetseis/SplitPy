@@ -9,8 +9,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -54,12 +54,13 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 
+
 class Meta(object):
     """
     A Result object contains attributes associated with the result
     of a single splitting analysis. These are equally applicable
     to the RC or SC method - see :func:`~splitpy.classes.analyze`.
-    
+
     Attributes
     ----------
     time : :class:`~obspy.core.UTCDateTime`
@@ -101,11 +102,12 @@ class Meta(object):
         self.slow = None
         self.inc = None
 
+
 class Data(object):
     """
     A Data object contains three-component raw (NEZ) and rotated (LQT) 
     waveforms centered on the arrival time of interest.
-    
+
     Attributes
     ----------
 
@@ -133,12 +135,13 @@ class Data(object):
         self.trQ = None
         self.trT = None
 
+
 class Result(object):
     """
     A Result object contains attributes associated with the result
     of a single splitting analysis. These are equally applicable
     to the RC or SC method - see :func:`~splitpy.classes.analyze`.
-    
+
     Attributes
     ----------
 
@@ -166,9 +169,8 @@ class Result(object):
         Error contours on `Emat`
     """
 
-
-    def __init__(self, Emat, trQ_c, trT_c, trFast, 
-        trSlow, phi, dtt, phi_min, edtt, ephi, errc):
+    def __init__(self, Emat, trQ_c, trT_c, trFast,
+                 trSlow, phi, dtt, phi_min, edtt, ephi, errc):
 
         self.Emat = Emat
         self.trQ_c = trQ_c
@@ -260,10 +262,12 @@ class Split(object):
 
         # Problem with mag
         mag = event.magnitudes[0].mag
-        if mag is None: mag = -9.
+        if mag is None:
+            mag = -9.
 
         # Calculate epicentral distance
-        epi_dist, az, baz = epi(lat, lon, self.sta.latitude, self.sta.longitude)
+        epi_dist, az, baz = epi(
+            lat, lon, self.sta.latitude, self.sta.longitude)
         epi_dist /= 1000
         gac = k2d(epi_dist)
 
@@ -366,12 +370,13 @@ class Split(object):
         tend = self.meta.time + self.ts + dts
 
         # Get waveforms
-        print ("* Requesting Waveforms: ")
-        print ("*    Startime: " + tstart.strftime("%Y-%m-%d %H:%M:%S"))
-        print ("*    Endtime:  " + tend.strftime("%Y-%m-%d %H:%M:%S"))
+        print("* Requesting Waveforms: ")
+        print("*    Startime: " + tstart.strftime("%Y-%m-%d %H:%M:%S"))
+        print("*    Endtime:  " + tend.strftime("%Y-%m-%d %H:%M:%S"))
 
-        err, trN, trE, trZ = splitpy.utils.get_data_NEZ(client=client, \
-            sta=self.sta, start=tstart, \
+        err, trN, trE, trZ = splitpy.utils.get_data_NEZ(
+            client=client,
+            sta=self.sta, start=tstart,
             end=tend, stdata=stdata, ndval=ndval)
 
         # Store as attributes with traces in dictionay
@@ -395,19 +400,19 @@ class Split(object):
         inc = self.meta.inc*np.pi/180.
         baz = self.meta.baz*np.pi/180.
 
-        M = np.zeros((3,3))
-        M[0,0] = np.cos(inc)
-        M[0,1] = -np.sin(inc) * np.sin(baz)
-        M[0,2] = -np.sin(inc) * np.cos(baz)
-        M[1,0] = np.sin(inc)
-        M[1,1] = np.cos(inc) * np.sin(baz)
-        M[1,2] = np.cos(inc) * np.cos(baz)
-        M[2,0] = 0.
-        M[2,1] = -np.cos(baz)
-        M[2,2] = np.sin(baz)
+        M = np.zeros((3, 3))
+        M[0, 0] = np.cos(inc)
+        M[0, 1] = -np.sin(inc) * np.sin(baz)
+        M[0, 2] = -np.sin(inc) * np.cos(baz)
+        M[1, 0] = np.sin(inc)
+        M[1, 1] = np.cos(inc) * np.sin(baz)
+        M[1, 2] = np.cos(inc) * np.cos(baz)
+        M[2, 0] = 0.
+        M[2, 1] = -np.cos(baz)
+        M[2, 2] = np.sin(baz)
 
         # Perform 3-D rotation
-        LQT = np.dot(np.array(M), np.array(\
+        LQT = np.dot(np.array(M), np.array(
             [self.data.trZ.data, self.data.trE.data, self.data.trN.data]))
 
         # Store into traces and add as new items in attribute dictionary
@@ -487,32 +492,35 @@ class Split(object):
             t2 = self.meta.time + self.ts + 25.
 
         # Calculate Silver and Chan splitting estimate
-        print ("* --> Calculating Rotation-Correlation (RC) Splitting")
+        print("* --> Calculating Rotation-Correlation (RC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
-                        splitpy.calc.split_RotCorr(self.data.trQ, self.data.trT, \
-                        self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
+            splitpy.calc.split_RotCorr(
+                self.data.trQ, self.data.trT,
+                self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
 
         # Calculate error
-        edtt, ephi, errc = splitpy.calc.split_errorRC(trT_c, \
-                        t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
+        edtt, ephi, errc = splitpy.calc.split_errorRC(
+            trT_c,
+            t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
 
         # Store dictionary as attribute
-        self.RC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow, 
-            phi, dtt, phi_min, edtt, ephi, errc)
+        self.RC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
+                             phi, dtt, phi_min, edtt, ephi, errc)
 
         # Calculate Silver and Chan splitting estimate
-        print ("* --> Calculating Silver-Chan (SC) Splitting")
+        print("* --> Calculating Silver-Chan (SC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
-                        splitpy.calc.split_SilverChan(self.data.trQ, self.data.trT, \
-                        self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
-        
+            splitpy.calc.split_SilverChan(
+                self.data.trQ, self.data.trT,
+                self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
+
         # Calculate errors
-        edtt, ephi, errc = splitpy.calc.split_errorSC(trT_c, \
-                        t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
+        edtt, ephi, errc = splitpy.calc.split_errorSC(
+            trT_c,
+            t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
 
-        self.SC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow, 
-            phi, dtt, phi_min, edtt, ephi, errc)
-
+        self.SC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
+                             phi, dtt, phi_min, edtt, ephi, errc)
 
     def is_null(self, snrTlim=3., ds=-1):
         """
@@ -535,28 +543,36 @@ class Split(object):
         self.null = False
 
         # Calculate Angular Difference for Null Measurement
-        dphi = max(abs(self.RC_res.phi - self.SC_res.phi), \
-            abs(self.SC_res.phi - self.RC_res.phi))
-        if dphi > 90.: dphi = 180. - dphi
+        dphi = max(abs(self.RC_res.phi - self.SC_res.phi),
+                   abs(self.SC_res.phi - self.RC_res.phi))
+        if dphi > 90.:
+            dphi = 180. - dphi
 
         # Summarize Null Measurement
-        if ds>=0:
-          print("*" + " "*ds + "Null Classification: ")
-          if self.snrt < snrTlim:
-            print("*" + " "*ds + "  SNR T Fail: {0:.2f} < {1:.2f}".format(self.snrt, snrTlim))
-          else:
-            print("*" + " "*ds + "  SNR T Pass: {0:.2f} > {1:.2f}".format(self.snrt, snrTlim))
-          if 22. < dphi < 68.:
-            print("*" + " "*ds + "  dPhi Fail: {0:.2f} within 22. < X < 68.".format(dphi))
-          else:
-            print("*" + " "*ds + "  dPhi Pass:  {0:.2f} outside 22. < X < 68.".format(dphi))
-       
+        if ds >= 0:
+            print("*" + " "*ds + "Null Classification: ")
+            if self.snrt < snrTlim:
+                print(
+                    "*" + " "*ds + "  SNR T Fail: {0:.2f} < {1:.2f}".format(
+                        self.snrt, snrTlim))
+            else:
+                print(
+                    "*" + " "*ds + "  SNR T Pass: {0:.2f} > {1:.2f}".format(
+                        self.snrt, snrTlim))
+            if 22. < dphi < 68.:
+                print("*" + " "*ds +
+                      "  dPhi Fail: {0:.2f} within 22. < X < 68.".format(dphi))
+            else:
+                print(
+                    "*" + " "*ds +
+                    "  dPhi Pass:  {0:.2f} outside 22. < X < 68.".format(dphi))
+
         # Check snr on tangential component
-        if self.snrt < snrTlim: 
+        if self.snrt < snrTlim:
             self.null = True
 
         # Check error on `phi_min` estimate
-        if 22. < dphi < 68.: 
+        if 22. < dphi < 68.:
             self.null = True
 
     def get_quality(self, ds):
@@ -579,26 +595,32 @@ class Split(object):
 
         # Ratio of delay times
         rho = self.RC_res.dtt/self.SC_res.dtt
-       
+
         # Test based on difference in fast axis directions
-        dphi = max(abs(self.RC_res.phi - self.SC_res.phi), \
-            abs(self.SC_res.phi - self.RC_res.phi))
-        if dphi > 90.: dphi = 180. - dphi
+        dphi = max(abs(self.RC_res.phi - self.SC_res.phi),
+                   abs(self.SC_res.phi - self.RC_res.phi))
+        if dphi > 90.:
+            dphi = 180. - dphi
 
         # If estimate is Null
         if self.null:
-            if rho < 0.2 and (37. < dphi < 53): 
+            if rho < 0.2 and (37. < dphi < 53):
                 self.quality = 'Good'
             elif rho < 0.3 and (32 < dphi < 58):
                 self.quality = 'Fair'
             else:
                 self.quality = 'Poor'
             if ds >= 0:
-              print("*" + " "*ds + "Quality Estimate: Null -- {0:s}".format(self.quality))
-              print("*" + " "*ds + "    rho: {0:.2f}; dphi: {1:.2f}".format(rho, dphi))
-              print("*" + " "*ds + "      Good: rho < 0.2  &&  37 < dphi < 53")
-              print("*" + " "*ds + "      Fair: rho < 0.3  &&  32 < dphi < 58")
-              print("*" + " "*ds + "      Poor: rho > 0.3  &&  dphi < 32 | dphi > 58")
+                print("*" + " "*ds +
+                      "Quality Estimate: Null -- {0:s}".format(self.quality))
+                print("*" + " "*ds +
+                      "    rho: {0:.2f}; dphi: {1:.2f}".format(rho, dphi))
+                print("*" + " "*ds +
+                      "      Good: rho < 0.2  &&  37 < dphi < 53")
+                print("*" + " "*ds +
+                      "      Fair: rho < 0.3  &&  32 < dphi < 58")
+                print("*" + " "*ds +
+                      "      Poor: rho > 0.3  &&  dphi < 32 | dphi > 58")
 
         # If estimate is non-Null
         else:
@@ -608,12 +630,18 @@ class Split(object):
                 self.quality = 'Fair'
             else:
                 self.quality = 'Poor'
-            if ds >=0:
-                print("*" + " "*ds + "Quality Estimate: Non-Null -- {0:s}".format(self.quality))
-                print("*" + " "*ds + "    rho: {0:.2f}; dphi: {1:.2f}".format(rho, dphi))
-                print("*" + " "*ds + "      Good: 0.8 < rho < 1.1  &&  dphi < 8")
-                print("*" + " "*ds + "      Fair: 0.7 < rho < 1.2  &&  dphi < 15")
-                print("*" + " "*ds + "      Poor: rho < 0.7 | rho > 1.3 &&  dphi > 15")
+            if ds >= 0:
+                print(
+                    "*" + " "*ds +
+                    "Quality Estimate: Non-Null -- {0:s}".format(self.quality))
+                print("*" + " "*ds +
+                      "    rho: {0:.2f}; dphi: {1:.2f}".format(rho, dphi))
+                print("*" + " "*ds +
+                      "      Good: 0.8 < rho < 1.1  &&  dphi < 8")
+                print("*" + " "*ds +
+                      "      Fair: 0.7 < rho < 1.2  &&  dphi < 15")
+                print("*" + " "*ds +
+                      "      Poor: rho < 0.7 | rho > 1.3 &&  dphi > 15")
 
     def display_results(self, ds=0):
         """
@@ -625,24 +653,24 @@ class Split(object):
             Number of stars to print out to screen (verbiage)
 
         """
-        
+
         print(" "*ds + ' ======= Best-fit splitting results ========')
-        print() 
+        print()
         print(" "*ds + ' Best fit values: RC method')
-        print(" "*ds + ' Phi = ' + \
-                str("{:3d}").format(int(self.RC_res.phi)) + \
-                ' degrees +/- ' + str("{:2d}").format(int(self.RC_res.ephi)))
-        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.RC_res.dtt) + \
-                ' seconds +/- ' + str("{:.1f}").format(self.RC_res.edtt))
+        print(" "*ds + ' Phi = ' +
+              str("{:3d}").format(int(self.RC_res.phi)) +
+              ' degrees +/- ' + str("{:2d}").format(int(self.RC_res.ephi)))
+        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.RC_res.dtt) +
+              ' seconds +/- ' + str("{:.1f}").format(self.RC_res.edtt))
         print()
         print(" "*ds + ' Best fit values: SC method')
-        print(" "*ds + ' Phi = '+\
-                str("{:3d}").format(int(self.SC_res.phi)) + \
-                ' degrees +/- ' + str("{:2d}").format(int(self.SC_res.ephi)))
-        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.SC_res.dtt) + \
-                ' seconds +/- ' + str("{:.1f}").format(self.SC_res.edtt))
+        print(" "*ds + ' Phi = ' +
+              str("{:3d}").format(int(self.SC_res.phi)) +
+              ' degrees +/- ' + str("{:2d}").format(int(self.SC_res.ephi)))
+        print(" "*ds + ' dt = ' + str("{:.1f}").format(self.SC_res.dtt) +
+              ' seconds +/- ' + str("{:.1f}").format(self.SC_res.edtt))
         print()
-        
+
     def display_meta(self,  ds=0):
         """
         Prints out content of metadata to screen
@@ -653,19 +681,27 @@ class Split(object):
             Number of stars to print out to screen (verbiage)
 
         """
-        
+
         print(" "*ds + ' ======= Meta data ========')
         print()
-        print(" "*ds + 'SNR (dB):            ' + str("{:.0f}").format(self.snrq))
+        print(" "*ds + 'SNR (dB):            ' +
+              str("{:.0f}").format(self.snrq))
         print(" "*ds + 'Station:             ' + self.sta.station)
         print(" "*ds + 'Time:                ' + str(self.meta.time))
-        print(" "*ds + 'Event depth (km):    ' + str("{:.0f}").format(self.meta.dep/1000.))
-        print(" "*ds + 'Magnitude (Mw):      ' + str("{:.1f}").format(self.meta.mag))
-        print(" "*ds + 'Longitude (deg):     ' + str("{:.2f}").format(self.meta.lon))
-        print(" "*ds + 'Latitude (deg):      ' + str("{:.2f}").format(self.meta.lat))
-        print(" "*ds + 'GAC (deg):           ' + str("{:.2f}").format(self.meta.gac))
-        print(" "*ds + 'Backazimuth deg):    ' + str("{:.2f}").format(self.meta.baz))
-        print(" "*ds + 'Incidence(deg):      ' + str("{:.2f}").format(self.meta.inc))
+        print(" "*ds + 'Event depth (km):    ' +
+              str("{:.0f}").format(self.meta.dep/1000.))
+        print(" "*ds + 'Magnitude (Mw):      ' +
+              str("{:.1f}").format(self.meta.mag))
+        print(" "*ds + 'Longitude (deg):     ' +
+              str("{:.2f}").format(self.meta.lon))
+        print(" "*ds + 'Latitude (deg):      ' +
+              str("{:.2f}").format(self.meta.lat))
+        print(" "*ds + 'GAC (deg):           ' +
+              str("{:.2f}").format(self.meta.gac))
+        print(" "*ds + 'Backazimuth deg):    ' +
+              str("{:.2f}").format(self.meta.baz))
+        print(" "*ds + 'Incidence(deg):      ' +
+              str("{:.2f}").format(self.meta.inc))
         print()
 
     def display_null_quality(self, ds=0):
@@ -678,13 +714,13 @@ class Split(object):
             Number of stars to print out to screen (verbiage)
 
         """
-        
+
         print(" "*ds + ' ======= Nulls and quality ========')
         print()
         print(" "*ds + ' Is Null?     ', self.null)
         print(" "*ds + ' Quality:     ', self.quality)
         print()
-        
+
     def save(self, file):
         """
         Saves Split object to file
@@ -695,7 +731,7 @@ class Split(object):
             File name for split object
 
         """
-        
+
         import pickle
         output = open(file, 'wb')
         pickle.dump(self, output)
@@ -758,7 +794,9 @@ class PickPlot(object):
             return ax
 
         if not hasattr(split, 'RC_res'):
-            raise(Exception("analysis has not yet been performed on split object. Aborting"))
+            raise(
+                Exception("analysis has not yet been performed " +
+                          "on split object. Aborting"))
 
         # Make sure to clear figure if it already exists at initialization
         if plt.fignum_exists(1):
@@ -768,21 +806,21 @@ class PickPlot(object):
         self.split = split
 
         # Define plot as GridSpec object
-        gs = gspec.GridSpec(24,1)
+        gs = gspec.GridSpec(24, 1)
 
         # Figure handle
-        fig = plt.figure(num=1,facecolor='w')
-        
+        fig = plt.figure(num=1, facecolor='w')
+
         # L component seismogram
-        ax1 = fig.add_subplot(gs[0:7])   #0:3
+        ax1 = fig.add_subplot(gs[0:7])  # 0:3
         ax1 = init_pickw(ax=ax1, title=self.split.sta.station, ylab='L')
 
         # Q component seismogram
-        ax2 = fig.add_subplot(gs[8:15])   #3:7
+        ax2 = fig.add_subplot(gs[8:15])  # 3:7
         ax2 = init_pickw(ax=ax2, title='', ylab='Q')
 
         # T component seismogram
-        ax3 = fig.add_subplot(gs[16:23])  #8:11
+        ax3 = fig.add_subplot(gs[16:23])  # 8:11
         ax3 = init_pickw(ax=ax3, title='', ylab='T')
         ax3.set_xlabel('Time (sec)')
 
@@ -823,7 +861,7 @@ class PickPlot(object):
             t2 = self.split.meta.time + self.split.ts + 25.
 
         # Define time axis
-        taxis = np.arange(self.split.data.trL.stats.npts)/ \
+        taxis = np.arange(self.split.data.trL.stats.npts) / \
             self.split.data.trL.stats.sampling_rate - dts
         tstart = self.split.data.trL.stats.starttime
 
@@ -860,35 +898,52 @@ class PickPlot(object):
 
             name = t.name
             time = t.time
-            if not name[0] == 'S': continue
-            if name == 'S':         # Direct S phase
-                self.fp[1].axvline(time - self.split.ts, color='k') 
-                self.fp[1].text(time - self.split.ts + 5., -1., 'S', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k') 
-                self.fp[2].text(time - self.split.ts + 5., -1., 'S', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k') 
-                self.fp[3].text(time - self.split.ts + 5., -1., 'S', rotation=90, ha='center', va='bottom')
-            elif name == 'SKS':     # Transmitted core-refracted shear wave - Main phase of interest 
-                self.fp[1].axvline(time - self.split.ts, color='k') 
-                self.fp[1].text(time - self.split.ts + 5., -1., 'SKS', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k') 
-                self.fp[2].text(time - self.split.ts + 5., -1., 'SKS', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k') 
-                self.fp[3].text(time - self.split.ts + 5., -1., 'SKS', rotation=90, ha='center', va='bottom')
-            elif name == 'SKKS':    # Core-refracted shear wave with 'K' bounce at core-mantle boundary
-                self.fp[1].axvline(time - self.split.ts, color='k') 
-                self.fp[1].text(time - self.split.ts + 5., -1., 'SKKS', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k') 
-                self.fp[2].text(time - self.split.ts + 5., -1., 'SKKS', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k') 
-                self.fp[3].text(time - self.split.ts + 5., -1., 'SKKS', rotation=90, ha='center', va='bottom')
-            elif name == 'ScS':     # Direct shear wave reflected at core-mantle boundary
-                self.fp[1].axvline(time - self.split.ts, color='k') 
-                self.fp[1].text(time - self.split.ts + 5., -1., 'ScS', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k') 
-                self.fp[2].text(time - self.split.ts + 5., -1., 'ScS', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k') 
-                self.fp[3].text(time - self.split.ts + 5., -1., 'ScS', rotation=90, ha='center', va='bottom')
+            if not name[0] == 'S':
+                continue
+            # Direct S phase
+            if name == 'S':
+                self.fp[1].axvline(time - self.split.ts, color='k')
+                self.fp[1].text(time - self.split.ts + 5., -1.,
+                                'S', rotation=90, ha='center', va='bottom')
+                self.fp[2].axvline(time - self.split.ts, color='k')
+                self.fp[2].text(time - self.split.ts + 5., -1.,
+                                'S', rotation=90, ha='center', va='bottom')
+                self.fp[3].axvline(time - self.split.ts, color='k')
+                self.fp[3].text(time - self.split.ts + 5., -1.,
+                                'S', rotation=90, ha='center', va='bottom')
+            # Transmitted core-refracted shear wave - Main phase of interest
+            elif name == 'SKS':
+                self.fp[1].axvline(time - self.split.ts, color='k')
+                self.fp[1].text(time - self.split.ts + 5., -1.,
+                                'SKS', rotation=90, ha='center', va='bottom')
+                self.fp[2].axvline(time - self.split.ts, color='k')
+                self.fp[2].text(time - self.split.ts + 5., -1.,
+                                'SKS', rotation=90, ha='center', va='bottom')
+                self.fp[3].axvline(time - self.split.ts, color='k')
+                self.fp[3].text(time - self.split.ts + 5., -1.,
+                                'SKS', rotation=90, ha='center', va='bottom')
+            # Core-refracted shear wave with 'K' bounce at core-mantle boundary
+            elif name == 'SKKS':
+                self.fp[1].axvline(time - self.split.ts, color='k')
+                self.fp[1].text(time - self.split.ts + 5., -1.,
+                                'SKKS', rotation=90, ha='center', va='bottom')
+                self.fp[2].axvline(time - self.split.ts, color='k')
+                self.fp[2].text(time - self.split.ts + 5., -1.,
+                                'SKKS', rotation=90, ha='center', va='bottom')
+                self.fp[3].axvline(time - self.split.ts, color='k')
+                self.fp[3].text(time - self.split.ts + 5., -1.,
+                                'SKKS', rotation=90, ha='center', va='bottom')
+            # Direct shear wave reflected at core-mantle boundary
+            elif name == 'ScS':
+                self.fp[1].axvline(time - self.split.ts, color='k')
+                self.fp[1].text(time - self.split.ts + 5., -1.,
+                                'ScS', rotation=90, ha='center', va='bottom')
+                self.fp[2].axvline(time - self.split.ts, color='k')
+                self.fp[2].text(time - self.split.ts + 5., -1.,
+                                'ScS', rotation=90, ha='center', va='bottom')
+                self.fp[3].axvline(time - self.split.ts, color='k')
+                self.fp[3].text(time - self.split.ts + 5., -1.,
+                                'ScS', rotation=90, ha='center', va='bottom')
 
         # Update plot
         self.fp[0].canvas.draw()
@@ -1024,12 +1079,14 @@ class DiagPlot(object):
             ax.set_title(title, fontsize=12)
             ax.set_ylabel(r'$\phi$ (deg)', labelpad=-10)
             ax.set_xlabel(r'$\delta t$ (sec)', labelpad=-2)
-            ax.set_xticks([0,1,2,3,4])
+            ax.set_xticks([0, 1, 2, 3, 4])
 
             return ax
 
         if not hasattr(split, 'RC_res'):
-            raise(Exception("analysis has not yet been performed on split object. Aborting"))
+            raise(
+                Exception("analysis has not yet been performed on " +
+                          "split object. Aborting"))
 
         # Make sure to clear figure if it already exists at initialization
         if plt.fignum_exists(2):
@@ -1038,8 +1095,8 @@ class DiagPlot(object):
         self.split = split
 
         # Figure handle
-        fig = plt.figure(num=2, figsize=(10,7), facecolor='w')
-    
+        fig = plt.figure(num=2, figsize=(10, 7), facecolor='w')
+
         # Q, T component seismograms
         ax0 = fig.add_axes([0.05, 0.73, 0.2, 0.2])
         ax0 = init_splitw(ax=ax0, title='Q, T')
@@ -1080,8 +1137,8 @@ class DiagPlot(object):
         axSC4 = fig.add_axes([0.775, 0.07, 0.2, 0.25])
         axSC4 = init_emap(ax=axSC4, title='Energy map of T')
 
-        fd = [fig, ax0, axt, axRC1, axRC2, axRC3, axRC4,\
-                axSC1, axSC2, axSC3, axSC4]
+        fd = [fig, ax0, axt, axRC1, axRC2, axRC3, axRC4,
+              axSC1, axSC2, axSC3, axSC4]
 
         # Make sure figure is open
         fd[0].show()
@@ -1129,13 +1186,15 @@ class DiagPlot(object):
             baz = baz/180.*np.pi
 
             # Define rotation matrix
-            M = [[np.cos(inc), -np.sin(inc)*np.sin(baz), -np.sin(inc)*np.cos(baz)],
-                    [np.sin(inc), np.cos(inc)*np.sin(baz), np.cos(inc)*np.cos(baz)],
-                    [0., -np.cos(baz), np.sin(baz)]]
+            M = [[np.cos(inc), -np.sin(inc)*np.sin(baz),
+                  -np.sin(inc)*np.cos(baz)],
+                 [np.sin(inc), np.cos(inc)*np.sin(baz),
+                  np.cos(inc)*np.cos(baz)],
+                 [0., -np.cos(baz), np.sin(baz)]]
 
             return M
 
-        # Copy traces to avoid overridding 
+        # Copy traces to avoid overridding
         trL_tmp = self.split.data.trL.copy()
         trL_tmp.trim(t1, t2)
         trQ_tmp = self.split.data.trQ.copy()
@@ -1149,14 +1208,18 @@ class DiagPlot(object):
 
         # Rotate seismograms for plots
         M = rot3D(self.split.meta.inc, self.split.meta.baz)
-        ZEN_RC = np.dot(np.transpose(M),
-                [trL_tmp.data, self.split.RC_res.trQ_c.data, self.split.RC_res.trT_c.data])
-        E_RC = ZEN_RC[1,:]
-        N_RC = ZEN_RC[2,:]
-        ZEN_SC = np.dot(np.transpose(M),
-                [trL_tmp.data, self.split.SC_res.trQ_c.data, self.split.SC_res.trT_c.data])
-        E_SC = ZEN_SC[1,:]
-        N_SC = ZEN_SC[2,:]
+        ZEN_RC = np.dot(
+            np.transpose(M),
+            [trL_tmp.data, self.split.RC_res.trQ_c.data,
+             self.split.RC_res.trT_c.data])
+        E_RC = ZEN_RC[1, :]
+        N_RC = ZEN_RC[2, :]
+        ZEN_SC = np.dot(
+            np.transpose(M),
+            [trL_tmp.data, self.split.SC_res.trQ_c.data,
+             self.split.SC_res.trT_c.data])
+        E_SC = ZEN_SC[1, :]
+        N_SC = ZEN_SC[2, :]
 
         # Original time series
         taxis = np.arange(trQ_tmp.stats.npts)/trQ_tmp.stats.sampling_rate
@@ -1168,35 +1231,50 @@ class DiagPlot(object):
         self.fd[1].plot(taxis, trT_tmp.data/max, 'r')
 
         # Text box
-        self.fd[2].text(0.5, 0.9, 'Event: '+self.split.meta.time.ctime()+'     '+\
-            str(self.split.meta.lat)+'N  '+str(self.split.meta.lon)+'E   '+\
-            str(np.int(self.split.meta.dep/1000.))+'km   '+'Mw='+\
+        self.fd[2].text(
+            0.5, 0.9, 'Event: ' + self.split.meta.time.ctime() + '     ' +
+            str(self.split.meta.lat) + 'N  ' +
+            str(self.split.meta.lon) + 'E   ' +
+            str(np.int(self.split.meta.dep/1000.)) + 'km   ' + 'Mw=' +
             str(self.split.meta.mag), horizontalalignment='center')
-        self.fd[2].text(0.5, 0.7, 'Station: '+self.split.sta.station+'   Backazimuth: '+\
-            str("{:.2f}").format(self.split.meta.baz)+'   Distance: '+\
-            str("{:.2f}").format(self.split.meta.gac), horizontalalignment='center')
-        self.fd[2].text(0.5, 0.5, r'Best fit RC values: $\phi$='+\
-            str(np.int(self.split.RC_res.phi))+r'$\pm$'+\
-            str("{:.2f}").format(self.split.RC_res.ephi)+r'   $\delta t$='+\
-            str(self.split.RC_res.dtt)+r'$\pm$'+\
-            str("{:.2f}").format(self.split.RC_res.edtt)+'s', horizontalalignment='center')
-        self.fd[2].text(0.5, 0.3, r'Best fit SC values: $\phi$='+\
-            str(np.int(self.split.SC_res.phi))+r'$\pm$'+\
-            str("{:.2f}").format(self.split.SC_res.ephi)+r'   $\delta t$='+\
-            str(self.split.SC_res.dtt)+r'$\pm$'+\
-            str("{:.2f}").format(self.split.SC_res.edtt)+'s', horizontalalignment='center')
-        self.fd[2].text(0.5, 0.1, 'Is Null? '+str(self.split.null)+'    Quality? '+\
+        self.fd[2].text(
+            0.5, 0.7, 'Station: ' + self.split.sta.station +
+            '   Backazimuth: ' +
+            str("{:.2f}").format(self.split.meta.baz) + '   Distance: ' +
+            str("{:.2f}").format(self.split.meta.gac),
+            horizontalalignment='center')
+        self.fd[2].text(
+            0.5, 0.5, r'Best fit RC values: $\phi$=' +
+            str(np.int(self.split.RC_res.phi)) + r'$\pm$' +
+            str("{:.2f}").format(self.split.RC_res.ephi) +
+            r'   $\delta t$=' +
+            str(self.split.RC_res.dtt) + r'$\pm$' +
+            str("{:.2f}").format(self.split.RC_res.edtt) +
+            's', horizontalalignment='center')
+        self.fd[2].text(
+            0.5, 0.3, r'Best fit SC values: $\phi$=' +
+            str(np.int(self.split.SC_res.phi)) + r'$\pm$' +
+            str("{:.2f}").format(self.split.SC_res.ephi) +
+            r'   $\delta t$=' +
+            str(self.split.SC_res.dtt) + r'$\pm$' +
+            str("{:.2f}").format(self.split.SC_res.edtt) +
+            's', horizontalalignment='center')
+        self.fd[2].text(
+            0.5, 0.1, 'Is Null? ' + str(self.split.null) + '    Quality? ' +
             str(self.split.quality), horizontalalignment='center')
 
         # Rotation-correlation
         # Corrected Fast and Slow
-        sum1 = np.sum(np.abs(self.split.RC_res.trFast.data - self.split.RC_res.trSlow.data))
-        sum2 = np.sum(np.abs(-self.split.RC_res.trFast.data - self.split.RC_res.trSlow.data))
-        if sum1 < sum2: 
-            sig = 1. 
-        else: 
+        sum1 = np.sum(np.abs(self.split.RC_res.trFast.data -
+                             self.split.RC_res.trSlow.data))
+        sum2 = np.sum(np.abs(-self.split.RC_res.trFast.data -
+                             self.split.RC_res.trSlow.data))
+        if sum1 < sum2:
+            sig = 1.
+        else:
             sig = -1.
-        taxis = np.arange(self.split.RC_res.trFast.stats.npts)/self.split.RC_res.trFast.stats.sampling_rate
+        taxis = np.arange(self.split.RC_res.trFast.stats.npts) / \
+            self.split.RC_res.trFast.stats.sampling_rate
         max1 = np.abs(self.split.RC_res.trFast.data).max()
         max2 = np.abs(self.split.RC_res.trSlow.data).max()
         max = np.amax([max1, max2])
@@ -1218,34 +1296,38 @@ class DiagPlot(object):
         phi = np.arange(-90., 90., self.dphi)
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
-        X,Y = np.meshgrid(dt, phi)
-        E2 = np.roll(self.split.RC_res.Emat, np.int(self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
+        X, Y = np.meshgrid(dt, phi)
+        E2 = np.roll(self.split.RC_res.Emat, np.int(
+            self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
 
         Emin = self.split.RC_res.Emat.min()
         Emax = self.split.RC_res.Emat.max()
         dE = (Emax - Emin)/16.
         levels = np.arange(Emin, Emax, dE)
         cmap = plt.cm.RdYlBu_r
-        cset1 = plt.contour(X, Y, E2, levels, \
-                cmap=plt.cm.get_cmap(cmap, len(levels)))
+        cset1 = plt.contour(X, Y, E2, levels,
+                            cmap=plt.cm.get_cmap(cmap, len(levels)))
 
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
         errc = self.split.RC_res.errc
-        ecset = plt.contour(X, Y, E2, (errc, ), colors='magenta',\
-                linewidths=2)
+        ecset = plt.contour(X, Y, E2, (errc, ), colors='magenta',
+                            linewidths=2)
 
         self.fd[6].axvline(self.split.RC_res.dtt)
         self.fd[6].axhline(self.split.RC_res.phi)
 
         # Silver-Chan
         # Corrected Fast and Slow
-        sum1 = np.sum(np.abs(self.split.SC_res.trFast.data - self.split.SC_res.trSlow.data))
-        sum2 = np.sum(np.abs(-self.split.SC_res.trFast.data - self.split.SC_res.trSlow.data))
-        if sum1 < sum2: 
-            sig = 1. 
-        else: 
+        sum1 = np.sum(np.abs(self.split.SC_res.trFast.data -
+                             self.split.SC_res.trSlow.data))
+        sum2 = np.sum(np.abs(-self.split.SC_res.trFast.data -
+                             self.split.SC_res.trSlow.data))
+        if sum1 < sum2:
+            sig = 1.
+        else:
             sig = -1.
-        taxis = np.arange(self.split.SC_res.trFast.stats.npts)/self.split.SC_res.trFast.stats.sampling_rate
+        taxis = np.arange(self.split.SC_res.trFast.stats.npts) / \
+            self.split.SC_res.trFast.stats.sampling_rate
         max1 = np.abs(self.split.SC_res.trFast.data).max()
         max2 = np.abs(self.split.SC_res.trSlow.data).max()
         max = np.amax([max1, max2])
@@ -1267,21 +1349,22 @@ class DiagPlot(object):
         phi = np.arange(-90., 90., self.dphi)
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
-        X,Y = np.meshgrid(dt, phi)
+        X, Y = np.meshgrid(dt, phi)
 
-        E2 = np.roll(self.split.SC_res.Emat, np.int(self.split.SC_res.phi-self.split.SC_res.phi_min),axis=0)
+        E2 = np.roll(self.split.SC_res.Emat, np.int(
+            self.split.SC_res.phi-self.split.SC_res.phi_min), axis=0)
 
         Emin = self.split.SC_res.Emat.min()
         Emax = self.split.SC_res.Emat.max()
         dE = (Emax - Emin)/16.
         levels = np.arange(Emin, Emax, dE)
         cmap = plt.cm.RdYlBu_r
-        cset1 = plt.contour(X, Y, E2, levels, \
-                cmap=plt.cm.get_cmap(cmap, len(levels)))
+        cset1 = plt.contour(X, Y, E2, levels,
+                            cmap=plt.cm.get_cmap(cmap, len(levels)))
 
         errc = self.split.SC_res.errc
-        ecset = plt.contour(X, Y, E2, (errc,), colors='magenta',\
-                linewidths=2)
+        ecset = plt.contour(X, Y, E2, (errc,), colors='magenta',
+                            linewidths=2)
 
         self.fd[10].axvline(self.split.SC_res.dtt)
         self.fd[10].axhline(self.split.SC_res.phi)
@@ -1319,8 +1402,10 @@ def _calc_snr(tr, t1, dt):
     trNze = tr.copy()
 
     # Filter between 0.02 and 0.5 (dominant S wave frequencies)
-    trSig.filter('bandpass',freqmin=0.02,freqmax=0.5,corners=2,zerophase=True)
-    trNze.filter('bandpass',freqmin=0.02,freqmax=0.5,corners=2,zerophase=True)
+    trSig.filter('bandpass', freqmin=0.02, freqmax=0.5,
+                 corners=2, zerophase=True)
+    trNze.filter('bandpass', freqmin=0.02, freqmax=0.5,
+                 corners=2, zerophase=True)
 
     # Trim twin seconds around P-wave arrival
     trSig.trim(t1, t1 + dt)
@@ -1332,4 +1417,3 @@ def _calc_snr(tr, t1, dt):
 
     # Calculate signal/noise ratio in dB
     return 10*np.log10(srms*srms/nrms/nrms)
-

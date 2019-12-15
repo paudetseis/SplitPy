@@ -9,8 +9,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -24,6 +24,7 @@
 import numpy as np
 from obspy.core import Trace, Stream
 from numpy.linalg import inv
+
 
 def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     """
@@ -67,11 +68,11 @@ def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
     dtt = np.arange(0., maxdt, ddt)
 
-    M = np.zeros((2,2,len(phi)))
-    M[0,0,:] = np.cos(phi)
-    M[0,1,:] = -np.sin(phi)
-    M[1,0,:] = np.sin(phi)
-    M[1,1,:] = np.cos(phi)
+    M = np.zeros((2, 2, len(phi)))
+    M[0, 0, :] = np.cos(phi)
+    M[0, 1, :] = -np.sin(phi)
+    M[1, 0, :] = np.sin(phi)
+    M[1, 1, :] = np.cos(phi)
 
     Ematrix = np.zeros((len(phi), len(dtt)))
 
@@ -87,7 +88,8 @@ def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     for p in range(len(phi)):
 
         # Test fast/slow direction
-        FS_test = np.dot(np.array(M[:,:,p]), np.array([trQ_tmp.data, trT_tmp.data]))
+        FS_test = np.dot(np.array(M[:, :, p]), np.array(
+            [trQ_tmp.data, trT_tmp.data]))
 
         # Compile into traces
         F0 = Trace(data=np.array(FS_test[0]), header=trQ_tmp.stats)
@@ -102,14 +104,15 @@ def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
             tmpSlow = tshift(F1, shift/2.)
 
             # Rotate back to Q and T system
-            corrected_QT = np.dot(inv(np.array(M[:,:,p])), np.array([tmpFast, tmpSlow]))
+            corrected_QT = np.dot(
+                inv(np.array(M[:, :, p])), np.array([tmpFast, tmpSlow]))
             trQ_c = Trace(data=corrected_QT[0], header=trQ_tmp.stats)
             trT_c = Trace(data=corrected_QT[1], header=trT_tmp.stats)
 
             #plot_cmp(trQ_c, trT_c,'phi='+str(phi[p]*180./np.pi)+'dt='+str(shift))
 
             # Energy on transverse component (component 1)
-            Ematrix[p,t] = np.sum(np.square(corrected_QT[1]))
+            Ematrix[p, t] = np.sum(np.square(corrected_QT[1]))
 
     # Find indices of minimum value of Energy matrix
     ind = np.where(Ematrix == Ematrix.min())
@@ -124,7 +127,8 @@ def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     if phiSC > 90.:
         phiSC = phiSC - 180.
 
-    FS_test = np.dot(np.array(M[:,:,ind_phi]), np.array([trQ_tmp.data, trT_tmp.data]))
+    FS_test = np.dot(np.array(M[:, :, ind_phi]),
+                     np.array([trQ_tmp.data, trT_tmp.data]))
 
     F0 = Trace(data=FS_test[0], header=trQ_tmp.stats)
     F1 = Trace(data=FS_test[1], header=trT_tmp.stats)
@@ -132,16 +136,17 @@ def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     tmpFast = tshift(F0, -shift/2.)
     tmpSlow = tshift(F1, shift/2.)
 
-    corrected_QT = np.dot(inv(np.array(M[:,:,ind_phi])), np.array([tmpFast, tmpSlow]))
+    corrected_QT = np.dot(
+        inv(np.array(M[:, :, ind_phi])), np.array([tmpFast, tmpSlow]))
 
     trQ_c = Trace(data=corrected_QT[0], header=trQ_tmp.stats)
     trT_c = Trace(data=corrected_QT[1], header=trT_tmp.stats)
-    
+
     trFast = Trace(data=tmpFast, header=trT_tmp.stats)
     trSlow = Trace(data=tmpSlow, header=trQ_tmp.stats)
-    
+
     return Ematrix, trQ_c, trT_c, trFast, trSlow, \
-            phiSC, shift, phiSC_min
+        phiSC, shift, phiSC_min
 
 
 def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
@@ -186,11 +191,11 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
     dtt = np.arange(0., maxdt, ddt)
 
-    M = np.zeros((2,2,len(phi)))
-    M[0,0,:] = np.cos(phi)
-    M[0,1,:] = -np.sin(phi)
-    M[1,0,:] = np.sin(phi)
-    M[1,1,:] = np.cos(phi)
+    M = np.zeros((2, 2, len(phi)))
+    M[0, 0, :] = np.cos(phi)
+    M[0, 1, :] = -np.sin(phi)
+    M[1, 0, :] = np.sin(phi)
+    M[1, 1, :] = np.cos(phi)
 
     Cmatrix_pos = np.zeros((len(phi), len(dtt)))
     Cmatrix_neg = np.zeros((len(phi), len(dtt)))
@@ -208,7 +213,8 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     for p in range(len(phi)):
 
         # Test fast/slow direction
-        FS_test = np.dot(np.array(M[:,:,p]), np.array([trQ_tmp.data, trT_tmp.data]))
+        FS_test = np.dot(np.array(M[:, :, p]), np.array(
+            [trQ_tmp.data, trT_tmp.data]))
 
         # Compile into traces
         F0 = Trace(data=np.array(FS_test[0]), header=trQ_tmp.stats)
@@ -219,7 +225,8 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
         ns1 = np.sum(F1.data*F1.data)
         norm = np.sqrt(ns0*ns1)
 
-        cor = Trace(data=np.fft.ifftshift(np.correlate(F0.data, F1.data, mode='same')/norm), header=trQ_tmp.stats)
+        cor = Trace(data=np.fft.ifftshift(np.correlate(
+            F0.data, F1.data, mode='same')/norm), header=trQ_tmp.stats)
 
         # Time shift loop
         for t in range(len(dtt)):
@@ -229,15 +236,16 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
             # Shift by dtt each component (+/-)
             cor_pos = tshift(cor, shift)
             cor_neg = tshift(cor, -shift)
-            Cmatrix_pos[p,t] = cor_pos[0]
-            Cmatrix_neg[p,t] = cor_neg[0]
+            Cmatrix_pos[p, t] = cor_pos[0]
+            Cmatrix_neg[p, t] = cor_neg[0]
 
     # Time shift is positive: fast axis arrives after slow axis
     if abs(Cmatrix_pos).max() > abs(Cmatrix_neg).max():
 
-        #print 'Cmatrix_pos is max'
+        # print 'Cmatrix_pos is max'
 
-        ind = np.where(Cmatrix_pos == max(Cmatrix_pos.max(), Cmatrix_pos.min(), key=abs))
+        ind = np.where(Cmatrix_pos == max(
+            Cmatrix_pos.max(), Cmatrix_pos.min(), key=abs))
         ind_phi = ind[0][0]
         ind_dtt = ind[1][0]
 
@@ -253,7 +261,8 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     # Time shift is negative: fast axis arrives before slow axis
     else:
 
-        ind = np.where(Cmatrix_neg == max(Cmatrix_neg.max(), Cmatrix_neg.min(), key=abs))
+        ind = np.where(Cmatrix_neg == max(
+            Cmatrix_neg.max(), Cmatrix_neg.min(), key=abs))
         ind_phi = ind[0][0]
         ind_dtt = ind[1][0]
 
@@ -273,13 +282,14 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     if phiRC > 90.:
         phiRC = phiRC - 180.
 
-    M2 = np.zeros((2,2))
-    M2[0,0] = np.cos(theta)
-    M2[0,1] = -np.sin(theta)
-    M2[1,0] = np.sin(theta)
-    M2[1,1] = np.cos(theta)
+    M2 = np.zeros((2, 2))
+    M2[0, 0] = np.cos(theta)
+    M2[0, 1] = -np.sin(theta)
+    M2[1, 0] = np.sin(theta)
+    M2[1, 1] = np.cos(theta)
 
-    FS_test = np.dot(np.array(M2[:,:]), np.array([trQ_tmp.data, trT_tmp.data]))
+    FS_test = np.dot(np.array(M2[:, :]), np.array(
+        [trQ_tmp.data, trT_tmp.data]))
 
     F0 = Trace(data=FS_test[0], header=trQ_tmp.stats)
     F1 = Trace(data=FS_test[1], header=trT_tmp.stats)
@@ -290,13 +300,14 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     trFast = Trace(data=tmpFast, header=trT_tmp.stats)
     trSlow = Trace(data=tmpSlow, header=trQ_tmp.stats)
 
-    corrected_QT = np.dot(inv(np.array(M2[:,:])), np.array([tmpFast, tmpSlow]))
+    corrected_QT = np.dot(
+        inv(np.array(M2[:, :])), np.array([tmpFast, tmpSlow]))
 
     trQ_c = Trace(data=corrected_QT[0], header=trQ_tmp.stats)
     trT_c = Trace(data=corrected_QT[1], header=trT_tmp.stats)
-    
+
     return Cmap, trQ_c, trT_c, trFast, trSlow, \
-            phiRC, dtRC, phiRC_max
+        phiRC, dtRC, phiRC_max
 
 
 def tshift(trace, tt):
@@ -347,7 +358,7 @@ def split_dof(tr):
         Degrees of freedom
 
     From Walsh, JGR, 2013
-    
+
     """
 
     F = np.abs(np.fft.fft(tr.data)[0:int(len(tr.data)/2) + 1])
@@ -355,12 +366,13 @@ def split_dof(tr):
     E2 = np.sum(F**2)
     E2 -= (F[0]**2 + F[-1]**2)/2.
     E4 = (1./3.)*(F[0]**4 + F[-1]**4)
-    for i in range(1,len(F) - 1):
+    for i in range(1, len(F) - 1):
         E4 += (4./3.)*F[i]**4
 
     dof = int(4.*E2**2/E4 - 2.)
 
     return dof
+
 
 def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     """
@@ -400,25 +412,28 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     # Copy trace to avoid overriding
     tr_tmp = tr.copy()
     tr_tmp.trim(t1, t2)
-    
+
     # Get degrees of freedom
     dof = split_dof(tr_tmp)
     if dof < 3:
         dof = 3
-        print("Degrees of freedom < 3. Fixing to DOF = 3, which may result in accurate errors")
+        print(
+            "Degrees of freedom < 3. Fixing to DOF = 3, which may " +
+            "result in accurate errors")
     n_par = 2
 
     # Error contour
     vmin = Emat.min()
     vmax = Emat.max()
-    err_contour = vmin*(1. + n_par/(dof - n_par)*
-            stats.f.ppf(1. - q, n_par, dof - n_par))
+    err_contour = vmin*(1. + n_par/(dof - n_par) *
+                        stats.f.ppf(1. - q, n_par, dof - n_par))
 
     # Estimate uncertainty (q confidence interval)
-    err = np.where(Emat<err_contour)
+    err = np.where(Emat < err_contour)
     if len(err) == 0:
-      return False, False, False
-    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
+        return False, False, False
+    err_phi = max(
+        0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
     err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)
 
     return err_dtt, err_phi, err_contour
@@ -465,28 +480,31 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     # Copy trace to avoid overriding
     tr_tmp = tr.copy()
     tr_tmp.trim(t1, t2)
-    
+
     # Get degrees of freedom
     dof = split_dof(tr_tmp)
     if dof <= 3:
         dof = 3.01
-        print("Degrees of freedom < 3. Fixing to DOF = 3, which may result in accurate errors")
+        print(
+            "Degrees of freedom < 3. Fixing to DOF = 3, which may " +
+            "result in accurate errors")
     n_par = 2
 
     # Fisher transformation
     vmin = np.arctanh(Emat.min())
 
     # Error contour
-    zrr_contour = vmin + (vmin*np.sign(vmin)*n_par/(dof - n_par)*\
-            stats.f.ppf(1. - q, n_par, dof - n_par))*\
-            np.sqrt(1./(dof-3))
+    zrr_contour = vmin + (vmin*np.sign(vmin)*n_par/(dof - n_par) *
+                          stats.f.ppf(1. - q, n_par, dof - n_par)) *\
+        np.sqrt(1./(dof-3))
 
     # Back transformation
     err_contour = np.tanh(zrr_contour)
 
     # Estimate uncertainty (q confidence interval)
-    err = np.where(Emat<err_contour)
-    err_phi = max(0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
+    err = np.where(Emat < err_contour)
+    err_phi = max(
+        0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
     err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)
 
     return err_dtt, err_phi, err_contour
