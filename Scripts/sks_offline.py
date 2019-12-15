@@ -11,8 +11,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,6 +22,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from obspy.clients.fdsn import Client
+from obspy.taup import TauPyModel
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication
+import matplotlib.pyplot as plt
 """
 Program sks_offline.py
 ----------------------
@@ -122,17 +128,12 @@ from os import path, listdir
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
 
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot
 
 # Import Obspy Modules
-from obspy.taup import TauPyModel
-from obspy.clients.fdsn import Client
 
 # Main function
+
 def main():
 
     # Run Input Parser
@@ -171,15 +172,16 @@ def main():
         print("|                   {0:>8s}                    |".format(stkey))
         print("|===============================================|")
         print("|===============================================|")
-        print("|  Working on {0:5d} saved events                |".format(nevs))
-        print("|===============================================|")      
+        print(
+            "|  Working on {0:5d} saved events                |".format(nevs))
+        print("|===============================================|")
 
         # select order of processing
         if opts.reverse:
-            ievs = range(0,nevs)
+            ievs = range(0, nevs)
         else:
             ievs = range(nevs - 1, -1, -1)
-        nevK=0
+        nevK = 0
 
         # Read through catalogue
         for iev in ievs:
@@ -189,23 +191,28 @@ def main():
 
             # Load Relevant Files
             # Station Data
-            sta = dill.load(open(path.join(indr, stkey, evSTR, "Station_Data.pkl"),"rb"))
+            sta = dill.load(
+                open(path.join(indr, stkey, evSTR, "Station_Data.pkl"), "rb"))
             split = Split(sta, opts.maxdt, opts.ddt, opts.dphi)
 
             # Event Data
-            ll = dill.load(open(path.join(indr, stkey, evSTR, "Event_Data.pkl"),"rb"))
-            ev = ll[0]; tt=ll[1]
+            ll = dill.load(
+                open(path.join(indr, stkey, evSTR, "Event_Data.pkl"), "rb"))
+            ev = ll[0]
+            tt = ll[1]
             split.add_event(ev)
 
             # Trace Filenames
             trpref = evSTR + "_" + sta.network + "." + sta.station
 
             # NEZ Trace files
-            trs = dill.load(open(path.join(indr, stkey, evSTR, "NEZ_Data.pkl"),"rb"))
+            trs = dill.load(
+                open(path.join(indr, stkey, evSTR, "NEZ_Data.pkl"), "rb"))
             split.add_NEZ(trs)
 
             # LQT Trace files
-            trs = dill.load(open(path.join(indr, stkey, evSTR, "LQT_Data.pkl"),"rb"))
+            trs = dill.load(
+                open(path.join(indr, stkey, evSTR, "LQT_Data.pkl"), "rb"))
             split.add_LQT(trs)
 
             # Output directory
@@ -219,7 +226,8 @@ def main():
             hr = str(split.meta.time.hour).zfill(2)
 
             # If distance between 85 and 120 deg:
-            if (split.meta.gac > opts.mindist and split.meta.gac < opts.maxdist):
+            if (split.meta.gac > opts.mindist and
+                    split.meta.gac < opts.maxdist):
 
                 # Display Event Info
                 nevK = nevK + 1
@@ -229,49 +237,63 @@ def main():
                     inum = nevs - iev + 1
                 print(" ")
                 print("****************************************************")
-                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(nevK, inum, nevs, split.meta.time.strftime("%Y%m%d_%H%M%S")))
-                print("*   Origin Time: " + split.meta.time.strftime("%Y-%m-%d %H:%M:%S"))
-                print("*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(split.meta.lat, split.meta.lon))
-                print("*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(split.meta.dep/1000., split.meta.mag))
-                print("*     {0:5s} -> Ev: {1:7.2f} km; {2:7.2f} deg; {3:6.2f}; {4:6.2f}".format(\
-                    split.sta.station, split.meta.epi_dist, split.meta.gac, split.meta.baz, split.meta.az))
-
+                print("* #{0:d} ({1:d}/{2:d}):  {3:13s}".format(
+                    nevK, inum, nevs, split.meta.time.strftime(
+                        "%Y%m%d_%H%M%S")))
+                print("*   Origin Time: " +
+                      split.meta.time.strftime("%Y-%m-%d %H:%M:%S"))
+                print(
+                    "*   Lat: {0:6.2f}; Lon: {1:7.2f}".format(
+                        split.meta.lat, split.meta.lon))
+                print(
+                    "*   Dep: {0:6.2f}; Mag: {1:3.1f}".format(
+                        split.meta.dep/1000., split.meta.mag))
+                print("*     {0:5s} -> Ev: {1:7.2f} km; {2:7.2f} deg; " +
+                      "{3:6.2f}; {4:6.2f}".format(
+                          split.sta.station, split.meta.epi_dist,
+                          split.meta.gac, split.meta.baz, split.meta.az))
 
                 # Loop over all times in tt
                 for t in tt:
 
                     # Extract SKS arrival
-                    if t.name=='SKS':
+                    if t.name == 'SKS':
 
                         # Add SKS phase to Split
                         split.add_phase(t, opts.vp)
 
-                        # Break out of loop 
+                        # Break out of loop
                         break
 
-                # Calculate snr over 30 seconds 
+                # Calculate snr over 30 seconds
                 split.calc_snrq(dt=30.)
 
                 # Make sure no processing happens for NaNs
-                if np.isnan(split.snrq): 
+                if np.isnan(split.snrq):
                     print("* SNR NaN...Skipping")
-                    print("****************************************************")
-                    continue 
+                    print("******************************************" +
+                          "**********")
+                    continue
 
                 # SNR below threshold
                 elif split.snrq < opts.msnr:
-                    print("* SNR Failed: {0:.2f} < {1:.2f}...Skipping".format(split.snrq, opts.msnr))
-                    print("****************************************************")
+                    print(
+                        "* SNR Failed: {0:.2f} < {1:.2f}...Skipping".format(
+                            split.snrq, opts.msnr))
+                    print("******************************************" +
+                          "**********")
 
                 # If SNR is higher than threshold
                 elif split.snrq >= opts.msnr:
-                    print("* SNR Passed: {0:4.2f} >= {1:3.1f}".format(split.snrq, opts.msnr))
+                    print(
+                        "* SNR Passed: {0:4.2f} >= {1:3.1f}".format(
+                            split.snrq, opts.msnr))
 
                     # Output file
-                    outfile = outdir + '/Split' + '.' + split.sta.station + '.' + \
-                                    split.meta.time.strftime("%Y.%j.%H%M%S") + '.pkl'
-                    outfig = outdir + '/Split' + '.' + split.sta.station + '.' + \
-                                    split.meta.time.strftime("%Y.%j.%H%M%S") + '.png'
+                    outfile = outdir + '/Split' + '.' + split.sta.station + \
+                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.pkl'
+                    outfig = outdir + '/Split' + '.' + split.sta.station + \
+                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.png'
 
                     # Analyze
                     split.analyze()
@@ -279,7 +301,8 @@ def main():
                     # Continue if problem with analysis
                     if split.RC_res.edtt is None or split.SC_res.edtt is None:
                         print("* !!! DOF Error. --> Skipping...")
-                        print("****************************************************")
+                        print("****************************************" +
+                              "************")
                         continue
 
                     # Determine is Null and quality of estimate
@@ -294,7 +317,7 @@ def main():
                     # Initialize diagnostic figure and plot it
                     dplot = DiagPlot(split)
                     dplot.plot_diagnostic()
-                    
+
                     # Choose whether to re-pick window times
                     iselect = 'a'
                     while iselect == 'a':
@@ -315,7 +338,7 @@ def main():
                             # Extract times from clicks
                             tp1 = [xx for xx, yy in xc][0]
                             tp2 = [xx for xx, yy in xc][1]
-                            
+
                             # Make sure tp2 > tp1
                             if tp2 < tp1:
                                 tp11 = tp2
@@ -333,12 +356,16 @@ def main():
                             split.analyze(t1=t1, t2=t2)
 
                             # Check for fault result
-                            if split.RC_res.edtt is None or split.SC_res.edtt is None:
+                            if (split.RC_res.edtt is None or
+                                    split.SC_res.edtt is None):
                                 print("* !!! DOF Error. --> Skipping...")
-                                print("****************************************************")
+                                print(
+                                    "**********************************" +
+                                    "******************")
                                 continue
 
-                            # Determine if estimate is Null and quality of estimate
+                            # Determine if estimate is Null and quality
+                            # of estimate
                             split.calc_snrt(t1, t2 - t1)
                             split.is_null(opts.snrTlim, 5)
                             split.get_quality(5)
@@ -351,7 +378,8 @@ def main():
                         else:
                             iselect = 'c'
 
-                            # Call interactive window for decision on estimate
+                            # Call interactive window for decision on
+                            # estimate
                             keep = Keep()
                             ans2 = keep.reply
 
@@ -370,10 +398,14 @@ def main():
                                 dplot.save(outfig)
 
                                 print("* Estimate Saved")
-                                print("****************************************************")
+                                print(
+                                    "*************************************" +
+                                    "***************")
                             else:
                                 print("* Estimate Discarded ")
-                                print("****************************************************")
+                                print(
+                                    "**************************************" +
+                                    "**************")
                                 continue
 
 
