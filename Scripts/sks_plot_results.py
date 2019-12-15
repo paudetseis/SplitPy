@@ -11,8 +11,8 @@
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -93,40 +93,90 @@ import pickle
 def get_options():
     from optparse import OptionParser, OptionGroup
 
-    parser = OptionParser(usage="Usage: %prog [options] <Folder> [Folder 2]", \
-        description="Script to plot the average splitting results for a given station. " \
-        "Loads the available pkl files in the specified Station Directory.")
+    parser = OptionParser(
+        usage="Usage: %prog [options] <Folder> [Folder 2]",
+        description="Script to plot the average splitting results for a " +
+        "given station. Loads the available pkl files in the specified " +
+        "Station Directory.")
 
     # General Settings
-    parser.add_option("--no-figure", action="store_false", dest="showfig", default=True, \
-        help="Specify to prevent plots from opening during processing; they are still " \
-        "saved to disk. [Default plots open and save]")
+    parser.add_option(
+        "--no-figure",
+        action="store_false",
+        dest="showfig",
+        default=True,
+        help="Specify to prevent plots from opening during processing; " +
+        "they are still saved to disk. [Default plots open and save]")
 
     # Null Settings
-    NullGroup = OptionGroup(parser, title="Null Selection Settings", description="Settings " \
+    NullGroup = OptionGroup(
+        parser,
+        title="Null Selection Settings",
+        description="Settings "
         "associated with selecting which Null or Non-Null data is included")
-    NullGroup.add_option("--nulls", "--Nulls", action="store_true", dest="nulls", default=False, \
-        help="Specify this flag to include Null Values in the average. [Default Non-Nulls only]")
-    NullGroup.add_option("--no-nons", "--No-Nons", action="store_false", dest="nons", default=True, \
-        help="Specify this flag to exclude Non-Nulls from the average [Default False]")
+    NullGroup.add_option(
+        "--nulls", "--Nulls",
+        action="store_true",
+        dest="nulls",
+        default=False,
+        help="Specify this flag to include Null Values in the average. " +
+        "[Default Non-Nulls only]")
+    NullGroup.add_option(
+        "--no-nons", "--No-Nons",
+        action="store_false",
+        dest="nons",
+        default=True,
+        help="Specify this flag to exclude Non-Nulls from the average " +
+        "[Default False]")
 
     # Quality Settings
-    QualGroup = OptionGroup(parser, title="Quality Selection Settings", \
-        description="Settings associated with selecting the qualities to include in the selection.")
-    QualGroup.add_option("--No-Good", "--no-good", action="store_false", dest="goods", default=True, \
-        help="Specify to exclude 'Good' measurements from the average. [Default Good + Fair]")
-    QualGroup.add_option("--No-Fair", "--no-fair", action="store_false", dest="fairs", default=True, \
-        help="Specify to exclude 'Fair' measurements from the average [Default Good + Fair]")
-    QualGroup.add_option("--Poor", "--poor", action="store_true", dest="poors", default=False, \
-        help="Specify to include 'Poor' measurements in the average [Default No Poors]")
+    QualGroup = OptionGroup(
+        parser,
+        title="Quality Selection Settings",
+        description="Settings associated with selecting the qualities " +
+        "to include in the selection.")
+    QualGroup.add_option(
+        "--No-Good", "--no-good",
+        action="store_false",
+        dest="goods",
+        default=True,
+        help="Specify to exclude 'Good' measurements from the average. " +
+        "[Default Good + Fair]")
+    QualGroup.add_option(
+        "--No-Fair", "--no-fair",
+        action="store_false",
+        dest="fairs",
+        default=True,
+        help="Specify to exclude 'Fair' measurements from the average " +
+        "[Default Good + Fair]")
+    QualGroup.add_option(
+        "--Poor", "--poor",
+        action="store_true",
+        dest="poors",
+        default=False,
+        help="Specify to include 'Poor' measurements in the average " +
+        "[Default No Poors]")
 
     # Split Type Settings
-    SpTypGroup = OptionGroup(parser, title="Split Type Settings", description="Settings to Select " \
+    SpTypGroup = OptionGroup(
+        parser,
+        title="Split Type Settings",
+        description="Settings to Select "
         "which Split types are included in the selection.")
-    SpTypGroup.add_option("--RC-Only", "--rc-only", "--RC-only", action="store_false", dest="SCinc", \
-        default=True, help="Specify to only include RC splits in the average. [Default RC + SC]")
-    SpTypGroup.add_option("--SC-Only", "--sc-only", "--SC-only", action="store_false", dest="RCinc", \
-        default=True, help="Specify to only include SC splits in the average. [Default RC + SC]")
+    SpTypGroup.add_option(
+        "--RC-Only", "--rc-only", "--RC-only",
+        action="store_false",
+        dest="SCinc",
+        default=True,
+        help="Specify to only include RC splits in the average. " +
+        "[Default RC + SC]")
+    SpTypGroup.add_option(
+        "--SC-Only", "--sc-only", "--SC-only",
+        action="store_false",
+        dest="RCinc",
+        default=True,
+        help="Specify to only include SC splits in the average. " +
+        "[Default RC + SC]")
 
     parser.add_option_group(NullGroup)
     parser.add_option_group(QualGroup)
@@ -156,21 +206,26 @@ def get_options():
         if opts.nulls:
             NullName = NullName + "-Nulls"
     else:
-        if opts.nulls: NullName = "_Nulls"
+        if opts.nulls:
+            NullName = "_Nulls"
     opts.NullName = NullName
 
     # Construct Quality FileName Components
     QualName = ""
     if opts.goods:
         QualName = "_G"
-        if opts.fairs: QualName = QualName + "-F"
-        if opts.poors: QualName = QualName + "-P"
+        if opts.fairs:
+            QualName = QualName + "-F"
+        if opts.poors:
+            QualName = QualName + "-P"
     else:
         if opts.fairs:
             QualName = "_F"
-            if opts.poors: QualName = QualName + "-P"
+            if opts.poors:
+                QualName = QualName + "-P"
         else:
-            if opts.poors: QualName = "_P"
+            if opts.poors:
+                QualName = "_P"
     opts.QualName = QualName
 
     # Construct Type FileName Components
@@ -191,7 +246,7 @@ def angle_mean(dt, phi, ddt, dphi):
     y = dt*np.sin(2*phi*np.pi/180.0)
     c = x + 1j*y
     m = np.mean(c)
-    
+
     phase = np.angle(m, deg=True)/2.
     radius = np.abs(m)
     dphase = np.sqrt(np.sum(dphi**2))/len(x)
@@ -200,14 +255,24 @@ def angle_mean(dt, phi, ddt, dphi):
     return phase, dphase, radius, dradius
 
 
-def process(sta,opts):
+def process(sta, opts):
 
     pickles = glob(join(arg, "Split.*.pkl"))
     pickles.sort()
 
     # Initialize Storage
-    baz = []; baz_null = []; phiRC = []; DphiRC = []; dtRC = []; DdtRC = []
-    phiSC = []; DphiSC = []; dtSC = []; DdtSC = []; Qual = []; Null = []
+    baz = []
+    baz_null = []
+    phiRC = []
+    DphiRC = []
+    dtRC = []
+    DdtRC = []
+    phiSC = []
+    DphiSC = []
+    dtSC = []
+    DdtSC = []
+    Qual = []
+    Null = []
 
     print("  Processing {0:d} Events...".format(len(pickles)))
 
@@ -233,19 +298,25 @@ def process(sta,opts):
         if opts.nons and opts.nulls:
             Naccept = True
         elif opts.nons and not opts.nulls:
-            if not split.null: Naccept = True
+            if not split.null:
+                Naccept = True
         elif not opts.nons and opts.nulls:
-            if split.null: Naccept = True
+            if split.null:
+                Naccept = True
 
         # Determine whether to accept based on Quality Selected
         Qaccept = False
         QGaccept = False
         QFaccept = False
         QPaccept = False
-        if opts.goods and split.quality == "Good": QGaccept = True
-        if opts.fairs and split.quality == "Fair": QFaccept = True
-        if opts.poors and split.quality == "Poor": QPaccept = True
-        if QGaccept or QFaccept or QPaccept: Qaccept = True
+        if opts.goods and split.quality == "Good":
+            QGaccept = True
+        if opts.fairs and split.quality == "Fair":
+            QFaccept = True
+        if opts.poors and split.quality == "Poor":
+            QPaccept = True
+        if QGaccept or QFaccept or QPaccept:
+            Qaccept = True
 
         # Accept Event?
         accept = False
@@ -284,8 +355,8 @@ def process(sta,opts):
             else:
                 print("      {0} Non-Null -> Skipped".format(split.quality))
 
-
-    if not baz: return
+    if not baz:
+        return
 
     # Gridspec for polar plot
     gs1 = gspec.GridSpec(1, 1)
@@ -294,7 +365,7 @@ def process(sta,opts):
     baz = np.array([float(i) for i in baz])
 
     # Get Max DT value
-    dtmax = ceil(max([max(dtRC), max(dtSC),3]))
+    dtmax = ceil(max([max(dtRC), max(dtSC), 3]))
 
     # Convert RC results to floats
     phi = np.array([float(i) for i in phiRC])
@@ -316,7 +387,8 @@ def process(sta,opts):
     # Add RC results to plot
     if opts.RCinc:
         ax1.scatter(phi*np.pi/180., dt, c='b')
-        ax1.plot(np.array([meanphiRC, meanphiRC])*np.pi/180., [0, meandtRC], 'b', linewidth=2)
+        ax1.plot(np.array([meanphiRC, meanphiRC])*np.pi /
+                 180., [0, meandtRC], 'b', linewidth=2)
 
     # Convert SC results to floats
     phi = np.array([float(i) for i in phiSC])
@@ -326,11 +398,12 @@ def process(sta,opts):
 
     # Calculate average and STD for SC technique
     meanphiSC, stdphiSC, meandtSC, stddtSC = angle_mean(dt, phi, Ddt, Dphi)
-    
+
     # Add SC results to plot
     if opts.SCinc:
         ax1.scatter(phi*np.pi/180., dt, c='coral')
-        ax1.plot(np.array([meanphiSC, meanphiSC])*np.pi/180., [0, meandtSC], 'coral', linewidth=2)
+        ax1.plot(np.array([meanphiSC, meanphiSC])*np.pi /
+                 180., [0, meandtSC], 'coral', linewidth=2)
 
     ax1.set_rmax(dtmax)
 
@@ -340,16 +413,17 @@ def process(sta,opts):
 
     ax2 = plt.subplot(gs2[0])
     ax3 = plt.subplot(gs2[1])
-    
-    ##### Azimuth panel
- 
+
+    # Azimuth panel
+
     phi = np.array([float(i) for i in phiRC])
     Dphi = np.array([float(i) for i in DphiRC])
-    
+
     # Plot shaded box with RC uncertainty
     if opts.RCinc:
 
-        ax2.axhspan(meanphiRC + stdphiRC, meanphiRC - stdphiRC, facecolor='b', alpha=0.2)
+        ax2.axhspan(meanphiRC + stdphiRC, meanphiRC -
+                    stdphiRC, facecolor='b', alpha=0.2)
         ax2.axhline(meanphiRC, c='b')
 
         # Plot individual RC results
@@ -357,11 +431,12 @@ def process(sta,opts):
 
     phi = np.array([float(i) for i in phiSC])
     Dphi = np.array([float(i) for i in DphiSC])
-    
+
     # Plot shaded box with SC uncertainty
     if opts.SCinc:
 
-        ax2.axhspan(meanphiSC + stdphiSC, meanphiSC - stdphiSC, facecolor='orange', alpha=0.2)
+        ax2.axhspan(meanphiSC + stdphiSC, meanphiSC -
+                    stdphiSC, facecolor='orange', alpha=0.2)
         ax2.axhline(meanphiSC, c='coral')
 
         # Plot individual SC results
@@ -371,16 +446,17 @@ def process(sta,opts):
     ax2.set_ylabel(r'Fast axis, $\phi$ (degree)')
     ax2.set_ylim(-95, 95)
     ax2.legend(loc=0, numpoints=1)
-    
-    ##### Delay time panel
-    
+
+    # Delay time panel
+
     dt = np.array([float(i) for i in dtRC])
     Ddt = np.array([float(i) for i in DdtRC])
-    
+
     # Plot shaded box with RC uncertainty
     if opts.RCinc:
 
-        ax3.axhspan(meandtRC + stddtRC, meandtRC - stddtRC, facecolor='b', alpha=0.2)
+        ax3.axhspan(meandtRC + stddtRC, meandtRC -
+                    stddtRC, facecolor='b', alpha=0.2)
         ax3.axhline(meandtRC, c='b')
 
         # Plot individual RC results
@@ -388,11 +464,12 @@ def process(sta,opts):
 
     dt = np.array([float(i) for i in dtSC])
     Ddt = np.array([float(i) for i in DdtSC])
-    
+
     # Plot shaded box with SC uncertainty
     if opts.SCinc:
 
-        ax3.axhspan(meandtSC + stddtSC, meandtSC - stddtSC, facecolor='orange', alpha=0.2)
+        ax3.axhspan(meandtSC + stddtSC, meandtSC -
+                    stddtSC, facecolor='orange', alpha=0.2)
         ax3.axhline(meandtSC, c='coral')
 
         # Plot individual SC results
@@ -400,11 +477,11 @@ def process(sta,opts):
 
     ax3.set_ylabel(r'Delay time, $\delta t$ (seconds)')
     ax3.set_ylim(0, dtmax)
-    
+
     ax3.set_xlabel('Back-azimuth (degree)')
     ax3.legend(loc=0, numpoints=1)
- 
-    # Add labels    
+
+    # Add labels
     plt.figtext(0.015, 0.80, 'A', fontweight='bold')
     plt.figtext(0.015, 0.48, 'B', fontweight='bold')
     plt.figtext(0.6, 0.7, 'C', fontweight='bold')
@@ -418,13 +495,18 @@ def process(sta,opts):
         DT = (meandtRC + meandtSC)/2.
         dPHI = (stdphiRC + stdphiSC)/2.
         dDT = (stddtRC + stddtSC)/2.
-        ax1.plot(np.array([PHI, PHI])*np.pi/180.,[0, DT],'r',linewidth=2,alpha=0.8)
+        ax1.plot(np.array([PHI, PHI])*np.pi/180.,
+                 [0, DT], 'r', linewidth=2, alpha=0.8)
         ax2.axhline(PHI, c='coral', alpha=0.5, linewidth=2)
-        ax2.axhline(PHI - dPHI, c='coral', linestyle='--', linewidth=1, alpha=0.5)
-        ax2.axhline(PHI + dPHI, c='coral', linestyle='--', linewidth=1, alpha=0.5)
+        ax2.axhline(PHI - dPHI, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
+        ax2.axhline(PHI + dPHI, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
         ax3.axhline(DT, c='coral', alpha=0.5, linewidth=2)
-        ax3.axhline(DT - dDT, c='coral', linestyle='--', linewidth=1, alpha=0.5)
-        ax3.axhline(DT + dDT, c='coral', linestyle='--', linewidth=1, alpha=0.5)
+        ax3.axhline(DT - dDT, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
+        ax3.axhline(DT + dDT, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
 
     elif not opts.RCinc and opts.SCinc:
         PHI = meanphiSC
@@ -447,16 +529,19 @@ def process(sta,opts):
     print("")
 
     # Write out Final Results
-    fid = open(join(outname) + ".dat",'w')
-    fid.writelines("{0}  {1:8.4f}  {2:7.4f}   {3:7.3f} {4:7.3f}   {5:5.3f} {6:5.3f}".format(\
-        arg, stlon, stlat, PHI, dPHI, DT, dDT))
+    fid = open(join(outname) + ".dat", 'w')
+    fid.writelines(
+        "{0}  {1:8.4f}  {2:7.4f}   {3:7.3f} {4:7.3f}   " +
+        "{5:5.3f} {6:5.3f}".format(
+            arg, stlon, stlat, PHI, dPHI, DT, dDT))
     fid.close()
 
     # Save Plot
     plt.savefig(join(outname)+'.png')
 
     # Display Plot
-    if opts.showfig: plt.show()
+    if opts.showfig:
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -474,7 +559,6 @@ if __name__ == "__main__":
     print("    Poors: ", opts.poors)
     print("---------------------------")
 
-
     for arg in args:
 
         # Check Folder Exists
@@ -486,5 +570,3 @@ if __name__ == "__main__":
 
         # Process the Folder
         process(arg, opts)
-
-
