@@ -1,6 +1,9 @@
 .. figure:: ../splitpy/examples/figures/SplitPy_logo.png
    :align: center
 
+Documentation
+=============
+
 SplitPy is a teleseismic shear-wave (SKS) Splitting Toolbox based on the 
 Matlab Tool SplitLab, developed by 
 `Wustefeld et al (2008) <https://doi.org/doi:10.1016/j.cageo.2007.08.002>`_.
