@@ -1,9 +1,6 @@
 .. figure:: ../splitpy/examples/figures/SplitPy_logo.png
    :align: center
 
-SplitPy Project documentation
-=============================
-
 SplitPy is a teleseismic shear-wave (SKS) Splitting Toolbox based on the 
 Matlab Tool SplitLab, developed by 
 `Wustefeld et al (2008) <https://doi.org/doi:10.1016/j.cageo.2007.08.002>`_.
@@ -33,12 +30,11 @@ USArray Transportable Array network.
 .. image:: https://travis-ci.org/paudetseis/SplitPy.svg?branch=master
     :target: https://travis-ci.org/paudetseis/SplitPy
 
-Quick links
-"""""""""""
+.. toctree::
+   :maxdepth: 1
+   :caption: Quick Links
 
-* `StDb Git repository <https://github.com/schaefferaj/StDb>`_
-* `SplitPy Git repository <https://github.com/paudetseis/SplitPy>`_
-* `SplitLab <http://splitting.gm.univ-montp2.fr>`_
+   links
 
 .. toctree::
    :maxdepth: 1

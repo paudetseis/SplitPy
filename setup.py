@@ -3,6 +3,7 @@ from os import listdir
 import re
 from numpy.distutils.core import setup
 
+
 def find_version(*paths):
     fname = os.path.join(os.path.dirname(__file__), *paths)
     with open(fname) as fp:
@@ -12,7 +13,8 @@ def find_version(*paths):
         return match.group(1)
     raise RuntimeError("Unable to find version string.")
 
-scripts=['Scripts/' + i for i in listdir('Scripts/')]
+
+scripts = ['Scripts/' + i for i in listdir('Scripts/')]
 
 setup(
     name='splitpy',

@@ -1,6 +1,7 @@
-# SplitPy: Software for teleseismic shear-wave splitting analysis
 
 ![](./splitpy/examples/figures/SplitPy_logo.png)
+
+## Software for teleseismic shear-wave splitting analysis
 
 Seismic anisotropy refers to the property of seismic waves to propagate
 at different wavespeeds depending on the direction of propagation. This
@@ -20,15 +21,21 @@ those in [Audet et al. (2016)](#references)
 [![DOI](https://zenodo.org/badge/211722700.svg)](https://zenodo.org/badge/latestdoi/211722700)
 [![Build Status](https://travis-ci.org/paudetseis/SplitPy.svg?branch=master)](https://travis-ci.org/paudetseis/SplitPy)
 
-## Citing
-
-If you use `SplitPy` in your work, please cite the Zenodo DOI above.
-
-## Documentation 
 Installation, Usage, API documentation and tutorials are described at 
 https://paudetseis.github.io/SplitPy/.
 
-## References
+#### Citing
+
+If you use `SplitPy` in your work, please cite the 
+[`Zenodo DOI`](https://zenodo.org/badge/latestdoi/211722700).
+
+#### Contributing
+
+All constructive contributions are welcome, e.g. bug reports, discussions or suggestions for new features. You can either [open an issue on GitHub](https://github.com/paudetseis/PlateFlex/issues) or make a pull request with your proposed changes. Before making a pull request, check if there is a corresponding issue opened and reference it in the pull request. If there isn't one, it is recommended to open one with your rationale for the change. New functionality or significant changes to the code that alter its behavior should come with corresponding tests and documentation. If you are new to contributing, you can open a work-in-progress pull request and have it iteratively reviewed.
+
+Examples of straightforward contributions include notebooks that describe published examples of teleseismic shear-wave splitting. Suggestions for improvements (speed, accuracy, etc.) are also welcome.
+
+#### References
 
 - Audet, P., Sole, C., and Schaeffer, A.J. (2016). Control of lithospheric
   inheritance on neotectonic activity in northwestern Canada? Geology,
