@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -173,9 +173,9 @@
             
   <div class="section" id="module-splitpy.calc">
 <span id="module-calc"></span><h1>Module calc<a class="headerlink" href="#module-splitpy.calc" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.calc.split_SilverChan">
-<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_SilverChan</code><span class="sig-paren">(</span><em class="sig-param">trQ</em>, <em class="sig-param">trT</em>, <em class="sig-param">baz</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em>, <em class="sig-param">maxdt</em>, <em class="sig-param">ddt</em>, <em class="sig-param">dphi</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_SilverChan" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_SilverChan</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trQ</span></em>, <em class="sig-param"><span class="n">trT</span></em>, <em class="sig-param"><span class="n">baz</span></em>, <em class="sig-param"><span class="n">t1</span></em>, <em class="sig-param"><span class="n">t2</span></em>, <em class="sig-param"><span class="n">maxdt</span></em>, <em class="sig-param"><span class="n">ddt</span></em>, <em class="sig-param"><span class="n">dphi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_SilverChan" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates splitting based on the minimization of energy on
 the corrected transverse component (Silver and Chan, 1990)</p>
 <dl class="field-list simple">
@@ -204,9 +204,9 @@ Azimuth of fast axis (deg)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.calc.split_RotCorr">
-<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_RotCorr</code><span class="sig-paren">(</span><em class="sig-param">trQ</em>, <em class="sig-param">trT</em>, <em class="sig-param">baz</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em>, <em class="sig-param">maxdt</em>, <em class="sig-param">ddt</em>, <em class="sig-param">dphi</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_RotCorr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_RotCorr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trQ</span></em>, <em class="sig-param"><span class="n">trT</span></em>, <em class="sig-param"><span class="n">baz</span></em>, <em class="sig-param"><span class="n">t1</span></em>, <em class="sig-param"><span class="n">t2</span></em>, <em class="sig-param"><span class="n">maxdt</span></em>, <em class="sig-param"><span class="n">ddt</span></em>, <em class="sig-param"><span class="n">dphi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_RotCorr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates splitting based on the maximum correlation between corrected
 radial and tangential components of motion</p>
 <dl class="field-list simple">
@@ -235,9 +235,9 @@ Azimuth of fast axis (deg)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.calc.tshift">
-<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">tshift</code><span class="sig-paren">(</span><em class="sig-param">trace</em>, <em class="sig-param">tt</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.tshift" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">tshift</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trace</span></em>, <em class="sig-param"><span class="n">tt</span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.tshift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shifts a <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -255,9 +255,9 @@ Azimuth of fast axis (deg)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.calc.split_dof">
-<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_dof</code><span class="sig-paren">(</span><em class="sig-param">tr</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_dof" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_dof</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tr</span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_dof" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determines the degrees of freedom to calculate the
 confidence region of the misfit function</p>
 <dl class="field-list simple">
@@ -274,9 +274,9 @@ confidence region of the misfit function</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.calc.split_errorSC">
-<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_errorSC</code><span class="sig-paren">(</span><em class="sig-param">tr</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em>, <em class="sig-param">q</em>, <em class="sig-param">Emat</em>, <em class="sig-param">maxdt</em>, <em class="sig-param">ddt</em>, <em class="sig-param">dphi</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_errorSC" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_errorSC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tr</span></em>, <em class="sig-param"><span class="n">t1</span></em>, <em class="sig-param"><span class="n">t2</span></em>, <em class="sig-param"><span class="n">q</span></em>, <em class="sig-param"><span class="n">Emat</span></em>, <em class="sig-param"><span class="n">maxdt</span></em>, <em class="sig-param"><span class="n">ddt</span></em>, <em class="sig-param"><span class="n">dphi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_errorSC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate error bars based on a F-test and
 a given confidence interval q</p>
 <dl class="field-list simple">
@@ -300,9 +300,9 @@ a given confidence interval q</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.calc.split_errorRC">
-<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_errorRC</code><span class="sig-paren">(</span><em class="sig-param">tr</em>, <em class="sig-param">t1</em>, <em class="sig-param">t2</em>, <em class="sig-param">q</em>, <em class="sig-param">Emat</em>, <em class="sig-param">maxdt</em>, <em class="sig-param">ddt</em>, <em class="sig-param">dphi</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_errorRC" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">splitpy.calc.</code><code class="sig-name descname">split_errorRC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tr</span></em>, <em class="sig-param"><span class="n">t1</span></em>, <em class="sig-param"><span class="n">t2</span></em>, <em class="sig-param"><span class="n">q</span></em>, <em class="sig-param"><span class="n">Emat</span></em>, <em class="sig-param"><span class="n">maxdt</span></em>, <em class="sig-param"><span class="n">ddt</span></em>, <em class="sig-param"><span class="n">dphi</span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_errorRC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates error bars based on a F-test and
 a given confidence interval q.</p>
 <div class="admonition note">

@@ -21,10 +21,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -175,28 +175,28 @@
 <span id="module-utils"></span><h1>Module utils<a class="headerlink" href="#module-splitpy.utils" title="Permalink to this headline">¶</a></h1>
 <p>Module containing the main utility functions used in the <cite>SplitPy</cite> scripts
 that accompany this package.</p>
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.utils.get_options">
 <code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Options from <code class="xref py py-class docutils literal notranslate"><span class="pre">OptionParser</span></code> objects.</p>
 <p>This function is used for data processing on-the-fly (requires web connection)</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.utils.get_options_prep">
 <code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options_prep</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options_prep" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Options from <code class="xref py py-class docutils literal notranslate"><span class="pre">OptionParser</span></code> objects.</p>
 <p>This function is used for preparation of SKS data for offline processing</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.utils.get_options_offline">
 <code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_options_offline</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_options_offline" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get Options from <code class="xref py py-class docutils literal notranslate"><span class="pre">OptionParser</span></code> objects.</p>
 <p>This function is used for processing SKS data offline</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.utils.parse_localdata_for_comp">
 <code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">parse_localdata_for_comp</code><span class="sig-paren">(</span><em class="sig-param">comp='Z'</em>, <em class="sig-param">stdata=&lt;class 'list'&gt;</em>, <em class="sig-param">sta=None</em>, <em class="sig-param">start=&lt;class 'obspy.core.utcdatetime.UTCDateTime'&gt;</em>, <em class="sig-param">end=&lt;class 'obspy.core.utcdatetime.UTCDateTime'&gt;</em>, <em class="sig-param">ndval=nan</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.parse_localdata_for_comp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to determine the path to data for a given component and alternate network</p>
@@ -221,7 +221,7 @@ that accompany this package.</p>
 </dl>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="splitpy.utils.get_data_NEZ">
 <code class="sig-prename descclassname">splitpy.utils.</code><code class="sig-name descname">get_data_NEZ</code><span class="sig-paren">(</span><em class="sig-param">client=None</em>, <em class="sig-param">sta=None</em>, <em class="sig-param">start=&lt;class 'obspy.core.utcdatetime.UTCDateTime'&gt;</em>, <em class="sig-param">end=&lt;class 'obspy.core.utcdatetime.UTCDateTime'&gt;</em>, <em class="sig-param">stdata=&lt;class 'list'&gt;</em>, <em class="sig-param">ndval=nan</em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.get_data_NEZ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to build a stream object for a seismogram in a given time window either
