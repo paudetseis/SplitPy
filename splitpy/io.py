@@ -25,6 +25,8 @@ Module containing a function used in one of the the `SplitPy` scripts
 that accompany this package.
 
 """
+from obspy import UTCDateTime
+from numpy import nan
 
 
 def list_local_data_stn(lcldrs=list, sta=None, net=None, altnet=[]):
