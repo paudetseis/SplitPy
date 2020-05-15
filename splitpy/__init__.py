@@ -120,6 +120,6 @@ __version__ = '0.1.0'
 __author__ = 'Pascal Audet & Andrew Schaeffer'
 
 # -*- coding: utf-8 -*-
-from . import io, calc, utils
+from . import io, calc, arguments
 from .classes import Split, PickPlot, DiagPlot
 from .gui import Pick, Keep, Save, Repeat

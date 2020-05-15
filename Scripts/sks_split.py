@@ -22,12 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from obspy.clients.fdsn import Client
-from obspy.taup import TauPyModel
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication
-import matplotlib.pyplot as plt
 """
 Program sks_split.py
 --------------------
@@ -155,42 +149,40 @@ Usage
 """
 
 # -*- coding: utf-8 -*-
-# Import splitpy, its classes and the conf module
-import splitpy
-from splitpy import Split, PickPlot, DiagPlot
-from splitpy import Pick, Keep, Save, Repeat
-
-# Import miscellaneous
-import sys
+from obspy.clients.fdsn import Client
+from obspy.taup import TauPyModel
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication
+import matplotlib.pyplot as plt
 import stdb
-import os.path
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
+from splitpy import arguments
+from splitpy import Pick, Keep, Save, Repeat
+from splitpy import Split, PickPlot, DiagPlot
+from pathlib import Path
 
-
-# Import Obspy Modules
-
-# Main function
 
 def main():
 
     app = QApplication([])
 
     # Run Input Parser
-    (opts, indb) = splitpy.utils.get_options()
+    args = arguments.get_arguments()
 
     # Load Database
-    db = stdb.io.load_db(fname=indb)
+    db = stdb.io.load_db(fname=args.indb)
 
     # Construct station key loop
     allkeys = db.keys()
     sorted(allkeys)
 
     # Extract key subset
-    if len(opts.stkeys) > 0:
+    if len(args.stkeys) > 0:
         stkeys = []
-        for skey in opts.stkeys:
+        for skey in args.stkeys:
             stkeys.extend([s for s in allkeys if skey in s])
     else:
         stkeys = db.keys()
@@ -206,31 +198,31 @@ def main():
         sta = db[stkey]
 
         # Initialize Split object
-        split = Split(sta, opts.maxdt, opts.ddt, opts.dphi)
+        split = Split(sta, args.maxdt, args.ddt, args.dphi)
 
         # Output directory
-        outdir = 'RESULTS/' + stkey
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
+        outdir = Path('RESULTS') / stkey
+        if not outdir.is_dir():
+            outdir.mkdir()
 
         # Establish client
-        if len(opts.UserAuth) == 0:
-            client = Client(opts.Server)
+        if len(args.UserAuth) == 0:
+            client = Client(args.Server)
         else:
             client = Client(
-                opts.Server, user=opts.UserAuth[0], password=opts.UserAuth[1])
+                args.Server, user=args.UserAuth[0], password=args.UserAuth[1])
 
         # Get catalogue search start time
-        if opts.startT is None:
+        if args.startT is None:
             evst = sta.dstart
         else:
-            evst = opts.startT
+            evst = args.startT
 
         # Get catalogue search end time
-        if opts.endT is None:
+        if args.endT is None:
             evet = sta.dend
         else:
-            evet = opts.endT
+            evet = args.endT
         if evst > sta.dend or evet < sta.dstart:
             continue
 
@@ -268,20 +260,20 @@ def main():
             evst.strftime("%Y-%m-%d %H:%M:%S")))
         print("|   End:   {0:19s}                  |".format(
             evet.strftime("%Y-%m-%d %H:%M:%S")))
-        if opts.maxmag is None:
+        if args.maxmag is None:
             print("|   Mag:   >{0:3.1f}                             " +
                   "    |".format(
-                      opts.minmag))
+                      args.minmag))
         else:
             print(
                 "|   Mag:   {0:3.1f} - {1:3.1f}                     " +
-                "       |".format(opts.minmag, opts.maxmag))
+                "       |".format(args.minmag, args.maxmag))
         print("| ...                                           |")
 
         # Get catalogue using deployment start and end
         cat = client.get_events(
             starttime=evst, endtime=evet,
-            minmagnitude=opts.minmag, maxmagnitude=opts.maxmag)
+            minmagnitude=args.minmag, maxmagnitude=args.maxmag)
 
         # Total number of events in Catalogue
         nevK = 0
@@ -290,19 +282,19 @@ def main():
             "|  Found {0:5d} possible events                  |".format(nevtT))
 
         # Get Local Data Availabilty
-        if len(opts.localdata) > 0:
+        if len(args.localdata) > 0:
             print("|-----------------------------------------------|")
             print("| Cataloging Local Data...                      |")
-            if opts.useNet:
+            if args.useNet:
                 stalcllist = splitpy.io.list_local_data_stn(
-                    lcldrs=opts.localdata, sta=sta.station,
+                    lcldrs=args.localdata, sta=sta.station,
                     net=sta.network, altnet=sta.altnet)
                 print("|   {0:>2s}.{1:5s}: {2:6d} files              " +
                       "        |".format(
                           sta.network, sta.station, len(stalcllist)))
             else:
                 stalcllist = splitpy.io.list_local_data_stn(
-                    lcldrs=opts.localdata, sta=sta.station)
+                    lcldrs=args.localdata, sta=sta.station)
                 print("|   {0:5s}: {1:6d} files                      " +
                       "   |".format(
                           sta.station, len(stalcllist)))
@@ -311,7 +303,7 @@ def main():
         print("|===============================================|")
 
         # Select order of processing
-        if opts.reverse:
+        if args.reverse:
             ievs = range(0, nevtT)
         else:
             ievs = range(nevtT-1, -1, -1)
@@ -331,12 +323,12 @@ def main():
             hr = str(split.meta.time.hour).zfill(2)
 
             # If distance between 85 and 120 deg:
-            if (split.meta.gac > opts.mindist and
-                    split.meta.gac < opts.maxdist):
+            if (split.meta.gac > args.mindist and
+                    split.meta.gac < args.maxdist):
 
                 # Display Event Info
                 nevK = nevK + 1
-                if opts.reverse:
+                if args.reverse:
                     inum = iev + 1
                 else:
                     inum = nevtT - iev + 1
@@ -370,14 +362,14 @@ def main():
                     if t.name == 'SKS':
 
                         # Add SKS phase to Split object
-                        split.add_phase(t, opts.vp)
+                        split.add_phase(t, args.vp)
 
                         # Break out of loop
                         break
 
                 # Get data
-                split.get_data_NEZ(client=client, dts=opts.dts,
-                                   stdata=stalcllist, ndval=opts.ndval)
+                split.get_data_NEZ(client=client, dts=args.dts,
+                                   stdata=stalcllist, ndval=args.ndval)
 
                 if split.err:
                     continue
@@ -396,34 +388,36 @@ def main():
                     continue
 
                 # SNR below threshold
-                elif split.snrq < opts.msnr:
+                elif split.snrq < args.msnr:
                     print(
                         "* SNR Failed: {0:.2f} < {1:.2f}...Skipping".format(
-                            split.snrq, opts.msnr))
+                            split.snrq, args.msnr))
                     print("*********************************************" +
                           "*******")
 
                 # If SNR is higher than threshold
-                elif split.snrq >= opts.msnr:
+                elif split.snrq >= args.msnr:
                     print(
                         "* SNR Passed: {0:4.2f} >= {1:3.1f}".format(
-                            split.snrq, opts.msnr))
+                            split.snrq, args.msnr))
 
                     # Output file
-                    outfile = outdir + '/Split' + '.' + split.sta.station +  \
-                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.pkl'
-                    outfig = outdir + '/Split' + '.' + split.sta.station + \
-                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.png'
+                    outfile = outdir / \
+                        ('Split.' + split.sta.station + '.' +
+                         split.meta.time.strftime("%Y.%j.%H%M%S") + '.pkl')
+                    outfig = outdir / \
+                        ('Split.' + split.sta.station + '.' +
+                         split.meta.time.strftime("%Y.%j.%H%M%S") + '.png')
 
                     # Check if result exists already
                     splitExists = False
-                    if os.path.exists(outfile):
+                    if outfile.exists():
                         splitExists = True
 
                     # Should we Re-Pick
                     if splitExists:
-                        if ((not opts.ovr and not opts.skip) or
-                                (opts.ovr and opts.skip)):
+                        if ((not args.ovr and not args.skip) or
+                                (args.ovr and args.skip)):
                             repeat = Repeat()
                             if not repeat.reply:
                                 # if not splitpy.gui.repeat():
@@ -435,13 +429,13 @@ def main():
                             else:
                                 print("* Split Results Exist --> Repeating")
 
-                        elif not opts.ovr and opts.skip:
+                        elif not args.ovr and args.skip:
                             print("* Split Results Exist --> Skipping")
                             print(
                                 "*******************************************" +
                                 "*********")
                             continue
-                        elif opts.ovr and not opts.skip:
+                        elif args.ovr and not args.skip:
                             print("* Split Results Exist --> Overwriting")
 
                     # Analyze
@@ -456,12 +450,12 @@ def main():
 
                     # Determine is Null and quality of estimate
                     split.calc_snrt()
-                    split.is_null(opts.snrTlim, 5)
+                    split.is_null(args.snrTlim, 5)
                     split.get_quality(5)
 
                     # Initialize LQT seismogram figure and plot it
                     pplot = PickPlot(split)
-                    pplot.plot_LQT_phases(tt, opts.dts)
+                    pplot.plot_LQT_phases(tt, args.dts)
 
                     # Initialize diagnostic figure and plot it
                     dplot = DiagPlot(split)
@@ -520,7 +514,7 @@ def main():
                             # Determine if estimate is Null and quality of
                             # estimate
                             split.calc_snrt(t1, t2 - t1)
-                            split.is_null(opts.snrTlim, 5)
+                            split.is_null(args.snrTlim, 5)
                             split.get_quality(5)
 
                             # Re-initialize diagnostic figure and plot
@@ -546,7 +540,7 @@ def main():
                                 # Check if result exists
                                 writeSplit = True
                                 if splitExists:
-                                    if not opts.ovr:
+                                    if not args.ovr:
                                         save_obj = Save()
                                         ans3 = save_obj.reply
                                         if not ans3:

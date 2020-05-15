@@ -46,7 +46,7 @@ a .png file.
 
 # -*- coding: utf-8 -*-
 import numpy as np
-import splitpy
+from splitpy import io, calc
 from obspy.core import Trace
 from obspy.geodetics.base import gps2dist_azimuth as epi
 from obspy.geodetics import kilometer2degrees as k2d
@@ -374,7 +374,7 @@ class Split(object):
         print("*    Startime: " + tstart.strftime("%Y-%m-%d %H:%M:%S"))
         print("*    Endtime:  " + tend.strftime("%Y-%m-%d %H:%M:%S"))
 
-        err, trN, trE, trZ = splitpy.utils.get_data_NEZ(
+        err, trN, trE, trZ = io.get_data_NEZ(
             client=client,
             sta=self.sta, start=tstart,
             end=tend, stdata=stdata, ndval=ndval)
@@ -494,12 +494,12 @@ class Split(object):
         # Calculate Silver and Chan splitting estimate
         print("* --> Calculating Rotation-Correlation (RC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
-            splitpy.calc.split_RotCorr(
+            calc.split_RotCorr(
                 self.data.trQ, self.data.trT,
                 self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
 
         # Calculate error
-        edtt, ephi, errc = splitpy.calc.split_errorRC(
+        edtt, ephi, errc = calc.split_errorRC(
             trT_c,
             t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
 
@@ -510,12 +510,12 @@ class Split(object):
         # Calculate Silver and Chan splitting estimate
         print("* --> Calculating Silver-Chan (SC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
-            splitpy.calc.split_SilverChan(
+            calc.split_SilverChan(
                 self.data.trQ, self.data.trT,
                 self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
 
         # Calculate errors
-        edtt, ephi, errc = splitpy.calc.split_errorSC(
+        edtt, ephi, errc = calc.split_errorSC(
             trT_c,
             t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
 
