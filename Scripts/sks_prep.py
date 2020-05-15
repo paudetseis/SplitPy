@@ -22,12 +22,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from obspy.clients.fdsn import Client
-from obspy.taup import TauPyModel
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication
-import matplotlib.pyplot as plt
+from pathlib import Path
+from splitpy import Split
+from splitpy import arguments, io
 """
 Program sks_prep.py
 -------------------
@@ -145,40 +142,35 @@ Usage
 """
 
 # -*- coding: utf-8 -*-
-# Import splitpy, its classes and the conf module
-import splitpy
-from splitpy import Split
-
-# Import miscellaneous
-import sys
+from obspy.clients.fdsn import Client
+from obspy.taup import TauPyModel
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication
+import matplotlib.pyplot as plt
 import stdb
 import dill
-import os.path
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
 
 
-# Import Obspy Modules
-
-# Main function
-
 def main():
 
     # Run Input Parser
-    (opts, indb) = splitpy.utils.get_options_prep()
+    args = arguments.get_arguments_prep()
 
     # Load Database
-    db = stdb.io.load_db(fname=indb)
+    db = stdb.io.load_db(fname=args.indb)
 
     # Construct station key loop
     allkeys = db.keys()
     sorted(allkeys)
 
     # Extract key subset
-    if len(opts.stkeys) > 0:
+    if len(args.stkeys) > 0:
         stkeys = []
-        for skey in opts.stkeys:
+        for skey in args.stkeys:
             stkeys.extend([s for s in allkeys if skey in s])
     else:
         stkeys = db.keys()
@@ -188,26 +180,26 @@ def main():
     tpmodel = TauPyModel(model='iasp91')
 
     # Output directory
-    if opts.startT is not None and opts.endT is not None:
-        Dtrange = "_{0:s}-{1:s}".format(opts.startT.strftime("%Y%m%d"),
-                                        opts.endT.strftime("%Y%m%d"))
-    elif opts.startT is None and opts.endT is not None:
-        Dtrange = "_-{0:s}".format(opts.endT.strftime("%Y%m%d"))
-    elif opts.startT is not None and opts.endT is None:
-        Dtrange = "_{0:s}-".format(opts.startT.strftime("%Y%m%d"))
+    if args.startT is not None and args.endT is not None:
+        Dtrange = "_{0:s}-{1:s}".format(args.startT.strftime("%Y%m%d"),
+                                        args.endT.strftime("%Y%m%d"))
+    elif args.startT is None and args.endT is not None:
+        Dtrange = "_-{0:s}".format(args.endT.strftime("%Y%m%d"))
+    elif args.startT is not None and args.endT is None:
+        Dtrange = "_{0:s}-".format(args.startT.strftime("%Y%m%d"))
     else:
         Dtrange = ""
 
-    if opts.maxmag is None:
+    if args.maxmag is None:
         mxmag = "+"
     else:
-        mxmag = "-{0:.1f}".format(opts.maxmag)
+        mxmag = "-{0:.1f}".format(args.maxmag)
 
-    dtdir = "{0:s}{1:s}_D{2:.0f}-{3:.0f}_M{4:.1f}{5:s}_S{6:.1f}+".format(
-        opts.datadir, Dtrange, opts.mindist, opts.maxdist,
-        opts.minmag, mxmag, opts.msnr)
-    if not os.path.isdir(dtdir):
-        os.makedirs(dtdir)
+    dtdir = Path("{0:s}{1:s}_D{2:.0f}-{3:.0f}_M{4:.1f}{5:s}_S{6:.1f}+".format(
+        args.datadir, Dtrange, args.mindist, args.maxdist,
+        args.minmag, mxmag, args.msnr))
+    if not dtdir.is_dir():
+        dtdir.mkdir()
 
     # Loop over station keys
     for stkey in list(stkeys):
@@ -216,29 +208,29 @@ def main():
         sta = db[stkey]
 
         # Initialize Split object
-        split = Split(sta, opts.maxdt, opts.ddt, opts.dphi)
+        split = Split(sta, args.maxdt, args.ddt, args.dphi)
 
         # Create Station Data Folder
-        outdir = dtdir + "/" + stkey
+        outdir = dtdir / stkey
 
         # Establish client
-        if len(opts.UserAuth) == 0:
-            client = Client(opts.Server)
+        if len(args.UserAuth) == 0:
+            client = Client(args.Server)
         else:
             client = Client(
-                opts.Server, user=opts.UserAuth[0], password=opts.UserAuth[1])
+                args.Server, user=args.UserAuth[0], password=args.UserAuth[1])
 
         # Get catalogue search start time
-        if opts.startT is None:
+        if args.startT is None:
             evst = sta.dstart
         else:
-            evst = opts.startT
+            evst = args.startT
 
         # Get catalogue search end time
-        if opts.endT is None:
+        if args.endT is None:
             evet = sta.dend
         else:
-            evet = opts.endT
+            evet = args.endT
         if evst > sta.dend or evet < sta.dstart:
             continue
 
@@ -276,20 +268,20 @@ def main():
             evst.strftime("%Y-%m-%d %H:%M:%S")))
         print("|   End:   {0:19s}                  |".format(
             evet.strftime("%Y-%m-%d %H:%M:%S")))
-        if opts.maxmag is None:
+        if args.maxmag is None:
             print("|   Mag:   >{0:3.1f}                              " +
                   "   |".format(
-                      opts.minmag))
+                      args.minmag))
         else:
             print(
                 "|   Mag:   {0:3.1f} - {1:3.1f}                       " +
-                "     |".format(opts.minmag, opts.maxmag))
+                "     |".format(args.minmag, args.maxmag))
         print("| ...                                           |")
 
         # Get catalogue using deployment start and end
         cat = client.get_events(
             starttime=evst, endtime=evet,
-            minmagnitude=opts.minmag, maxmagnitude=opts.maxmag)
+            minmagnitude=args.minmag, maxmagnitude=args.maxmag)
 
         # Total number of events in Catalogue
         nevK = 0
@@ -298,19 +290,19 @@ def main():
             "|  Found {0:5d} possible events                  |".format(nevtT))
 
         # Get Local Data Availabilty
-        if len(opts.localdata) > 0:
+        if len(args.localdata) > 0:
             print("|-----------------------------------------------|")
             print("| Cataloging Local Data...                      |")
-            if opts.useNet:
-                stalcllist = splitpy.io.list_local_data_stn(
-                    lcldrs=opts.localdata, sta=sta.station,
+            if args.useNet:
+                stalcllist = io.list_local_data_stn(
+                    lcldrs=args.localdata, sta=sta.station,
                     net=sta.network, altnet=sta.altnet)
                 print("|   {0:>2s}.{1:5s}: {2:6d} files                " +
                       "      |".format(
                           sta.network, sta.station, len(stalcllist)))
             else:
-                stalcllist = splitpy.io.list_local_data_stn(
-                    lcldrs=opts.localdata, sta=sta.station)
+                stalcllist = io.list_local_data_stn(
+                    lcldrs=args.localdata, sta=sta.station)
                 print("|   {0:5s}: {1:6d} files                         " +
                       "|".format(
                           sta.station, len(stalcllist)))
@@ -319,7 +311,7 @@ def main():
         print("|===============================================|")
 
         # Select order of processing
-        if opts.reverse:
+        if args.reverse:
             ievs = range(0, nevtT)
         else:
             ievs = range(nevtT-1, -1, -1)
@@ -339,12 +331,12 @@ def main():
             hr = str(split.meta.time.hour).zfill(2)
 
             # If distance between 85 and 120 deg:
-            if (split.meta.gac > opts.mindist and
-                    split.meta.gac < opts.maxdist):
+            if (split.meta.gac > args.mindist and
+                    split.meta.gac < args.maxdist):
 
                 # Display Event Info
                 nevK = nevK + 1
-                if opts.reverse:
+                if args.reverse:
                     inum = iev + 1
                 else:
                     inum = nevtT - iev + 1
@@ -378,15 +370,15 @@ def main():
                     if t.name == 'SKS':
 
                         # Add SKS phase to Split
-                        split.add_phase(t, opts.vp)
+                        split.add_phase(t, args.vp)
 
                         # Break out of loop
                         break
 
                 # Get data
                 split.get_data_NEZ(
-                    client=client, dts=opts.dts,
-                    stdata=stalcllist, ndval=opts.ndval)
+                    client=client, dts=args.dts,
+                    stdata=stalcllist, ndval=args.ndval)
 
                 if split.err:
                     continue
@@ -405,32 +397,34 @@ def main():
                     continue
 
                 # SNR below threshold
-                elif split.snrq < opts.msnr:
+                elif split.snrq < args.msnr:
                     print(
                         "* SNR Failed: {0:.2f} < {1:.2f}...Skipping".format(
-                            split.snrq, opts.msnr))
+                            split.snrq, args.msnr))
                     print("********************************************" +
                           "********")
 
                 # If SNR is higher than threshold
-                elif split.snrq >= opts.msnr:
+                elif split.snrq >= args.msnr:
                     print(
                         "* SNR Passed: {0:4.2f} >= {1:3.1f}".format(
-                            split.snrq, opts.msnr))
+                            split.snrq, args.msnr))
 
                     # Create Event Folder
-                    evtdir = outdir + "/" + \
+                    evtdir = outdir / \
                         split.meta.time.strftime("%Y%m%d_%H%M%S")
 
                     # Create Folder
-                    if not os.path.isdir(evtdir):
-                        os.makedirs(evtdir)
+                    if not evtdir.is_dir():
+                        evtdir.mkdir()
 
                     # Event Data
-                    dill.dump([ev, tt], open(evtdir + "/Event_Data.pkl", "wb"))
+                    filename = evtdir / "Event_Data.pkl"
+                    dill.dump([ev, tt], open(filename, "wb"))
 
                     # Station Data
-                    dill.dump(sta, open(evtdir + "/Station_Data.pkl", "wb"))
+                    filename = evtdir / "Station_Data.pkl"
+                    dill.dump(sta, open(filename, "wb"))
 
                     # Trace Filenames
                     trpref = split.meta.time.strftime(
@@ -438,28 +432,31 @@ def main():
                         sta.station
 
                     # Raw Trace files
+                    filename = evtdir / "NEZ_Data.pkl"
                     dill.dump([split.data.trN, split.data.trE, split.data.trZ],
-                              open(evtdir + "/NEZ_Data.pkl", "wb"))
-                    split.data.trN.write(os.path.join(
-                        evtdir, trpref + ".N.mseed"), format='MSEED')
-                    split.data.trE.write(os.path.join(
-                        evtdir, trpref + ".E.mseed"), format='MSEED')
-                    split.data.trZ.write(os.path.join(
-                        evtdir, trpref + ".Z.mseed"), format='MSEED')
+                              open(filename, "wb"))
+
+                    # split.data.trN.write(os.path.join(
+                    #     evtdir, trpref + ".N.mseed"), format='MSEED')
+                    # split.data.trE.write(os.path.join(
+                    #     evtdir, trpref + ".E.mseed"), format='MSEED')
+                    # split.data.trZ.write(os.path.join(
+                    #     evtdir, trpref + ".Z.mseed"), format='MSEED')
 
                     # LQT Traces
+                    filename = evtdir / "LQT_Data.pkl"
                     dill.dump([split.data.trL, split.data.trQ, split.data.trT],
-                              open(evtdir + "/LQT_Data.pkl", "wb"))
-                    split.data.trL.write(os.path.join(
-                        evtdir, trpref + ".L.mseed"), format='MSEED')
-                    split.data.trQ.write(os.path.join(
-                        evtdir, trpref + ".Q.mseed"), format='MSEED')
-                    split.data.trT.write(os.path.join(
-                        evtdir, trpref + ".T.mseed"), format='MSEED')
+                              open(filename, "wb"))
+                    # split.data.trL.write(os.path.join(
+                    #     evtdir, trpref + ".L.mseed"), format='MSEED')
+                    # split.data.trQ.write(os.path.join(
+                    #     evtdir, trpref + ".Q.mseed"), format='MSEED')
+                    # split.data.trT.write(os.path.join(
+                    #     evtdir, trpref + ".T.mseed"), format='MSEED')
 
                     # Update
                     print("* Wrote Output Files to: ")
-                    print("*     "+evtdir)
+                    print("*     "+str(evtdir))
                     print("******************************************" +
                           "**********")
 
