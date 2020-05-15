@@ -22,10 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pathlib import Path
-from splitpy import arguments
-from splitpy import Pick, Keep, Save, Repeat
-from splitpy import Split, PickPlot, DiagPlot
 """
 Program sks_split.py
 --------------------
@@ -163,6 +159,10 @@ import stdb
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
+from splitpy import arguments
+from splitpy import Pick, Keep, Save, Repeat
+from splitpy import Split, PickPlot, DiagPlot
+from pathlib import Path
 
 
 def main():

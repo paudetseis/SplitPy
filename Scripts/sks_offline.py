@@ -22,12 +22,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from obspy.clients.fdsn import Client
-from obspy.taup import TauPyModel
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication
-import matplotlib.pyplot as plt
 """
 Program sks_offline.py
 ----------------------
@@ -115,52 +109,60 @@ Usage
 """
 
 # -*- coding: utf-8 -*-
-# Import splitpy, its classes and the conf module
-import splitpy
-from splitpy import Split, PickPlot, DiagPlot
-from splitpy import Pick, Keep, Save, Repeat
-
-# Import miscellaneous
-import sys
+from obspy.clients.fdsn import Client
+from obspy.taup import TauPyModel
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication
+import matplotlib.pyplot as plt
 import stdb
 import dill
-from os import path, listdir
 import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
+from splitpy import arguments
+from splitpy import Split, PickPlot, DiagPlot
+from splitpy import Pick, Keep, Save, Repeat
+from pathlib import Path
 
-
-# Import Obspy Modules
-
-# Main function
 
 def main():
 
     # Run Input Parser
-    (opts, indr) = splitpy.utils.get_options_offline()
+    args = arguments.get_arguments_offline()
 
-    # Generate list of available Station Folders
-    stnkeys = listdir(indr)
+    # Load Database
+    db = stdb.io.load_db(fname=args.indb)
 
-    # Sort available stations
-    stnkeys.sort()
+    # Construct station key loop
+    allkeys = db.keys()
+    sorted(allkeys)
 
     # Extract key subset
-    if len(opts.stkeys) > 0:
+    if len(args.stkeys) > 0:
         stkeys = []
-        for skey in opts.stkeys:
+        for skey in args.stkeys:
             stkeys.extend([s for s in allkeys if skey in s])
     else:
-        stkeys = stnkeys
+        stkeys = db.keys()
+        sorted(stkeys)
 
     # Loop over station keys
-    for ik in range(len(stkeys)):
+    for stkey in list(stkeys):
 
-        # Station Key
-        stkey = stkeys[ik]
+        # Extract station information from dictionary
+        sta = db[stkey]
+
+        # Data directory
+        datapath = Path("DATA")
+
+        # Event directories
+        evdirs = datapath.iterdir()
+
+        # Get only directories for which the key is available
+        evs = [x for x in evdirs.iterdir() if x.name==stkey]
 
         # Get List of events to process
-        evs = listdir(path.join(indr, stkey))
         evs.sort()
         nevs = len(evs)
 
@@ -177,7 +179,7 @@ def main():
         print("|===============================================|")
 
         # select order of processing
-        if opts.reverse:
+        if args.reverse:
             ievs = range(0, nevs)
         else:
             ievs = range(nevs - 1, -1, -1)
@@ -191,34 +193,31 @@ def main():
 
             # Load Relevant Files
             # Station Data
-            sta = dill.load(
-                open(path.join(indr, stkey, evSTR, "Station_Data.pkl"), "rb"))
-            split = Split(sta, opts.maxdt, opts.ddt, opts.dphi)
+            stafile = evSTR / "Station_Data.pkl"
+            sta = dill.load(open(stafile, "rb"))
+            split = Split(sta, args.maxdt, args.ddt, args.dphi)
 
             # Event Data
-            ll = dill.load(
-                open(path.join(indr, stkey, evSTR, "Event_Data.pkl"), "rb"))
+            eventfile = evSTR / "Event_Data.pkl"
+            ll = dill.load(open(eventfile, "rb"))
             ev = ll[0]
             tt = ll[1]
             split.add_event(ev)
 
-            # Trace Filenames
-            trpref = evSTR + "_" + sta.network + "." + sta.station
-
             # NEZ Trace files
-            trs = dill.load(
-                open(path.join(indr, stkey, evSTR, "NEZ_Data.pkl"), "rb"))
+            NEZfile = evSTR / "NEZ_Data.pkl"
+            trs = dill.load(open(NEZfile, "rb"))
             split.add_NEZ(trs)
 
             # LQT Trace files
-            trs = dill.load(
-                open(path.join(indr, stkey, evSTR, "LQT_Data.pkl"), "rb"))
+            LQTfile = evSTR / "LQT_Data.pkl"
+            trs = dill.load(open(LQTfile, "rb"))
             split.add_LQT(trs)
 
             # Output directory
-            outdir = path.join('RESULTS', sta.network + "." + sta.station)
-            if not path.isdir(outdir):
-                makedirs(outdir)
+            outdir = Path('RESULTS') / stkey
+            if not outdir.is_dir():
+                outdir.mkdir()
 
             # Define time stamp
             yr = str(split.meta.time.year).zfill(4)
@@ -226,12 +225,12 @@ def main():
             hr = str(split.meta.time.hour).zfill(2)
 
             # If distance between 85 and 120 deg:
-            if (split.meta.gac > opts.mindist and
-                    split.meta.gac < opts.maxdist):
+            if (split.meta.gac > args.mindist and
+                    split.meta.gac < args.maxdist):
 
                 # Display Event Info
                 nevK = nevK + 1
-                if opts.reverse:
+                if args.reverse:
                     inum = iev + 1
                 else:
                     inum = nevs - iev + 1
@@ -260,7 +259,7 @@ def main():
                     if t.name == 'SKS':
 
                         # Add SKS phase to Split
-                        split.add_phase(t, opts.vp)
+                        split.add_phase(t, args.vp)
 
                         # Break out of loop
                         break
@@ -276,24 +275,24 @@ def main():
                     continue
 
                 # SNR below threshold
-                elif split.snrq < opts.msnr:
+                elif split.snrq < args.msnr:
                     print(
                         "* SNR Failed: {0:.2f} < {1:.2f}...Skipping".format(
-                            split.snrq, opts.msnr))
+                            split.snrq, args.msnr))
                     print("******************************************" +
                           "**********")
 
                 # If SNR is higher than threshold
-                elif split.snrq >= opts.msnr:
+                elif split.snrq >= args.msnr:
                     print(
                         "* SNR Passed: {0:4.2f} >= {1:3.1f}".format(
-                            split.snrq, opts.msnr))
+                            split.snrq, args.msnr))
 
                     # Output file
-                    outfile = outdir + '/Split' + '.' + split.sta.station + \
-                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.pkl'
-                    outfig = outdir + '/Split' + '.' + split.sta.station + \
-                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.png'
+                    outfile = outdir / ('Split.' + split.sta.station + \
+                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.pkl')
+                    outfig = outdir / ('Split' + '.' + split.sta.station + \
+                        '.' + split.meta.time.strftime("%Y.%j.%H%M%S") + '.png')
 
                     # Analyze
                     split.analyze()
@@ -307,12 +306,12 @@ def main():
 
                     # Determine is Null and quality of estimate
                     split.calc_snrt()
-                    split.is_null(opts.snrTlim, 5)
+                    split.is_null(args.snrTlim, 5)
                     split.get_quality(5)
 
                     # Initialize LQT seismogram figure and plot it
                     pplot = PickPlot(split)
-                    pplot.plot_LQT_phases(tt, opts.dts)
+                    pplot.plot_LQT_phases(tt, args.dts)
 
                     # Initialize diagnostic figure and plot it
                     dplot = DiagPlot(split)
@@ -367,7 +366,7 @@ def main():
                             # Determine if estimate is Null and quality
                             # of estimate
                             split.calc_snrt(t1, t2 - t1)
-                            split.is_null(opts.snrTlim, 5)
+                            split.is_null(args.snrTlim, 5)
                             split.get_quality(5)
 
                             # Re-initialize diagnostic figure and plot

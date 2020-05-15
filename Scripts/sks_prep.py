@@ -195,9 +195,11 @@ def main():
     else:
         mxmag = "-{0:.1f}".format(args.maxmag)
 
-    dtdir = Path("{0:s}{1:s}_D{2:.0f}-{3:.0f}_M{4:.1f}{5:s}_S{6:.1f}+".format(
-        args.datadir, Dtrange, args.mindist, args.maxdist,
-        args.minmag, mxmag, args.msnr))
+    datadir = Path("DATA")
+    dtdir = datadir / \
+        ("{0:s}{1:s}_D{2:.0f}-{3:.0f}_M{4:.1f}{5:s}_S{6:.1f}+".format(
+            args.datadir, Dtrange, args.mindist, args.maxdist,
+            args.minmag, mxmag, args.msnr))
     if not dtdir.is_dir():
         dtdir.mkdir()
 
