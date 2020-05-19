@@ -45,12 +45,12 @@ a .png file.
 """
 
 # -*- coding: utf-8 -*-
+from math import ceil
 import numpy as np
-from splitpy import io, calc
-from obspy.core import Trace
-from obspy.geodetics.base import gps2dist_azimuth as epi
-from obspy.geodetics import kilometer2degrees as k2d
+from splitpy import utils, calc
+from obspy import Trace, Stream
 import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 
@@ -88,52 +88,77 @@ class Meta(object):
 
     """
 
-    def __init__(self, time, dep, lon, lat, mag, gac, epi_dist, baz, az):
+    def __init__(self, sta, event, gacmin=85., gacmax=120., phase='SKS',
+                 maxdt=4., ddt=0.1, dphi=1.):
 
-        self.time = time
-        self.dep = dep
-        self.lon = lon
-        self.lat = lat
-        self.mag = mag
-        self.gac = gac
-        self.epi_dist = epi_dist
-        self.baz = baz
-        self.az = az
-        self.slow = None
-        self.inc = None
+        from obspy.geodetics.base import gps2dist_azimuth as epi
+        from obspy.geodetics import kilometer2degrees as k2d
+        from obspy.taup import TauPyModel
 
+        # Extract event 4D parameters
+        self.time = event.origins[0].time
+        self.lon = event.origins[0].longitude
+        self.lat = event.origins[0].latitude
+        self.dep = event.origins[0].depth
 
-class Data(object):
-    """
-    A Data object contains three-component raw (NEZ) and rotated (LQT) 
-    waveforms centered on the arrival time of interest.
+        # Check if depth is valid type
+        if self.dep is not None:
+            if self.dep > 1000.:
+                self.dep = self.dep/1000.
+        else:
+            self.dep = 10.
 
-    Attributes
-    ----------
+        # Magnitude
+        self.mag = event.magnitudes[0].mag
+        if self.mag is None:
+            self.mag = -9.
 
-    trN : :class:`~obspy.core.Trace`
-        Trace of North component of motion
-    trE : :class:`~obspy.core.Trace`
-        Trace of East component of motion
-    trZ : :class:`~obspy.core.Trace` 
-        Trace of Vertical component of motion
-    trL : :class:`~obspy.core.Trace`
-        Trace of longitudinal component of motion
-    trQ : :class:`~obspy.core.Trace`
-        Trace of radial component of motion
-    trT : :class:`~obspy.core.Trace`
-        Trace of tangential component of motion
+        # Calculate epicentral distance
+        self.epi_dist, self.az, self.baz = epi(
+            self.lat, self.lon, sta.latitude, sta.longitude)
+        self.epi_dist /= 1000
+        self.gac = k2d(self.epi_dist)
 
-    """
+        if self.gac > gacmin and self.gac < gacmax:
 
-    def __init__(self, trE, trN, trZ):
+            # Get travel time info
+            tpmodel = TauPyModel(model='iasp91')
 
-        self.trE = trE
-        self.trN = trN
-        self.trZ = trZ
-        self.trL = None
-        self.trQ = None
-        self.trT = None
+            # Get Travel times (Careful: here dep is in meters)
+            arrivals = tpmodel.get_travel_times(
+                distance_in_degree=self.gac,
+                source_depth_in_km=self.dep,
+                phase_list=[phase])
+            if len(arrivals) > 1:
+                print("arrival has many entries: ", len(arrivals))
+            elif len(arrivals) == 0:
+                print("no arrival found")
+                self.accept = False
+                return
+
+            arrival = arrivals[0]
+
+            # Attributes from parameters
+            self.ttime = arrival.time
+            self.slow = arrival.ray_param_sec_degree/111.
+            self.inc = arrival.incident_angle
+            self.phase = phase
+            self.accept = True
+        else:
+            self.ttime = None
+            self.slow = None
+            self.inc = None
+            self.phase = None
+            self.accept = False
+
+        # Attributes that get updated as analysis progresses
+        self.snrq = None
+        self.snrt = None
+        self.maxdt = maxdt
+        self.ddt = ddt
+        self.dphi = dphi
+        self.align = 'LQT'
+        self.rotated = False
 
 
 class Result(object):
@@ -232,14 +257,28 @@ class Split(object):
 
     """
 
-    def __init__(self, sta, maxdt, ddt, dphi):
+    def __init__(self, sta):
 
+        # # Load example data if initializing empty object
+        # if sta == 'demo' or sta == 'Demo':
+        #     print("Uploading demo data - station NY.MMPY")
+        #     import os
+        #     import pickle
+        #     sta = pickle.load(
+        #         open(os.path.join(
+        #             os.path.dirname(__file__),
+        #             "examples/data", "MMPY.pkl"), 'rb'))['NY.MMPY']
+
+        # Attributes from parameters
         self.sta = sta
-        self.maxdt = maxdt
-        self.ddt = ddt
-        self.dphi = dphi
 
-    def add_event(self, event):
+        # Initialize meta and data objects as None
+        self.meta = None
+        self.dataZNE = None
+        self.dataLQT = None
+
+    def add_event(self, event, gacmin=85., gacmax=120., phase='SKS',
+                  returned=False):
         """
         Adds event metadata to Split object. 
 
@@ -255,216 +294,323 @@ class Split(object):
 
         """
 
-        time = event.origins[0].time
-        dep = event.origins[0].depth
-        lon = event.origins[0].longitude
-        lat = event.origins[0].latitude
+        from obspy.geodetics.base import gps2dist_azimuth as epi
+        from obspy.geodetics import kilometer2degrees as k2d
+        from obspy.taup import TauPyModel
+        from obspy.core.event.event import Event
 
-        # Problem with mag
-        mag = event.magnitudes[0].mag
-        if mag is None:
-            mag = -9.
+        # if event == 'demo' or event == 'Demo':
+        #     from obspy.clients.fdsn import Client
+        #     from obspy.core import UTCDateTime
+        #     client = Client()
+        #     # Get catalogue using deployment start and end
+        #     event = client.get_events(
+        #         starttime=UTCDateTime('2015-07-03T06:00:00'),
+        #         endtime=UTCDateTime('2015-07-03T07:00:00'),
+        #         minmagnitude=6.0,
+        #         maxmagnitude=6.5)[0]
+        #     print(event.short_str())
 
-        # Calculate epicentral distance
-        epi_dist, az, baz = epi(
-            lat, lon, self.sta.latitude, self.sta.longitude)
-        epi_dist /= 1000
-        gac = k2d(epi_dist)
+        if not isinstance(event, Event):
+            raise(Exception("Event has incorrect type"))
 
         # Store as object attributes
-        self.meta = Meta(time, dep, lon, lat, mag, gac, epi_dist, baz, az)
+        self.meta = Meta(sta=self.sta, event=event,
+                         gacmin=gacmin, gacmax=gacmax,
+                         phase=phase)
 
-    def add_phase(self, t, vp):
+        if returned:
+            return self.meta.accept
+
+    def add_data(self, stream, returned=False, new_sr=5.):
         """
-        Adds phase information for SKS arrival from taup model
-
-        Parameters
-        ----------
-        t : :class:`~obspy.taup.TaupPyModel`
-            Travel-time table metadata
-
-        Attributes
-        ----------
-        ts : float
-            Travel time between earthquake and station (sec)
-        ph : str
-            Phase name ('SKS')
-        meta.slow : float
-            Horizontal slowness of phase
-        meta.inc : float
-            Incidence angle of phase at surface
-
-        """
-
-        # Store as attributes
-        self.ts = t.time
-        self.ph = t.name
-        self.meta.slow = t.ray_param_sec_degree/111.
-        self.meta.inc = np.arcsin(vp*self.meta.slow)*180./np.pi
-
-    def add_NEZ(self, stream):
-        """
-        Adds seismograms from available stream
+        Adds stream as object attribute
 
         Parameters
         ----------
         stream : :class:`~obspy.core.Stream`
             Stream container for NEZ seismograms
+        returned : bool
+            Whether or not to return the ``accept`` attribute
 
         Attributes
         ----------
-        data : :class:`~splitpy.classes.Data`
-            Object containing :class:`obspy.core.Trace` objects
-
-        """
-
-        self.data = Data(stream[0], stream[1], stream[2])
-
-    def add_LQT(self, stream):
-        """
-        Adds seismograms from available stream
-
-        Parameters
-        ----------
-        stream : :class:`~obspy.core.Stream`
+        zne_data : :class:`~obspy.core.Stream`
             Stream container for NEZ seismograms
 
-        Attributes
-        ----------
-
-        data : :class:`~splitpy.classes.Data`
-            Object containing :class:`~obspy.core.Trace` objects
+        Returns
+        -------
+        accept : bool
+            Whether or not the object is accepted for further analysis
 
         """
 
-        self.data.trL = stream[0]
-        self.data.trQ = stream[1]
-        self.data.trT = stream[2]
+        if not self.meta:
+            raise(Exception("No meta data available - aborting"))
 
-    def get_data_NEZ(self, client, dts, stdata, ndval):
+        if not self.meta.accept:
+            return
+
+        # # Load demo data
+        # if stream == 'demo' or stream == 'Demo':
+        #     import os
+        #     import pickle
+        #     file = open(os.path.join(
+        #         os.path.dirname(__file__),
+        #         "examples/data", "ZNE_Data.pkl"), "rb")
+        #     stream = pickle.load(file)
+        #     print(stream)
+
+        if not isinstance(stream, Stream):
+            raise(Exception("Event has incorrect type"))
+
+        try:
+            self.data = stream
+
+            if not np.allclose(
+                    [tr.stats.npts for tr in stream[1:]], stream[0].stats.npts):
+                self.meta.accept = False
+
+            # Filter Traces
+            self.data.filter('lowpass', freq=0.5*new_sr,
+                             corners=2, zerophase=True)
+            self.data.resample(new_sr, no_filter=False)
+
+        except:
+            print("Error: Not all channels are available")
+            self.meta.accept = False
+
+        if returned:
+            return self.meta.accept
+
+    def download_data(self, client, stdata=[], ndval=np.nan, new_sr=5.,
+                      dts=120., returned=False, verbose=False):
         """
         Downloads seismograms based on event origin time and
-        SKS phase arrival.
+        P phase arrival.
 
         Parameters
         ----------
         client : :class:`~obspy.client.fdsn.Client`
             Client object
-        dts : float
-            Time duration (?)
-        stdata : :class:`stdb.classes.StDbElement`
-            Station metadata
         ndval : float
             Fill in value for missing data
+        new_sr : float
+            New sampling rate (Hz)
+        dts : float
+            Time duration (sec)
+        stdata : List
+            Station list
+        returned : bool
+            Whether or not to return the ``accept`` attribute
+
+        Returns
+        -------
+        accept : bool
+            Whether or not the object is accepted for further analysis
 
         Attributes
         ----------
-
-        data : :class:`~splitpy.classes.Data`
-            Object containing :class:`~obspy.core.Trace` objects
+        data : :class:`~obspy.core.Stream`
+            Stream containing :class:`~obspy.core.Trace` objects
 
         """
 
-        # Define start and end times for requests
-        tstart = self.meta.time + self.ts - dts
-        tend = self.meta.time + self.ts + dts
+        if self.meta is None:
+            raise(Exception("Requires event data as attribute - aborting"))
+
+        if not self.meta.accept:
+            return
+
+        # Define start time for request
+        tstart = self.meta.time + self.meta.ttime - dts
+        tend = self.meta.time + self.meta.ttime + dts
 
         # Get waveforms
         print("* Requesting Waveforms: ")
         print("*    Startime: " + tstart.strftime("%Y-%m-%d %H:%M:%S"))
         print("*    Endtime:  " + tend.strftime("%Y-%m-%d %H:%M:%S"))
 
-        err, trN, trE, trZ = io.get_data_NEZ(
-            client=client,
-            sta=self.sta, start=tstart,
-            end=tend, stdata=stdata, ndval=ndval)
+        # Download data
+        err, stream = utils.download_data(
+            client=client, sta=self.sta, start=tstart, end=tend,
+            stdata=stdata, ndval=ndval, new_sr=new_sr,
+            verbose=verbose)
 
-        # Store as attributes with traces in dictionay
-        self.err = err
-        self.data = Data(trN, trE, trZ)
+        # Store as attributes with traces in dictionary
+        try:
+            trE = stream.select(component='E')[0]
+            trN = stream.select(component='N')[0]
+            trZ = stream.select(component='Z')[0]
+            self.dataZNE = Stream(traces=[trZ, trN, trE])
 
-    def rotate_ZEN_LQT(self):
+            # Filter Traces and resample
+            self.dataZNE.filter('lowpass', freq=0.5*new_sr,
+                             corners=2, zerophase=True)
+            self.dataZNE.resample(new_sr, no_filter=False)
+
+        # If there is no ZNE, perhaps there is Z12?
+        except:
+
+            try:
+                tr1 = stream.select(component='1')[0]
+                tr2 = stream.select(component='2')[0]
+                trZ = stream.select(component='Z')[0]
+                self.dataZ12 = Stream(traces=[trZ, tr1, tr2])
+
+                # Rotate from Z12 to ZNE using StDb azcorr attribute
+                self.rotate(align='ZNE')
+
+                # Filter Traces and resample
+                self.dataZNE.filter('lowpass', freq=0.5*new_sr,
+                                 corners=2, zerophase=True)
+                self.dataZNE.resample(new_sr, no_filter=False)
+
+            except:
+                self.meta.accept = False
+
+        if returned:
+            return self.meta.accept
+
+    def rotate(self, align=None):
         """
         Rotates 3-component seismograms from vertical (Z),
         east (E) and north (N) to longitudinal (L), 
-        radial (Q) and tangential (T) components of motion
-
-        Attributes
-        ----------
-
-        data : :class:`~splitpy.classes.Data`
-            Object containing :class:`~obspy.core.Trace` objects
-
-        """
-
-        inc = self.meta.inc*np.pi/180.
-        baz = self.meta.baz*np.pi/180.
-
-        M = np.zeros((3, 3))
-        M[0, 0] = np.cos(inc)
-        M[0, 1] = -np.sin(inc) * np.sin(baz)
-        M[0, 2] = -np.sin(inc) * np.cos(baz)
-        M[1, 0] = np.sin(inc)
-        M[1, 1] = np.cos(inc) * np.sin(baz)
-        M[1, 2] = np.cos(inc) * np.cos(baz)
-        M[2, 0] = 0.
-        M[2, 1] = -np.cos(baz)
-        M[2, 2] = np.sin(baz)
-
-        # Perform 3-D rotation
-        LQT = np.dot(np.array(M), np.array(
-            [self.data.trZ.data, self.data.trE.data, self.data.trN.data]))
-
-        # Store into traces and add as new items in attribute dictionary
-        self.data.trL = Trace(data=LQT[0], header=self.data.trZ.stats)
-        self.data.trQ = Trace(data=LQT[1], header=self.data.trN.stats)
-        self.data.trT = Trace(data=LQT[2], header=self.data.trE.stats)
-
-    def calc_snrq(self, t1=None, dt=30.):
-        """
-        Calculates signal-to-noise ration on radial (Q) component
+        radial (Q) and tangential (T) components of motion.
+        Note that the method 'rotate' from ``obspy.core.stream.Stream``
+        is used for the rotation ``'ZNE->ZRT'`` and ``'ZNE->LQT'``.
+        Rotation ``'ZNE->PVH'`` is implemented separately here 
+        due to different conventions.
 
         Parameters
         ----------
-        t1 : :class:`~obspy.core.utcdatetime.UTCDateTime`
-            Predicted arrival time of phase
-        dt : float
-            Duration (sec)
+        align : str
+            Alignment of coordinate system for rotation
+            ('ZRT', 'LQT', or 'PVH')
 
-        Attributes
-        ----------
-        snrq : float
-            Signal-to-noise ratio  (dB)
+        Returns
+        -------
+        rotated : bool
+            Whether or not the object has been rotated
 
         """
 
-        if t1 is None:
-            t1 = self.meta.time + self.ts - 5.
-        self.snrq = _calc_snr(self.data.trQ, t1=t1, dt=dt)
+        if not self.meta.accept:
+            return
 
-    def calc_snrt(self, t1=None, dt=30.):
+        if self.meta.rotated:
+            print("Data have been rotated already - continuing")
+            return
+
+        # Use default values from meta data if arguments are not specified
+        if not align:
+            align = self.meta.align
+
+        if align == 'ZNE':
+            # Rotating from 1,2 to N,E is the negative of
+            # rotation from RT to NE, with
+            # baz corresponding to azim of component 1
+            from obspy.signal.rotate import rotate_rt_ne
+
+            # Copy traces
+            trZ = self.dataZ12.select(component='Z')[0].copy()
+            trN = self.dataZ12.select(component='1')[0].copy()
+            trE = self.dataZ12.select(component='2')[0].copy()
+
+            azim = self.sta.azcorr
+            N, E = rotate_rt_ne(trN.data, trE.data, azim)
+            trN.data = -1.*N
+            trE.data = -1.*E
+
+            # Update stats of streams
+            trN.stats.channel = trN.stats.channel[:-1] + 'N'
+            trE.stats.channel = trE.stats.channel[:-1] + 'E'
+
+            self.dataZNE = Stream(traces=[trZ, trN, trE])
+
+        elif align == 'LQT':
+            data = self.dataZNE.copy()
+            data.rotate('ZNE->LQT',
+                             back_azimuth=self.meta.baz,
+                             inclination=self.meta.inc)
+            for tr in data:
+                if tr.stats.channel.endswith('Q'):
+                    tr.data = -tr.data
+            self.meta.align = align
+            self.meta.rotated = True
+            self.dataLQT = data.copy()
+
+        else:
+            raise(Exception("incorrect 'align' argument"))
+
+    def calc_snr(self, dt=30., fmin=0.05, fmax=1.):
         """
-        Calculates signal-to-noise ration on tangential (T) component
+        Calculates signal-to-noise ratio on either Z, L or P component
 
         Parameters
         ----------
-        t1 : :class:`~obspy.core.utcdatetime.UTCDateTime`
-            Predicted arrival time of phase
         dt : float
             Duration (sec)
+        fmin : float
+            Minimum frequency corner for SNR filter (Hz)
+        fmax : float
+            Maximum frequency corner for SNR filter (Hz)
 
         Attributes
         ----------
-        snrt : float
-            Signal-to-noise ratio  (dB)
+        snr : float
+            Signal-to-noise ratio on vertical component (dB)
+        snrh : float
+            Signal-to-noise ratio on radial component (dB)
 
         """
 
-        if t1 is None:
-            t1 = self.meta.time + self.ts - 5.
-        self.snrt = _calc_snr(self.data.trT, t1=t1, dt=dt)
+        if not self.meta.accept:
+            return
 
-    def analyze(self, t1=None, t2=None):
+        if self.meta.snrq and self.meta.snrt:
+            print("SNR already calculated - continuing")
+            return
+
+        t1 = self.meta.time + self.meta.ttime
+
+        # Copy trace to signal and noise traces
+        trSigQ = self.dataLQT.select(component='Q')[0].copy()
+        trNzeQ = self.dataLQT.select(component='Q')[0].copy()
+        trSigT = self.dataLQT.select(component='T')[0].copy()
+        trNzeT = self.dataLQT.select(component='T')[0].copy()
+
+        trSigQ.detrend().taper(max_percentage=0.05)
+        trNzeQ.detrend().taper(max_percentage=0.05)
+        trSigT.detrend().taper(max_percentage=0.05)
+        trNzeT.detrend().taper(max_percentage=0.05)
+
+        # Filter between 0.1 and 1.0 (dominant P wave frequencies)
+        trSigQ.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+        trNzeQ.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+        trSigT.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+        trNzeT.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+
+        # Trim around S-wave arrival
+        trSigQ.trim(t1, t1 + dt)
+        trNzeQ.trim(t1 - dt, t1)
+        trSigT.trim(t1, t1 + dt)
+        trNzeT.trim(t1 - dt, t1)
+
+        # Calculate root mean square (RMS) and SNR
+        srms = np.sqrt(np.mean(np.square(trSigQ.data)))
+        nrms = np.sqrt(np.mean(np.square(trNzeQ.data)))
+        self.meta.snrq = 10*np.log10(srms*srms/nrms/nrms)
+
+        srms = np.sqrt(np.mean(np.square(trSigT.data)))
+        nrms = np.sqrt(np.mean(np.square(trNzeT.data)))
+        self.meta.snrt = 10*np.log10(srms*srms/nrms/nrms)
+
+    def analyze(self, t1=None, t2=None, verbose=False):
         """
         Calculates the shear-wave splitting parameters based 
         on two alternative method: the Rotation-Correlation (RC)
@@ -488,41 +634,47 @@ class Split(object):
         """
 
         if t1 is None and t2 is None:
-            t1 = self.meta.time + self.ts - 5.
-            t2 = self.meta.time + self.ts + 25.
+            t1 = self.meta.time + self.meta.ttime - 5.
+            t2 = self.meta.time + self.meta.ttime + 25.
+
+        # Define signal
+        trQ = self.dataLQT.select(component='Q')[0].copy()
+        trT = self.dataLQT.select(component='T')[0].copy()
 
         # Calculate Silver and Chan splitting estimate
-        print("* --> Calculating Rotation-Correlation (RC) Splitting")
+        if verbose:
+            print("* --> Calculating Rotation-Correlation (RC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
             calc.split_RotCorr(
-                self.data.trQ, self.data.trT,
-                self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
+                trQ, trT, self.meta.baz, t1, t2, 
+                self.meta.maxdt, self.meta.ddt, self.meta.dphi)
 
         # Calculate error
         edtt, ephi, errc = calc.split_errorRC(
-            trT_c,
-            t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
+            trT_c, t1, t2, 0.05, Emat,
+            self.meta.maxdt, self.meta.ddt, self.meta.dphi)
 
         # Store dictionary as attribute
         self.RC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
                              phi, dtt, phi_min, edtt, ephi, errc)
 
         # Calculate Silver and Chan splitting estimate
-        print("* --> Calculating Silver-Chan (SC) Splitting")
+        if verbose:
+            print("* --> Calculating Silver-Chan (SC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
             calc.split_SilverChan(
-                self.data.trQ, self.data.trT,
-                self.meta.baz, t1, t2, self.maxdt, self.ddt, self.dphi)
+                trQ, trT, self.meta.baz, t1, t2,
+                self.meta.maxdt, self.meta.ddt, self.meta.dphi)
 
         # Calculate errors
         edtt, ephi, errc = calc.split_errorSC(
-            trT_c,
-            t1, t2, 0.05, Emat, self.maxdt, self.ddt, self.dphi)
+            trT_c, t1, t2, 0.05, Emat,
+            self.meta.maxdt, self.meta.ddt, self.meta.dphi)
 
         self.SC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
                              phi, dtt, phi_min, edtt, ephi, errc)
 
-    def is_null(self, snrTlim=3., ds=-1):
+    def is_null(self, snrTlim=3., verbose=False):
         """
         Determines if splitting result is a Null result
 
@@ -531,7 +683,7 @@ class Split(object):
         snrTlim : float
             Threshold for snr on T component
         ds : int
-            Number of stars to print out to screen (verbiage)
+            Number of spaces to print out to screen (verbiage)
 
         Attributes
         ----------
@@ -551,14 +703,14 @@ class Split(object):
         # Summarize Null Measurement
         if ds >= 0:
             print("*" + " "*ds + "Null Classification: ")
-            if self.snrt < snrTlim:
+            if self.meta.snrt < snrTlim:
                 print(
                     "*" + " "*ds + "  SNR T Fail: {0:.2f} < {1:.2f}".format(
-                        self.snrt, snrTlim))
+                        self.meta.snrt, snrTlim))
             else:
                 print(
                     "*" + " "*ds + "  SNR T Pass: {0:.2f} > {1:.2f}".format(
-                        self.snrt, snrTlim))
+                        self.meta.snrt, snrTlim))
             if 22. < dphi < 68.:
                 print("*" + " "*ds +
                       "  dPhi Fail: {0:.2f} within 22. < X < 68.".format(dphi))
@@ -568,14 +720,14 @@ class Split(object):
                     "  dPhi Pass:  {0:.2f} outside 22. < X < 68.".format(dphi))
 
         # Check snr on tangential component
-        if self.snrt < snrTlim:
+        if self.meta.snrt < snrTlim:
             self.null = True
 
         # Check error on `phi_min` estimate
         if 22. < dphi < 68.:
             self.null = True
 
-    def get_quality(self, ds):
+    def get_quality(self, verbose=False):
         """
         Determines the quality of the estimate (either Null or non-Null)
         based on ratio of delay times and difference in fast axis directions
@@ -584,7 +736,7 @@ class Split(object):
         Parameters
         ----------
         ds : int
-            Number of stars to print out to screen (verbiage)
+            Number of spaces to print out to screen (verbiage)
 
         Attributes
         ----------
@@ -610,16 +762,16 @@ class Split(object):
                 self.quality = 'Fair'
             else:
                 self.quality = 'Poor'
-            if ds >= 0:
-                print("*" + " "*ds +
+            if verbose:
+                print("*" + " "*5 +
                       "Quality Estimate: Null -- {0:s}".format(self.quality))
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "    rho: {0:.2f}; dphi: {1:.2f}".format(rho, dphi))
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "      Good: rho < 0.2  &&  37 < dphi < 53")
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "      Fair: rho < 0.3  &&  32 < dphi < 58")
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "      Poor: rho > 0.3  &&  dphi < 32 | dphi > 58")
 
         # If estimate is non-Null
@@ -630,17 +782,17 @@ class Split(object):
                 self.quality = 'Fair'
             else:
                 self.quality = 'Poor'
-            if ds >= 0:
+            if verbose:
                 print(
-                    "*" + " "*ds +
+                    "*" + " "*5 +
                     "Quality Estimate: Non-Null -- {0:s}".format(self.quality))
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "    rho: {0:.2f}; dphi: {1:.2f}".format(rho, dphi))
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "      Good: 0.8 < rho < 1.1  &&  dphi < 8")
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "      Fair: 0.7 < rho < 1.2  &&  dphi < 15")
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "      Poor: rho < 0.7 | rho > 1.3 &&  dphi > 15")
 
     def display_results(self, ds=0):
@@ -650,7 +802,7 @@ class Split(object):
         Parameters
         ----------
         ds : int
-            Number of stars to print out to screen (verbiage)
+            Number of spaces to print out to screen (verbiage)
 
         """
 
@@ -678,14 +830,14 @@ class Split(object):
         Parameters
         ----------
         ds : int
-            Number of stars to print out to screen (verbiage)
+            Number of spaces to print out to screen (verbiage)
 
         """
 
         print(" "*ds + ' ======= Meta data ========')
         print()
         print(" "*ds + 'SNR (dB):            ' +
-              str("{:.0f}").format(self.snrq))
+              str("{:.0f}").format(self.meta.snrq))
         print(" "*ds + 'Station:             ' + self.sta.station)
         print(" "*ds + 'Time:                ' + str(self.meta.time))
         print(" "*ds + 'Event depth (km):    ' +
@@ -711,7 +863,7 @@ class Split(object):
         Parameters
         ----------
         ds : int
-            Number of stars to print out to screen (verbiage)
+            Number of spaces to print out to screen (verbiage)
 
         """
 
@@ -765,6 +917,21 @@ class PickPlot(object):
 
     def __init__(self, split):
 
+        from obspy.taup import TauPyModel
+
+        # Store split as attribute
+        self.split = split
+
+        # Get travel time info
+        tpmodel = TauPyModel(model='iasp91')
+        self.phase_list = ['S', 'SKS', 'SKKS', 'PKS']
+
+        # Get Travel times (Careful: here dep is in meters)
+        self.arrivals = tpmodel.get_travel_times(
+            distance_in_degree=self.split.meta.gac,
+            source_depth_in_km=self.split.meta.dep,
+            phase_list=phase_list)
+
         def init_pickw(ax, title, ylab):
             """
             Sets default axis attributes and return axis handle
@@ -801,9 +968,6 @@ class PickPlot(object):
         # Make sure to clear figure if it already exists at initialization
         if plt.fignum_exists(1):
             plt.figure(1).clf()
-
-        # Store split as attribute
-        self.split = split
 
         # Define plot as GridSpec object
         gs = gspec.GridSpec(24, 1)
@@ -855,26 +1019,33 @@ class PickPlot(object):
 
         """
 
+        if not self.split.meta.rotated:
+            raise(Exception("Split object not rotated - aborting"))
+
         # Default start and end times
         if t1 is None and t2 is None:
-            t1 = self.split.meta.time + self.split.ts - 5.
-            t2 = self.split.meta.time + self.split.ts + 25.
+            t1 = self.split.meta.time + self.split.ttime - 5.
+            t2 = self.split.meta.time + self.split.ttime + 25.
+
+        # Define signal and noise
+        trL = self.split.dataLQT.select(component='L')[0].copy()
+        trQ = self.split.dataLQT.select(component='Q')[0].copy()
+        trT = self.split.dataLQT.select(component='T')[0].copy()
 
         # Define time axis
-        taxis = np.arange(self.split.data.trL.stats.npts) / \
-            self.split.data.trL.stats.sampling_rate - dts
-        tstart = self.split.data.trL.stats.starttime
+        taxis = np.arange(trL.stats.npts)/trL.stats.sampling_rate - dts
+        tstart = trL.stats.starttime
 
         # Set uniform vertical scale
-        maxL = np.abs(self.split.data.trL.data).max()
-        maxQ = np.abs(self.split.data.trQ.data).max()
-        maxT = np.abs(self.split.data.trT.data).max()
-        max = np.amax([maxL, maxQ, maxT])
+        maxL = np.abs(trL.data).max()
+        maxQ = np.abs(trQ.data).max()
+        maxT = np.abs(trT.data).max()
+        mmax = np.amax([maxL, maxQ, maxT])
 
         # Plot traces
-        self.fp[1].plot(taxis, self.split.data.trL.data/max)
-        self.fp[2].plot(taxis, self.split.data.trQ.data/max)
-        self.fp[3].plot(taxis, self.split.data.trT.data/max)
+        self.fp[1].plot(taxis, trL.data/mmax)
+        self.fp[2].plot(taxis, trQ.data/mmax)
+        self.fp[3].plot(taxis, trT.data/mmax)
 
         # Set tight limits
         self.fp[1].set_xlim((taxis[0], taxis[-1]))
@@ -894,56 +1065,56 @@ class PickPlot(object):
         self.ll = ll
 
         # Add vertical lines and text for various phases
-        for t in tt:
+        for t in self.arrivals:
 
             name = t.name
             time = t.time
             if not name[0] == 'S':
                 continue
-            # Direct S phase
-            if name == 'S':
-                self.fp[1].axvline(time - self.split.ts, color='k')
-                self.fp[1].text(time - self.split.ts + 5., -1.,
-                                'S', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k')
-                self.fp[2].text(time - self.split.ts + 5., -1.,
-                                'S', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k')
-                self.fp[3].text(time - self.split.ts + 5., -1.,
-                                'S', rotation=90, ha='center', va='bottom')
-            # Transmitted core-refracted shear wave - Main phase of interest
-            elif name == 'SKS':
-                self.fp[1].axvline(time - self.split.ts, color='k')
-                self.fp[1].text(time - self.split.ts + 5., -1.,
-                                'SKS', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k')
-                self.fp[2].text(time - self.split.ts + 5., -1.,
-                                'SKS', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k')
-                self.fp[3].text(time - self.split.ts + 5., -1.,
-                                'SKS', rotation=90, ha='center', va='bottom')
-            # Core-refracted shear wave with 'K' bounce at core-mantle boundary
-            elif name == 'SKKS':
-                self.fp[1].axvline(time - self.split.ts, color='k')
-                self.fp[1].text(time - self.split.ts + 5., -1.,
-                                'SKKS', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k')
-                self.fp[2].text(time - self.split.ts + 5., -1.,
-                                'SKKS', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k')
-                self.fp[3].text(time - self.split.ts + 5., -1.,
-                                'SKKS', rotation=90, ha='center', va='bottom')
-            # Direct shear wave reflected at core-mantle boundary
-            elif name == 'ScS':
-                self.fp[1].axvline(time - self.split.ts, color='k')
-                self.fp[1].text(time - self.split.ts + 5., -1.,
-                                'ScS', rotation=90, ha='center', va='bottom')
-                self.fp[2].axvline(time - self.split.ts, color='k')
-                self.fp[2].text(time - self.split.ts + 5., -1.,
-                                'ScS', rotation=90, ha='center', va='bottom')
-                self.fp[3].axvline(time - self.split.ts, color='k')
-                self.fp[3].text(time - self.split.ts + 5., -1.,
-                                'ScS', rotation=90, ha='center', va='bottom')
+            # # Direct S phase
+            # if name == 'S':
+            self.fp[1].axvline(time - self.split.meta.ttime, color='k')
+            self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
+                            name, rotation=90, ha='center', va='bottom')
+            self.fp[2].axvline(time - self.split.meta.ttime, color='k')
+            self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
+                            name, rotation=90, ha='center', va='bottom')
+            self.fp[3].axvline(time - self.split.meta.ttime, color='k')
+            self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
+                            name, rotation=90, ha='center', va='bottom')
+            # # Transmitted core-refracted shear wave - Main phase of interest
+            # elif name == 'SKS':
+            #     self.fp[1].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'SKS', rotation=90, ha='center', va='bottom')
+            #     self.fp[2].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'SKS', rotation=90, ha='center', va='bottom')
+            #     self.fp[3].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'SKS', rotation=90, ha='center', va='bottom')
+            # # Core-refracted shear wave with 'K' bounce at core-mantle boundary
+            # elif name == 'SKKS':
+            #     self.fp[1].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'SKKS', rotation=90, ha='center', va='bottom')
+            #     self.fp[2].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'SKKS', rotation=90, ha='center', va='bottom')
+            #     self.fp[3].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'SKKS', rotation=90, ha='center', va='bottom')
+            # # Direct shear wave reflected at core-mantle boundary
+            # elif name == 'ScS':
+            #     self.fp[1].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'ScS', rotation=90, ha='center', va='bottom')
+            #     self.fp[2].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'ScS', rotation=90, ha='center', va='bottom')
+            #     self.fp[3].axvline(time - self.split.meta.ttime, color='k')
+            #     self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
+            #                     'ScS', rotation=90, ha='center', va='bottom')
 
         # Update plot
         self.fp[0].canvas.draw()
@@ -1007,6 +1178,8 @@ class DiagPlot(object):
     """
 
     def __init__(self, split):
+
+        self.split = split
 
         def init_splitw(ax, title):
             """
@@ -1083,7 +1256,7 @@ class DiagPlot(object):
 
             return ax
 
-        if not hasattr(split, 'RC_res'):
+        if not hasattr(self.split, 'RC_res'):
             raise(
                 Exception("analysis has not yet been performed on " +
                           "split object. Aborting"))
@@ -1091,8 +1264,6 @@ class DiagPlot(object):
         # Make sure to clear figure if it already exists at initialization
         if plt.fignum_exists(2):
             plt.figure(2).clf()
-
-        self.split = split
 
         # Figure handle
         fig = plt.figure(num=2, figsize=(10, 7), facecolor='w')
@@ -1160,8 +1331,8 @@ class DiagPlot(object):
         """
 
         if t1 is None and t2 is None:
-            t1 = self.split.meta.time + self.split.ts - 5.
-            t2 = self.split.meta.time + self.split.ts + 25.
+            t1 = self.split.meta.time + self.split.meta.ttime - 5.
+            t2 = self.split.meta.time + self.split.meta.ttime + 25.
 
         def rot3D(inc, baz):
             """
@@ -1195,15 +1366,15 @@ class DiagPlot(object):
             return M
 
         # Copy traces to avoid overridding
-        trL_tmp = self.split.data.trL.copy()
+        trL_tmp = self.dataLQT.select(component='L')[0].copy()
         trL_tmp.trim(t1, t2)
-        trQ_tmp = self.split.data.trQ.copy()
+        trQ_tmp = self.dataLQT.select(component='Q')[0].copy()
         trQ_tmp.trim(t1, t2)
-        trT_tmp = self.split.data.trT.copy()
+        trT_tmp = self.dataLQT.select(component='T')[0].copy()
         trT_tmp.trim(t1, t2)
-        trE_tmp = self.split.data.trE.copy()
+        trE_tmp = self.dataZNE.select(component='E')[0].copy()
         trE_tmp.trim(t1, t2)
-        trN_tmp = self.split.data.trN.copy()
+        trN_tmp = self.dataZNE.select(component='N')[0].copy()
         trN_tmp.trim(t1, t2)
 
         # Rotate seismograms for plots
@@ -1225,10 +1396,10 @@ class DiagPlot(object):
         taxis = np.arange(trQ_tmp.stats.npts)/trQ_tmp.stats.sampling_rate
         max1 = np.abs(trQ_tmp.data).max()
         max2 = np.abs(trT_tmp.data).max()
-        max = np.amax([max1, max2])
+        mmax = np.amax([max1, max2])
 
-        self.fd[1].plot(taxis, trQ_tmp.data/max, 'b--')
-        self.fd[1].plot(taxis, trT_tmp.data/max, 'r')
+        self.fd[1].plot(taxis, trQ_tmp.data/mmax, 'b--')
+        self.fd[1].plot(taxis, trT_tmp.data/mmax, 'r')
 
         # Text box
         self.fd[2].text(
@@ -1277,23 +1448,23 @@ class DiagPlot(object):
             self.split.RC_res.trFast.stats.sampling_rate
         max1 = np.abs(self.split.RC_res.trFast.data).max()
         max2 = np.abs(self.split.RC_res.trSlow.data).max()
-        max = np.amax([max1, max2])
+        mmax = np.amax([max1, max2])
 
-        self.fd[3].plot(taxis, self.split.RC_res.trFast.data/max, 'b--')
-        self.fd[3].plot(taxis, sig*self.split.RC_res.trSlow.data/max, 'r')
+        self.fd[3].plot(taxis, self.split.RC_res.trFast.data/mmax, 'b--')
+        self.fd[3].plot(taxis, sig*self.split.RC_res.trSlow.data/mmax, 'r')
 
         # Corrected Q and T
-        self.fd[4].plot(taxis, self.split.RC_res.trQ_c.data/max, 'b--')
-        self.fd[4].plot(taxis, self.split.RC_res.trT_c.data/max, 'r')
+        self.fd[4].plot(taxis, self.split.RC_res.trQ_c.data/mmax, 'b--')
+        self.fd[4].plot(taxis, self.split.RC_res.trT_c.data/mmax, 'r')
 
         # Prticle motion
-        self.fd[5].plot(trE_tmp.data/max, trN_tmp.data/max, 'b--')
-        self.fd[5].plot(E_RC/max, N_RC/max, 'r')
+        self.fd[5].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
+        self.fd[5].plot(E_RC/mmax, N_RC/mmax, 'r')
 
         # Map of energy
         plt.sca(self.fd[6])
-        dt = np.arange(0., self.maxdt, self.ddt)
-        phi = np.arange(-90., 90., self.dphi)
+        dt = np.arange(0., self.split.meta.maxdt, self.split.meta.ddt)
+        phi = np.arange(-90., 90., self.split.meta.dphi)
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
@@ -1330,23 +1501,23 @@ class DiagPlot(object):
             self.split.SC_res.trFast.stats.sampling_rate
         max1 = np.abs(self.split.SC_res.trFast.data).max()
         max2 = np.abs(self.split.SC_res.trSlow.data).max()
-        max = np.amax([max1, max2])
+        mmax = np.amax([max1, max2])
 
-        self.fd[7].plot(taxis, self.split.SC_res.trFast.data/max, 'b--')
-        self.fd[7].plot(taxis, sig*self.split.SC_res.trSlow.data/max, 'r')
+        self.fd[7].plot(taxis, self.split.SC_res.trFast.data/mmax, 'b--')
+        self.fd[7].plot(taxis, sig*self.split.SC_res.trSlow.data/mmax, 'r')
 
         # Corrected Q and T
-        self.fd[8].plot(taxis, self.split.SC_res.trQ_c.data/max, 'b--')
-        self.fd[8].plot(taxis, self.split.SC_res.trT_c.data/max, 'r')
+        self.fd[8].plot(taxis, self.split.SC_res.trQ_c.data/mmax, 'b--')
+        self.fd[8].plot(taxis, self.split.SC_res.trT_c.data/mmax, 'r')
 
         # Particle motion
-        self.fd[9].plot(trE_tmp.data/max, trN_tmp.data/max, 'b--')
-        self.fd[9].plot(E_SC/max, N_SC/max, 'r')
+        self.fd[9].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
+        self.fd[9].plot(E_SC/mmax, N_SC/mmax, 'r')
 
         # Map of energy
         plt.sca(self.fd[10])
-        dt = np.arange(0., self.maxdt, self.ddt)
-        phi = np.arange(-90., 90., self.dphi)
+        dt = np.arange(0., self.split.meta.maxdt, self.split.meta.ddt)
+        phi = np.arange(-90., 90., self.split.meta.dphi)
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
@@ -1385,35 +1556,35 @@ class DiagPlot(object):
         self.fd[0].savefig(file)
 
 
-def _calc_snr(tr, t1, dt):
-    """
-    Calculates signal-to-noise ratio based on start time
-    and a given duration in seconds
+# def _calc_snr(tr, t1, dt):
+#     """
+#     Calculates signal-to-noise ratio based on start time
+#     and a given duration in seconds
 
-    Returns
-    -------
-    snr : float
-        Signal-to-noise ration (dB)
+#     Returns
+#     -------
+#     snr : float
+#         Signal-to-noise ration (dB)
 
-    """
+#     """
 
-    # Copy Z trace to signal and noise traces
-    trSig = tr.copy()
-    trNze = tr.copy()
+#     # Copy Z trace to signal and noise traces
+#     trSig = tr.copy()
+#     trNze = tr.copy()
 
-    # Filter between 0.02 and 0.5 (dominant S wave frequencies)
-    trSig.filter('bandpass', freqmin=0.02, freqmax=0.5,
-                 corners=2, zerophase=True)
-    trNze.filter('bandpass', freqmin=0.02, freqmax=0.5,
-                 corners=2, zerophase=True)
+#     # Filter between 0.02 and 0.5 (dominant S wave frequencies)
+#     trSig.filter('bandpass', freqmin=0.02, freqmax=0.5,
+#                  corners=2, zerophase=True)
+#     trNze.filter('bandpass', freqmin=0.02, freqmax=0.5,
+#                  corners=2, zerophase=True)
 
-    # Trim twin seconds around P-wave arrival
-    trSig.trim(t1, t1 + dt)
-    trNze.trim(t1 - dt, t1)
+#     # Trim twin seconds around P-wave arrival
+#     trSig.trim(t1, t1 + dt)
+#     trNze.trim(t1 - dt, t1)
 
-    # Calculate root mean square (RMS)
-    srms = np.sqrt(np.mean(np.square(trSig.data)))
-    nrms = np.sqrt(np.mean(np.square(trNze.data)))
+#     # Calculate root mean square (RMS)
+#     srms = np.sqrt(np.mean(np.square(trSig.data)))
+#     nrms = np.sqrt(np.mean(np.square(trNze.data)))
 
-    # Calculate signal/noise ratio in dB
-    return 10*np.log10(srms*srms/nrms/nrms)
+#     # Calculate signal/noise ratio in dB
+#     return 10*np.log10(srms*srms/nrms/nrms)

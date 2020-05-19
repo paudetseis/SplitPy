@@ -168,6 +168,21 @@ def get_arguments(argv=None):
         default=6.,
         help="Specify default P velocity value. [Default 6.0 km/s]")
     ConstGroup.add_argument(
+        "--sampling-rate",
+        action="store",
+        type=float,
+        dest="new_sampling_rate",
+        default=10.,
+        help="Specify new sampling rate in Hz. [Default 10.]")
+    ConstGroup.add_argument(
+        "--dt-snr",
+        action="store",
+        type=float,
+        dest="dt_snr",
+        default=30.,
+        help="Specify the window length over which to calculate " +
+        "the SNR in sec. [Default 30.]")
+    ConstGroup.add_argument(
         "--SNR",
         action="store",
         type=float,
@@ -212,6 +227,22 @@ def get_arguments(argv=None):
         default=1.,
         help="Specify the minimum SNR Threshold for the Transverse " +
         "component to be considered Non-Null. [Default 1.]")
+    ConstGroup.add_argument(
+        "--fmin",
+        action="store",
+        type=float,
+        dest="fmin",
+        default=0.01,
+        help="Specify the minimum frequency corner for SNR and CC " +
+        "filter (Hz). [Default 0.01]")
+    ConstGroup.add_argument(
+        "--fmax",
+        action="store",
+        type=float,
+        dest="fmax",
+        default=1.0,
+        help="Specify the maximum frequency corner for SNR and CC " +
+        "filter (Hz). [Default 1.0]")
 
     # Event Selection Criteria
     EventGroup = parser.add_argument_group(
@@ -283,6 +314,14 @@ def get_arguments(argv=None):
         default=120.,
         help="Specify the maximum great circle distance (degrees) " +
         "between the station and event. [Default 120]")
+    GeomGroup.add_argument(
+        "--phase",
+        action="store",
+        type=str,
+        dest="phase",
+        default='SKS',
+        help="Specify the phase name to use. Be careful with the distance. " +
+        "setting. Options are 'SKS' or 'SKKS'. [Default 'SKS']")
 
     args = parser.parse_args(argv)
 
@@ -344,6 +383,20 @@ def get_arguments(argv=None):
         args.ndval = 0.0
     else:
         args.ndval = nan
+
+    # Check distances for selected phase
+    if args.phase not in ['SKS', 'SKKS']:
+        parser.error(
+            "Error: choose between 'SKS' and 'SKKS.")
+    if args.phase == 'SKS' or 'SKKS':
+        if not args.mindist:
+            args.mindist = 85.
+        if not args.maxdist:
+            args.maxdist = 120.
+        if args.mindist < 85. or args.maxdist > 120.:
+            parser.error(
+                "Distances should be between 85 and 120 deg. for " +
+                "teleseismic 'SKS' and 'SKKS' waves.")
 
     return args
 

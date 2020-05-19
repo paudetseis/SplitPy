@@ -6,7 +6,7 @@ def test_obspy_import():
 
 def test_splitpy_modules():
     import splitpy
-    from splitpy import io, calc, classes, arguments, gui
+    from splitpy import utils, calc, classes, arguments, gui
     from splitpy.classes import Meta, Data, Result, Split
     from splitpy import Pick, Keep, Save, Repeat
     from splitpy import PickPlot, DiagPlot

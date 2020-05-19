@@ -214,16 +214,16 @@ def main():
 
         # Get catalogue search start time
         if args.startT is None:
-            evst = sta.dstart
+            evst = sta.startdate
         else:
             evst = args.startT
 
         # Get catalogue search end time
         if args.endT is None:
-            evet = sta.dend
+            evet = sta.enddate
         else:
             evet = args.endT
-        if evst > sta.dend or evet < sta.dstart:
+        if evst > sta.enddate or evet < sta.startdate:
             continue
 
         # Temporary print locations
@@ -556,11 +556,11 @@ def main():
                                     dplot.save(outfig)
 
                                     print("* Estimate Saved to File: " +
-                                          outfile)
+                                          str(outfile))
                                 else:
                                     print(
                                         "* Existing Estimate Retained (" +
-                                        outfile + ")")
+                                        str(outfile) + ")")
                                 print(
                                     "************************************" +
                                     "****************")
