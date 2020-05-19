@@ -17,9 +17,9 @@ before_install:
   - if [[ $DOCS == 1 ]]; then
       DEP="sphinx sphinx_rtd_theme";
     else
-      DEP="";
+      DEP="pytest-cov";
     fi
-  - conda create -q -n testenv python=$PYTHON_VERSION obspy dill $DEP
+  - conda create -q -n testenv python=$PYTHON_VERSION obspy $DEP
   - conda activate testenv
   - conda list
 install:
@@ -28,9 +28,14 @@ install:
 script:
   - if [[ $DOCS == 1 ]]; then
       cd docs; make html; touch _build/html/.nojekyll; cd ..;
+    else
+      mkdir empty; cd empty; pytest -v --cov=splitpy ../splitpy/tests/;
     fi
+
 after_success:
-  - if [[ $DOCS == 1 ]]; then
+  - if [[ $DOCS != 1 ]]; then
+      bash <(curl -s https://codecov.io/bash);
+    else
       openssl aes-256-cbc -K $encrypted_f315283a03bb_key -iv $encrypted_f315283a03bb_iv -in ".travis/github_deploy_key.enc" -out ".travis/github_deploy_key" -d;
     fi
 notifications:
