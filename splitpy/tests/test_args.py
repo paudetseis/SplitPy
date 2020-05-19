@@ -8,19 +8,15 @@ from . import get_meta
 dbfile = resource_filename('splitpy',
                            'examples/data/MMPY.pkl')
 
-def test_get_args():
-    args = arguments.get_arguments([dbfile])
+def test_get_args_calc_auto():
+    args = arguments.get_arguments_calc_auto([dbfile])
     return args
 
-def test_get_args_prep():
-    args = arguments.get_arguments_prep([dbfile])
+def test_get_args_calc_manual():
+    args = arguments.get_arguments_calc_manual([dbfile])
     return args
 
-def test_get_args_offline():
-    args = arguments.get_arguments_offline([dbfile])
-    return args
-
-def test_get_args_plot():
-    args = arguments.get_arguments_plot([dbfile])
+def test_get_args_average():
+    args = arguments.get_arguments_average([dbfile])
     return args
 

@@ -486,7 +486,7 @@ class Split(object):
         ----------
         align : str
             Alignment of coordinate system for rotation
-            ('ZRT', 'LQT', or 'PVH')
+            ('ZNE' or 'LQT')
 
         Returns
         -------
@@ -543,12 +543,14 @@ class Split(object):
         else:
             raise(Exception("incorrect 'align' argument"))
 
-    def calc_snr(self, dt=30., fmin=0.05, fmax=1.):
+    def calc_snr(self, t1=None, dt=30., fmin=0.02, fmax=0.5):
         """
         Calculates signal-to-noise ratio on either Z, L or P component
 
         Parameters
         ----------
+        t1 : :class:`~obspy.core.utcdatetime.UTCDateTime`
+            Pick time of arrival (sec)
         dt : float
             Duration (sec)
         fmin : float
@@ -568,11 +570,8 @@ class Split(object):
         if not self.meta.accept:
             return
 
-        if self.meta.snrq and self.meta.snrt:
-            print("SNR already calculated - continuing")
-            return
-
-        t1 = self.meta.time + self.meta.ttime
+        if t1 is None:
+            t1 = self.meta.time + self.meta.ttime
 
         # Copy trace to signal and noise traces
         trSigQ = self.dataLQT.select(component='Q')[0].copy()
@@ -701,22 +700,22 @@ class Split(object):
             dphi = 180. - dphi
 
         # Summarize Null Measurement
-        if ds >= 0:
-            print("*" + " "*ds + "Null Classification: ")
+        if verbose:
+            print("*" + " "*5 + "Null Classification: ")
             if self.meta.snrt < snrTlim:
                 print(
-                    "*" + " "*ds + "  SNR T Fail: {0:.2f} < {1:.2f}".format(
+                    "*" + " "*5 + "  SNR T Fail: {0:.2f} < {1:.2f}".format(
                         self.meta.snrt, snrTlim))
             else:
                 print(
-                    "*" + " "*ds + "  SNR T Pass: {0:.2f} > {1:.2f}".format(
+                    "*" + " "*5 + "  SNR T Pass: {0:.2f} > {1:.2f}".format(
                         self.meta.snrt, snrTlim))
             if 22. < dphi < 68.:
-                print("*" + " "*ds +
+                print("*" + " "*5 +
                       "  dPhi Fail: {0:.2f} within 22. < X < 68.".format(dphi))
             else:
                 print(
-                    "*" + " "*ds +
+                    "*" + " "*5 +
                     "  dPhi Pass:  {0:.2f} outside 22. < X < 68.".format(dphi))
 
         # Check snr on tangential component
@@ -836,24 +835,29 @@ class Split(object):
 
         print(" "*ds + ' ======= Meta data ========')
         print()
-        print(" "*ds + 'SNR (dB):            ' +
+        print(" "*ds + ' SNR (dB):            ' +
               str("{:.0f}").format(self.meta.snrq))
-        print(" "*ds + 'Station:             ' + self.sta.station)
-        print(" "*ds + 'Time:                ' + str(self.meta.time))
-        print(" "*ds + 'Event depth (km):    ' +
+        print(" "*ds + ' Station:             ' + self.sta.station)
+        print(" "*ds + ' Time:                ' + str(self.meta.time))
+        print(" "*ds + ' Event depth (km):    ' +
               str("{:.0f}").format(self.meta.dep/1000.))
-        print(" "*ds + 'Magnitude (Mw):      ' +
+        print(" "*ds + ' Magnitude (Mw):      ' +
               str("{:.1f}").format(self.meta.mag))
-        print(" "*ds + 'Longitude (deg):     ' +
+        print(" "*ds + ' Longitude (deg):     ' +
               str("{:.2f}").format(self.meta.lon))
-        print(" "*ds + 'Latitude (deg):      ' +
+        print(" "*ds + ' Latitude (deg):      ' +
               str("{:.2f}").format(self.meta.lat))
-        print(" "*ds + 'GAC (deg):           ' +
+        print(" "*ds + ' GAC (deg):           ' +
               str("{:.2f}").format(self.meta.gac))
-        print(" "*ds + 'Backazimuth deg):    ' +
+        print(" "*ds + ' Backazimuth deg):    ' +
               str("{:.2f}").format(self.meta.baz))
-        print(" "*ds + 'Incidence(deg):      ' +
+        print(" "*ds + ' Incidence (deg):      ' +
               str("{:.2f}").format(self.meta.inc))
+        print(" "*ds + ' SNR - Q:      ' +
+              str("{:.2f}").format(self.meta.snrq))
+        print(" "*ds + ' SNR - T:      ' +
+              str("{:.2f}").format(self.meta.snrt))
+
         print()
 
     def display_null_quality(self, ds=0):
@@ -924,13 +928,13 @@ class PickPlot(object):
 
         # Get travel time info
         tpmodel = TauPyModel(model='iasp91')
-        self.phase_list = ['S', 'SKS', 'SKKS', 'PKS']
+        self.phase_list = ['S', 'SKS', 'SKKS', 'PKS', 'ScS']
 
         # Get Travel times (Careful: here dep is in meters)
         self.arrivals = tpmodel.get_travel_times(
             distance_in_degree=self.split.meta.gac,
             source_depth_in_km=self.split.meta.dep,
-            phase_list=phase_list)
+            phase_list=self.phase_list)
 
         def init_pickw(ax, title, ylab):
             """
@@ -960,7 +964,7 @@ class PickPlot(object):
             ax.set_ylim((-1.1, 1.1))
             return ax
 
-        if not hasattr(split, 'RC_res'):
+        if not hasattr(self.split, 'RC_res'):
             raise(
                 Exception("analysis has not yet been performed " +
                           "on split object. Aborting"))
@@ -988,15 +992,16 @@ class PickPlot(object):
         ax3 = init_pickw(ax=ax3, title='', ylab='T')
         ax3.set_xlabel('Time (sec)')
 
-        fp = [fig, ax1, ax2, ax3]
+        axes = [fig, ax1, ax2, ax3]
 
         # Ensure Figure is open
-        fp[0].show()
+        # fp[0].canvas.draw()
+        axes[0].show()
 
         # Store handles as attribute
-        self.fp = fp
+        self.axes = axes
 
-    def plot_LQT_phases(self, tt, dts, t1=None, t2=None):
+    def plot_LQT_phases(self, dts, t1=None, t2=None):
         """
         Plots rotated three-components of motion for picking.
 
@@ -1024,8 +1029,8 @@ class PickPlot(object):
 
         # Default start and end times
         if t1 is None and t2 is None:
-            t1 = self.split.meta.time + self.split.ttime - 5.
-            t2 = self.split.meta.time + self.split.ttime + 25.
+            t1 = self.split.meta.time + self.split.meta.ttime - 5.
+            t2 = self.split.meta.time + self.split.meta.ttime + 25.
 
         # Define signal and noise
         trL = self.split.dataLQT.select(component='L')[0].copy()
@@ -1043,23 +1048,23 @@ class PickPlot(object):
         mmax = np.amax([maxL, maxQ, maxT])
 
         # Plot traces
-        self.fp[1].plot(taxis, trL.data/mmax)
-        self.fp[2].plot(taxis, trQ.data/mmax)
-        self.fp[3].plot(taxis, trT.data/mmax)
+        self.axes[1].plot(taxis, trL.data/mmax)
+        self.axes[2].plot(taxis, trQ.data/mmax)
+        self.axes[3].plot(taxis, trT.data/mmax)
 
         # Set tight limits
-        self.fp[1].set_xlim((taxis[0], taxis[-1]))
-        self.fp[2].set_xlim((taxis[0], taxis[-1]))
-        self.fp[3].set_xlim((taxis[0], taxis[-1]))
+        self.axes[1].set_xlim((taxis[0], taxis[-1]))
+        self.axes[2].set_xlim((taxis[0], taxis[-1]))
+        self.axes[3].set_xlim((taxis[0], taxis[-1]))
 
         # Add vertical lines for picked times
         ll = list(range(6))
-        ll[0] = self.fp[1].axvline(t1 - tstart - dts, color='r')
-        ll[1] = self.fp[1].axvline(t2 - tstart - dts, color='r')
-        ll[2] = self.fp[2].axvline(t1 - tstart - dts, color='r')
-        ll[3] = self.fp[2].axvline(t2 - tstart - dts, color='r')
-        ll[4] = self.fp[3].axvline(t1 - tstart - dts, color='r')
-        ll[5] = self.fp[3].axvline(t2 - tstart - dts, color='r')
+        ll[0] = self.axes[1].axvline(t1 - tstart - dts, color='r')
+        ll[1] = self.axes[1].axvline(t2 - tstart - dts, color='r')
+        ll[2] = self.axes[2].axvline(t1 - tstart - dts, color='r')
+        ll[3] = self.axes[2].axvline(t2 - tstart - dts, color='r')
+        ll[4] = self.axes[3].axvline(t1 - tstart - dts, color='r')
+        ll[5] = self.axes[3].axvline(t2 - tstart - dts, color='r')
 
         # Store List of lines as attribute
         self.ll = ll
@@ -1069,55 +1074,19 @@ class PickPlot(object):
 
             name = t.name
             time = t.time
-            if not name[0] == 'S':
-                continue
-            # # Direct S phase
-            # if name == 'S':
-            self.fp[1].axvline(time - self.split.meta.ttime, color='k')
-            self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
+
+            self.axes[1].axvline(time - self.split.meta.ttime, color='k')
+            self.axes[1].text(time - self.split.meta.ttime + 5., -1.,
                             name, rotation=90, ha='center', va='bottom')
-            self.fp[2].axvline(time - self.split.meta.ttime, color='k')
-            self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
+            self.axes[2].axvline(time - self.split.meta.ttime, color='k')
+            self.axes[2].text(time - self.split.meta.ttime + 5., -1.,
                             name, rotation=90, ha='center', va='bottom')
-            self.fp[3].axvline(time - self.split.meta.ttime, color='k')
-            self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
+            self.axes[3].axvline(time - self.split.meta.ttime, color='k')
+            self.axes[3].text(time - self.split.meta.ttime + 5., -1.,
                             name, rotation=90, ha='center', va='bottom')
-            # # Transmitted core-refracted shear wave - Main phase of interest
-            # elif name == 'SKS':
-            #     self.fp[1].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'SKS', rotation=90, ha='center', va='bottom')
-            #     self.fp[2].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'SKS', rotation=90, ha='center', va='bottom')
-            #     self.fp[3].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'SKS', rotation=90, ha='center', va='bottom')
-            # # Core-refracted shear wave with 'K' bounce at core-mantle boundary
-            # elif name == 'SKKS':
-            #     self.fp[1].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'SKKS', rotation=90, ha='center', va='bottom')
-            #     self.fp[2].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'SKKS', rotation=90, ha='center', va='bottom')
-            #     self.fp[3].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'SKKS', rotation=90, ha='center', va='bottom')
-            # # Direct shear wave reflected at core-mantle boundary
-            # elif name == 'ScS':
-            #     self.fp[1].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[1].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'ScS', rotation=90, ha='center', va='bottom')
-            #     self.fp[2].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[2].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'ScS', rotation=90, ha='center', va='bottom')
-            #     self.fp[3].axvline(time - self.split.meta.ttime, color='k')
-            #     self.fp[3].text(time - self.split.meta.ttime + 5., -1.,
-            #                     'ScS', rotation=90, ha='center', va='bottom')
 
         # Update plot
-        self.fp[0].canvas.draw()
+        self.axes[0].canvas.draw()
 
     def update_LQT(self, tp1, tp2):
         """
@@ -1141,15 +1110,15 @@ class PickPlot(object):
         self.ll[5].remove()
 
         # Add new vertical lines with new picks
-        self.ll[0] = self.fp[1].axvline(tp1, color='r')
-        self.ll[1] = self.fp[1].axvline(tp2, color='r')
-        self.ll[2] = self.fp[2].axvline(tp1, color='r')
-        self.ll[3] = self.fp[2].axvline(tp2, color='r')
-        self.ll[4] = self.fp[3].axvline(tp1, color='r')
-        self.ll[5] = self.fp[3].axvline(tp2, color='r')
+        self.ll[0] = self.axes[1].axvline(tp1, color='r')
+        self.ll[1] = self.axes[1].axvline(tp2, color='r')
+        self.ll[2] = self.axes[2].axvline(tp1, color='r')
+        self.ll[3] = self.axes[2].axvline(tp2, color='r')
+        self.ll[4] = self.axes[3].axvline(tp1, color='r')
+        self.ll[5] = self.axes[3].axvline(tp2, color='r')
 
         # Update figure
-        self.fp[0].canvas.draw()
+        self.axes[0].canvas.draw()
 
 
 class DiagPlot(object):
@@ -1308,14 +1277,14 @@ class DiagPlot(object):
         axSC4 = fig.add_axes([0.775, 0.07, 0.2, 0.25])
         axSC4 = init_emap(ax=axSC4, title='Energy map of T')
 
-        fd = [fig, ax0, axt, axRC1, axRC2, axRC3, axRC4,
+        axes = [fig, ax0, axt, axRC1, axRC2, axRC3, axRC4,
               axSC1, axSC2, axSC3, axSC4]
 
-        # Make sure figure is open
-        fd[0].show()
+        # # Make sure figure is open
+        axes[0].show()
 
         # Store handes as attribute
-        self.fd = fd
+        self.axes = axes
 
     def plot_diagnostic(self, t1=None, t2=None):
         """
@@ -1366,15 +1335,15 @@ class DiagPlot(object):
             return M
 
         # Copy traces to avoid overridding
-        trL_tmp = self.dataLQT.select(component='L')[0].copy()
+        trL_tmp = self.split.dataLQT.select(component='L')[0].copy()
         trL_tmp.trim(t1, t2)
-        trQ_tmp = self.dataLQT.select(component='Q')[0].copy()
+        trQ_tmp = self.split.dataLQT.select(component='Q')[0].copy()
         trQ_tmp.trim(t1, t2)
-        trT_tmp = self.dataLQT.select(component='T')[0].copy()
+        trT_tmp = self.split.dataLQT.select(component='T')[0].copy()
         trT_tmp.trim(t1, t2)
-        trE_tmp = self.dataZNE.select(component='E')[0].copy()
+        trE_tmp = self.split.dataZNE.select(component='E')[0].copy()
         trE_tmp.trim(t1, t2)
-        trN_tmp = self.dataZNE.select(component='N')[0].copy()
+        trN_tmp = self.split.dataZNE.select(component='N')[0].copy()
         trN_tmp.trim(t1, t2)
 
         # Rotate seismograms for plots
@@ -1398,23 +1367,23 @@ class DiagPlot(object):
         max2 = np.abs(trT_tmp.data).max()
         mmax = np.amax([max1, max2])
 
-        self.fd[1].plot(taxis, trQ_tmp.data/mmax, 'b--')
-        self.fd[1].plot(taxis, trT_tmp.data/mmax, 'r')
+        self.axes[1].plot(taxis, trQ_tmp.data/mmax, 'b--')
+        self.axes[1].plot(taxis, trT_tmp.data/mmax, 'r')
 
         # Text box
-        self.fd[2].text(
+        self.axes[2].text(
             0.5, 0.9, 'Event: ' + self.split.meta.time.ctime() + '     ' +
             str(self.split.meta.lat) + 'N  ' +
             str(self.split.meta.lon) + 'E   ' +
             str(np.int(self.split.meta.dep/1000.)) + 'km   ' + 'Mw=' +
             str(self.split.meta.mag), horizontalalignment='center')
-        self.fd[2].text(
+        self.axes[2].text(
             0.5, 0.7, 'Station: ' + self.split.sta.station +
             '   Backazimuth: ' +
             str("{:.2f}").format(self.split.meta.baz) + '   Distance: ' +
             str("{:.2f}").format(self.split.meta.gac),
             horizontalalignment='center')
-        self.fd[2].text(
+        self.axes[2].text(
             0.5, 0.5, r'Best fit RC values: $\phi$=' +
             str(np.int(self.split.RC_res.phi)) + r'$\pm$' +
             str("{:.2f}").format(self.split.RC_res.ephi) +
@@ -1422,7 +1391,7 @@ class DiagPlot(object):
             str(self.split.RC_res.dtt) + r'$\pm$' +
             str("{:.2f}").format(self.split.RC_res.edtt) +
             's', horizontalalignment='center')
-        self.fd[2].text(
+        self.axes[2].text(
             0.5, 0.3, r'Best fit SC values: $\phi$=' +
             str(np.int(self.split.SC_res.phi)) + r'$\pm$' +
             str("{:.2f}").format(self.split.SC_res.ephi) +
@@ -1430,7 +1399,7 @@ class DiagPlot(object):
             str(self.split.SC_res.dtt) + r'$\pm$' +
             str("{:.2f}").format(self.split.SC_res.edtt) +
             's', horizontalalignment='center')
-        self.fd[2].text(
+        self.axes[2].text(
             0.5, 0.1, 'Is Null? ' + str(self.split.null) + '    Quality? ' +
             str(self.split.quality), horizontalalignment='center')
 
@@ -1450,19 +1419,19 @@ class DiagPlot(object):
         max2 = np.abs(self.split.RC_res.trSlow.data).max()
         mmax = np.amax([max1, max2])
 
-        self.fd[3].plot(taxis, self.split.RC_res.trFast.data/mmax, 'b--')
-        self.fd[3].plot(taxis, sig*self.split.RC_res.trSlow.data/mmax, 'r')
+        self.axes[3].plot(taxis, self.split.RC_res.trFast.data/mmax, 'b--')
+        self.axes[3].plot(taxis, sig*self.split.RC_res.trSlow.data/mmax, 'r')
 
         # Corrected Q and T
-        self.fd[4].plot(taxis, self.split.RC_res.trQ_c.data/mmax, 'b--')
-        self.fd[4].plot(taxis, self.split.RC_res.trT_c.data/mmax, 'r')
+        self.axes[4].plot(taxis, self.split.RC_res.trQ_c.data/mmax, 'b--')
+        self.axes[4].plot(taxis, self.split.RC_res.trT_c.data/mmax, 'r')
 
         # Prticle motion
-        self.fd[5].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
-        self.fd[5].plot(E_RC/mmax, N_RC/mmax, 'r')
+        self.axes[5].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
+        self.axes[5].plot(E_RC/mmax, N_RC/mmax, 'r')
 
         # Map of energy
-        plt.sca(self.fd[6])
+        plt.sca(self.axes[6])
         dt = np.arange(0., self.split.meta.maxdt, self.split.meta.ddt)
         phi = np.arange(-90., 90., self.split.meta.dphi)
 
@@ -1484,8 +1453,8 @@ class DiagPlot(object):
         ecset = plt.contour(X, Y, E2, (errc, ), colors='magenta',
                             linewidths=2)
 
-        self.fd[6].axvline(self.split.RC_res.dtt)
-        self.fd[6].axhline(self.split.RC_res.phi)
+        self.axes[6].axvline(self.split.RC_res.dtt)
+        self.axes[6].axhline(self.split.RC_res.phi)
 
         # Silver-Chan
         # Corrected Fast and Slow
@@ -1503,19 +1472,19 @@ class DiagPlot(object):
         max2 = np.abs(self.split.SC_res.trSlow.data).max()
         mmax = np.amax([max1, max2])
 
-        self.fd[7].plot(taxis, self.split.SC_res.trFast.data/mmax, 'b--')
-        self.fd[7].plot(taxis, sig*self.split.SC_res.trSlow.data/mmax, 'r')
+        self.axes[7].plot(taxis, self.split.SC_res.trFast.data/mmax, 'b--')
+        self.axes[7].plot(taxis, sig*self.split.SC_res.trSlow.data/mmax, 'r')
 
         # Corrected Q and T
-        self.fd[8].plot(taxis, self.split.SC_res.trQ_c.data/mmax, 'b--')
-        self.fd[8].plot(taxis, self.split.SC_res.trT_c.data/mmax, 'r')
+        self.axes[8].plot(taxis, self.split.SC_res.trQ_c.data/mmax, 'b--')
+        self.axes[8].plot(taxis, self.split.SC_res.trT_c.data/mmax, 'r')
 
         # Particle motion
-        self.fd[9].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
-        self.fd[9].plot(E_SC/mmax, N_SC/mmax, 'r')
+        self.axes[9].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
+        self.axes[9].plot(E_SC/mmax, N_SC/mmax, 'r')
 
         # Map of energy
-        plt.sca(self.fd[10])
+        plt.sca(self.axes[10])
         dt = np.arange(0., self.split.meta.maxdt, self.split.meta.ddt)
         phi = np.arange(-90., 90., self.split.meta.dphi)
 
@@ -1537,10 +1506,11 @@ class DiagPlot(object):
         ecset = plt.contour(X, Y, E2, (errc,), colors='magenta',
                             linewidths=2)
 
-        self.fd[10].axvline(self.split.SC_res.dtt)
-        self.fd[10].axhline(self.split.SC_res.phi)
+        self.axes[10].axvline(self.split.SC_res.dtt)
+        self.axes[10].axhline(self.split.SC_res.phi)
 
-        self.fd[0].canvas.draw()
+        self.axes[0].canvas.draw()
+        # plt.show()
 
     def save(self, file):
         """
@@ -1553,38 +1523,4 @@ class DiagPlot(object):
 
         """
 
-        self.fd[0].savefig(file)
-
-
-# def _calc_snr(tr, t1, dt):
-#     """
-#     Calculates signal-to-noise ratio based on start time
-#     and a given duration in seconds
-
-#     Returns
-#     -------
-#     snr : float
-#         Signal-to-noise ration (dB)
-
-#     """
-
-#     # Copy Z trace to signal and noise traces
-#     trSig = tr.copy()
-#     trNze = tr.copy()
-
-#     # Filter between 0.02 and 0.5 (dominant S wave frequencies)
-#     trSig.filter('bandpass', freqmin=0.02, freqmax=0.5,
-#                  corners=2, zerophase=True)
-#     trNze.filter('bandpass', freqmin=0.02, freqmax=0.5,
-#                  corners=2, zerophase=True)
-
-#     # Trim twin seconds around P-wave arrival
-#     trSig.trim(t1, t1 + dt)
-#     trNze.trim(t1 - dt, t1)
-
-#     # Calculate root mean square (RMS)
-#     srms = np.sqrt(np.mean(np.square(trSig.data)))
-#     nrms = np.sqrt(np.mean(np.square(trNze.data)))
-
-#     # Calculate signal/noise ratio in dB
-#     return 10*np.log10(srms*srms/nrms/nrms)
+        self.axes[0].savefig(file)

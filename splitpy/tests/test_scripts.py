@@ -3,13 +3,13 @@ import numpy as np
 import pickle
 import stdb
 from obspy.clients.fdsn import Client
-from splitpy import Split
+from splitpy import Split, utils
 from . import test_args, get_meta
 from pathlib import Path
 
 def test_split(tmp_path):
 
-    args = test_args.test_get_args()
+    args = test_args.test_get_args_calc_auto()
     args.startT = UTCDateTime('2016-08-24')
     args.endT = UTCDateTime('2016-08-25')
     args.verb = True
@@ -126,14 +126,14 @@ def test_split(tmp_path):
             print("|-----------------------------------------------|")
             print("| Cataloging Local Data...                      |")
             if args.useNet:
-                stalcllist = io.list_local_data_stn(
+                stalcllist = utils.list_local_data_stn(
                     lcldrs=args.localdata, sta=sta.station,
                     net=sta.network, altnet=sta.altnet)
                 print("|   {0:>2s}.{1:5s}: {2:6d} files              " +
                       "        |".format(
                           sta.network, sta.station, len(stalcllist)))
             else:
-                stalcllist = io.list_local_data_stn(
+                stalcllist = utils.list_local_data_stn(
                     lcldrs=args.localdata, sta=sta.station)
                 print("|   {0:5s}: {1:6d} files                      " +
                       "   |".format(
@@ -234,8 +234,7 @@ def test_split(tmp_path):
                 split.rotate(align='LQT')
 
                 # Calculate snr over dt_snr seconds
-                split.calc_snr(
-                    dt=args.dt_snr, fmin=args.fmin, fmax=args.fmax)
+                split.calc_snr(fmin=args.fmin, fmax=args.fmax)
                 if args.verb:
                     print("* SNRQ: {}".format(split.meta.snrq))
                     print("* SNRT: {}".format(split.meta.snrt))
