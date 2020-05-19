@@ -19,7 +19,7 @@ before_install:
     else
       DEP="pytest-cov";
     fi
-  - conda create -q -n testenv python=$PYTHON_VERSION obspy $DEP
+  - conda create -q -n testenv python=$PYTHON_VERSION obspy $DEP -c conda-forge
   - conda activate testenv
   - conda list
 install:

@@ -49,8 +49,8 @@ from math import ceil
 import numpy as np
 from splitpy import utils, calc
 from obspy import Trace, Stream
-import matplotlib
-matplotlib.use('Qt5Agg')
+# import matplotlib
+# matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 
