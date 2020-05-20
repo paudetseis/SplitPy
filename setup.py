@@ -15,7 +15,7 @@ def find_version(*paths):
     raise RuntimeError("Unable to find version string.")
 
 
-scripts = [str(x) for x in Path('Scripts').iterdir() if x.is_dir()]
+scripts = [str(x) for x in Path('Scripts').iterdir() if x.is_file()]
 
 setup(
     name='splitpy',
@@ -32,7 +32,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8'],
-    install_requires=['stdb', 'obspy', 'dill', 'PyQt5'],
+    install_requires=['stdb', 'obspy', 'PyQt5'],
     python_requires='>=3.6',
     packages=['splitpy'],
     scripts=scripts)

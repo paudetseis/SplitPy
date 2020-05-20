@@ -33,7 +33,7 @@ from obspy import UTCDateTime
 from numpy import nan
 
 
-def get_arguments(argv=None):
+def get_arguments_calc_auto(argv=None):
     """
     Get Options from :class:`~optparse.OptionParser` objects.
 
@@ -42,7 +42,7 @@ def get_arguments(argv=None):
     """
 
     parser = ArgumentParser(
-        usage="Usage: %prog [arguments] <station database>",
+        usage="%(prog)s [arguments] <station database>",
         description="Script wrapping "
         "together the python-based implementation of SplitLab by " +
         "Wustefeld and others. This version " +
@@ -53,8 +53,6 @@ def get_arguments(argv=None):
         "one by one with the SKS Splitting parameters measured " +
         "individually using both the " +
         "Rotation-Correlation (RC) and Silver & Chan (SC) methods.")
-
-    # General Settings
     parser.add_argument(
         "indb",
         help="Station Database to process from.",
@@ -98,6 +96,19 @@ def get_arguments(argv=None):
         "each event. Selecting skip and overwrite (ie, both flags) " +
         "negate each other, and both are set to " +
         "False (every repeat is prompted). [Default False]")
+    parser.add_argument(
+        "-C", "--calc",
+        action="store_true",
+        dest="calc",
+        default=False,
+        help="Analyze data for shear-wave splitting. [Default saves data "+
+        "to folders for subsequent analysis]")
+    parser.add_argument(
+        "-P", "--plot-diagnostic",
+        action="store_true",
+        dest="diagplot",
+        default=False,
+        help="Plot diagnostic window at end of process. [Default False]")
 
     # Server Settings
     ServerGroup = parser.add_argument_group(
@@ -161,20 +172,20 @@ def get_arguments(argv=None):
         title='Parameter Settings',
         description="Miscellaneous default values and settings")
     ConstGroup.add_argument(
-        "--Vp",
+        "--sampling-rate",
         action="store",
         type=float,
-        dest="vp",
-        default=6.,
-        help="Specify default P velocity value. [Default 6.0 km/s]")
+        dest="new_sampling_rate",
+        default=10.,
+        help="Specify new sampling rate in Hz. [Default 10.]")
     ConstGroup.add_argument(
-        "--SNR",
+        "--min-snr",
         action="store",
         type=float,
         dest="msnr",
-        default=7.5,
-        help="Specify the SNR threshold used to determine whether " +
-        "events are processedc. [Default 7.5]")
+        default=5.,
+        help="Minimum SNR value calculated on the radial (Q) component "+
+        "to proceed with analysis (dB). [Default 5.]")
     ConstGroup.add_argument(
         "--window",
         action="store",
@@ -182,36 +193,55 @@ def get_arguments(argv=None):
         dest="dts",
         default=120.,
         help="Specify time window length before and after the SKS "
-        "arrival. The total window length is 2*dst. [Default 120 s]")
+        "arrival. The total window length is 2*dst (sec). [Default 120]")
     ConstGroup.add_argument(
         "--max-delay",
         action="store",
         type=float,
         dest="maxdt",
         default=4.,
-        help="Specify the maximum delay time. [Default 4 s]")
+        help="Specify the maximum delay time in search (sec). "+
+        "[Default 4]")
     ConstGroup.add_argument(
-        "--time-increment",
+        "--dt-delay",
         action="store",
         type=float,
         dest="ddt",
         default=0.1,
-        help="Specify the time increment. [Default 0.1 s]")
+        help="Specify the time delay increment in search (sec). "+
+        "[Default 0.1]")
     ConstGroup.add_argument(
-        "--angle-increment",
+        "--dphi",
         action="store",
         type=float,
         dest="dphi",
         default=1.,
-        help="Specify the angle increment. [Default 1 d]")
+        help="Specify the fast angle increment in search (degree). "+
+        "[Default 1.]")
     ConstGroup.add_argument(
-        "--transverse-SNR",
+        "--snrT",
         action="store",
         type=float,
         dest="snrTlim",
         default=1.,
         help="Specify the minimum SNR Threshold for the Transverse " +
         "component to be considered Non-Null. [Default 1.]")
+    ConstGroup.add_argument(
+        "--fmin",
+        action="store",
+        type=float,
+        dest="fmin",
+        default=0.02,
+        help="Specify the minimum frequency corner for SNR " +
+        "filter (Hz). [Default 0.02]")
+    ConstGroup.add_argument(
+        "--fmax",
+        action="store",
+        type=float,
+        dest="fmax",
+        default=0.5,
+        help="Specify the maximum frequency corner for SNR " +
+        "filter (Hz). [Default 0.5]")
 
     # Event Selection Criteria
     EventGroup = parser.add_argument_group(
@@ -219,7 +249,7 @@ def get_arguments(argv=None):
         description="Settings associated with refining "
         "the events to include in matching station pairs")
     EventGroup.add_argument(
-        "--start-time",
+        "--start",
         action="store",
         type=str,
         dest="startT",
@@ -228,7 +258,7 @@ def get_arguments(argv=None):
         "the start time for the event search. This will override any " +
         "station start times. [Default start date of each station]")
     EventGroup.add_argument(
-        "--end-time",
+        "--end",
         action="store",
         type=str,
         dest="endT",
@@ -237,7 +267,7 @@ def get_arguments(argv=None):
         "the end time for the event search. This will override any " +
         "station end times [Default end date of each station]")
     EventGroup.add_argument(
-        "--reverse-order", "-R",
+        "--reverse", "-R",
         action="store_true",
         dest="reverse",
         default=False,
@@ -283,6 +313,14 @@ def get_arguments(argv=None):
         default=120.,
         help="Specify the maximum great circle distance (degrees) " +
         "between the station and event. [Default 120]")
+    GeomGroup.add_argument(
+        "--phase",
+        action="store",
+        type=str,
+        dest="phase",
+        default='SKS',
+        help="Specify the phase name to use. Be careful with the distance. " +
+        "setting. Options are 'SKS' or 'SKKS'. [Default 'SKS']")
 
     args = parser.parse_args(argv)
 
@@ -345,299 +383,24 @@ def get_arguments(argv=None):
     else:
         args.ndval = nan
 
-    return args
-
-
-def get_arguments_prep(argv=None):
-    """
-    Get Options from :class:`~optparse.OptionParser` objects.
-
-    This function is used for preparation of SKS data for offline processing
-
-    """
-
-    parser = ArgumentParser(
-        usage="Usage: %prog [arguments] <station database>",
-        description="Script to " +
-        "download and prepare datasets for SKS splitting processing. " +
-        "This script downloads and prepares event and station data, " +
-        "so that splitting can then be calculated offline.")
-
-    # General Settings
-    parser.add_argument(
-        "indb",
-        help="Station Database to process from.",
-        type=str)
-    parser.add_argument(
-        "--keys",
-        action="store",
-        type=str,
-        dest="stkeys",
-        default="",
-        help="Specify a comma separated list of station keys for which " +
-        "to perform analysis. These must be contained within the " +
-        "station database. Partial keys will be used to match against " +
-        "those in the dictionary. For instance, providing IU will match " +
-        "with all stations in the IU network [Default " +
-        "processes all stations in the database]")
-    parser.add_argument(
-        "-v", "-V", "--verbose",
-        action="store_true",
-        dest="verb",
-        default=False,
-        help="Specify to increase verbosity.")
-    parser.add_argument(
-        "--local-data",
-        action="store",
-        type=str,
-        dest="localdata",
-        default=None,
-        help="Specify a comma separated list of paths containing " +
-        "day-long sac files of data already downloaded. If data exists " +
-        "for a seismogram is already present on disk, it is selected " +
-        "preferentially over downloading the data using the Client interface")
-    parser.add_argument(
-        "--no-data-zero",
-        action="store_true",
-        dest="ndval",
-        default=False,
-        help="Specify to force missing data to be set as zero, rather " +
-        "than default behaviour which sets to nan.")
-    parser.add_argument(
-        "--no-local-net",
-        action="store_false",
-        dest="useNet",
-        default=True,
-        help="Specify to prevent using the Network code in the search " +
-        "for local data (sometimes for CN stations the dictionary name " +
-        "for a station may disagree with that in the filename. " +
-        "[Default Network used]")
-    parser.add_argument(
-        "-D", "--data-directory",
-        action="store",
-        type=str,
-        dest="datadir",
-        default="DATA",
-        help="Specify the directory prefix in which the prepared data " +
-        "is stored. [Default 'DATA']. The start and end time and date " +
-        "as well as min and max magnitudes are included in the final " +
-        "folder name.")
-
-    # Server Settings
-    ServerGroup = parser.add_argument_group(
-        title="Server Settings",
-        description="Settings associated with which "
-        "datacenter to log into.")
-    ServerGroup.add_argument(
-        "-S", "--Server",
-        action="store",
-        type=str,
-        dest="Server",
-        default="IRIS",
-        help="Specify the server to connect to. Options include: " +
-        "BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU, NCEDC, " +
-        "NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS, USP. [Default IRIS]")
-    ServerGroup.add_argument(
-        "-U", "--User-Auth",
-        action="store",
-        type=str,
-        dest="UserAuth",
-        default="",
-        help="Enter your IRIS Authentification Username and Password " +
-        "(--User-Auth='username:authpassword') to access and download " +
-        "restricted data. [Default no user and password]")
-
-    # Constants Settings
-    ConstGroup = parser.add_argument_group(
-        title='Parameter Settings',
-        description="Miscellaneous default values and settings")
-    ConstGroup.add_argument(
-        "--Vp",
-        action="store",
-        type=float,
-        dest="vp",
-        default=6.,
-        help="Specify default P velocity value. [Default 6.0 km/s]")
-    ConstGroup.add_argument(
-        "--SNR",
-        action="store",
-        type=float,
-        dest="msnr",
-        default=7.5,
-        help="Specify the SNR threshold used to determine whether " +
-        "events are processedc. [Default 7.5]")
-    ConstGroup.add_argument(
-        "--window",
-        action="store",
-        type=float,
-        dest="dts",
-        default=120.,
-        help="Specify time window length before and after the " +
-        "SKS arrival. The total window length is "
-        "2*dst. [Default 120 s]")
-    ConstGroup.add_argument(
-        "--max-delay",
-        action="store",
-        type=float,
-        dest="maxdt",
-        default=4.,
-        help="Specify the maximum delay time. [Default 4 s]")
-    ConstGroup.add_argument(
-        "--time-increment",
-        action="store",
-        type=float,
-        dest="ddt",
-        default=0.1,
-        help="Specify the time increment. [Default 0.1 s]")
-    ConstGroup.add_argument(
-        "--angle-increment",
-        action="store",
-        type=float,
-        dest="dphi",
-        default=1.,
-        help="Specify the angle increment. [Default 1 d]")
-    ConstGroup.add_argument(
-        "--transverse-SNR",
-        action="store",
-        type=float,
-        dest="snrTlim",
-        default=1.,
-        help="Specify the minimum SNR Threshold for the Transverse " +
-        "component to be considered Non-Null. [Default 1.]")
-
-    # Event Selection Criteria
-    EventGroup = parser.add_argument_group(
-        title="Event Settings",
-        description="Settings associated with "
-        "refining the events to include in matching station pairs")
-    EventGroup.add_argument(
-        "--start-time",
-        action="store",
-        type=str,
-        dest="startT",
-        default="",
-        help="Specify a UTCDateTime compatible string representing the " +
-        "start time for the event search. This will override any station " +
-        "start times. [Default more recent start date for each station pair]")
-    EventGroup.add_argument(
-        "--reverse-order", "-R",
-        action="store_true",
-        dest="reverse",
-        default=False,
-        help="Reverse order of events. Default behaviour starts at " +
-        "oldest event and works towards most " +
-        "recent. Specify reverse order and instead the program will " +
-        "start with the most recent events and "
-        "work towards older")
-    EventGroup.add_argument(
-        "--end-time",
-        action="store",
-        type=str,
-        dest="endT",
-        default="",
-        help="Specify a UTCDateTime compatible string representing " +
-        "the end time for the event search. " +
-        "This will override any station end times [Default older end " +
-        "date for each the pair of stations]")
-    EventGroup.add_argument(
-        "--min-mag",
-        action="store",
-        type=float,
-        dest="minmag",
-        default=6.0,
-        help="Specify the minimum magnitude of event for which to " +
-        "search. [Default 6.0]")
-    EventGroup.add_argument(
-        "--max-mag",
-        action="store",
-        type=float,
-        dest="maxmag",
-        default=None,
-        help="Specify the maximum magnitude of event for which to " +
-        "search. [Default None, ie no limit]")
-
-    # Geometry Settings
-    GeomGroup = parser.add_argument_group(
-        title="Geometry Settings",
-        description="Settings associatd with the "
-        "event-station geometries")
-    GeomGroup.add_argument(
-        "--min-dist",
-        action="store",
-        type=float,
-        dest="mindist",
-        default=85.,
-        help="Specify the minimum great circle distance (degrees) " +
-        "between the station and event. [Default 85]")
-    GeomGroup.add_argument(
-        "--max-dist",
-        action="store",
-        type=float,
-        dest="maxdist",
-        default=120.,
-        help="Specify the maximum great circle distance (degrees) " +
-        "between the station and event. [Default 120]")
-
-    args = parser.parse_args(argv)
-
-    # Check inputs
-    if not exist(args.indb):
-        parser.error("Input file " + args.indb + " does not exist")
-
-    # create station key list
-    if len(args.stkeys) > 0:
-        args.stkeys = args.stkeys.split(',')
-
-    # construct start time
-    if len(args.startT) > 0:
-        try:
-            args.startT = UTCDateTime(args.startT)
-        except:
+    # Check distances for selected phase
+    if args.phase not in ['SKS', 'SKKS']:
+        parser.error(
+            "Error: choose between 'SKS' and 'SKKS.")
+    if args.phase == 'SKS' or 'SKKS':
+        if not args.mindist:
+            args.mindist = 85.
+        if not args.maxdist:
+            args.maxdist = 120.
+        if args.mindist < 85. or args.maxdist > 120.:
             parser.error(
-                "Cannot construct UTCDateTime from start time: " +
-                args.startT)
-    else:
-        args.startT = None
-
-    # construct end time
-    if len(args.endT) > 0:
-        try:
-            args.endT = UTCDateTime(args.endT)
-        except:
-            parser.error(
-                "Cannot construct UTCDateTime from end time: " +
-                args.endT)
-    else:
-        args.endT = None
-
-    # Parse User Authentification
-    if not len(args.UserAuth) == 0:
-        tt = args.UserAuth.split(':')
-        if not len(tt) == 2:
-            parser.error(
-                "Error: Incorrect Username and Password Strings " +
-                "for User Authentification")
-        else:
-            args.UserAuth = tt
-    else:
-        args.UserAuth = []
-
-    # Parse Local Data directories
-    if args.localdata is not None:
-        args.localdata = args.localdata.split(',')
-    else:
-        args.localdata = []
-
-    # Check NoData Value
-    if args.ndval:
-        args.ndval = 0.0
-    else:
-        args.ndval = nan
+                "Distances should be between 85 and 120 deg. for " +
+                "teleseismic 'SKS' and 'SKKS' waves.")
 
     return args
 
 
-def get_arguments_offline(argv=None):
+def get_arguments_calc_manual(argv=None):
     """
     Get Options from :class:`~optparse.OptionParser` objects.
 
@@ -646,7 +409,7 @@ def get_arguments_offline(argv=None):
     """
 
     parser = ArgumentParser(
-        usage="Usage: %prog [arguments] <station database>",
+        usage="%(prog)s [arguments] <station database>",
         description="Script to process "
         "and calculate the spliting parameters for a dataset " +
         "that has already been downloaded by sks_prep.py. ")
@@ -669,35 +432,25 @@ def get_arguments_offline(argv=None):
         "dictionary. For instance, providing IU will match " +
         "with all stations in the IU network [Default " +
         "processes all stations in the database]")
+    parser.add_argument(
+        "-v", "-V", "--verbose",
+        action="store_true",
+        dest="verb",
+        default=False,
+        help="Specify to increase verbosity.")
 
     # Constants Settings
     ConstGroup = parser.add_argument_group(
         title='Parameter Settings',
         description="Miscellaneous default values and settings")
     ConstGroup.add_argument(
-        "--Vp",
-        action="store",
-        type=float,
-        dest="vp",
-        default=6.,
-        help="Specify default P velocity value. [Default 6.0 km/s]")
-    ConstGroup.add_argument(
-        "--SNR",
-        action="store",
-        type=float,
-        dest="msnr",
-        default=7.5,
-        help="Specify the SNR threshold used to determine whether " +
-        "events are processedc. [Default 7.5]")
-    ConstGroup.add_argument(
         "--window",
         action="store",
         type=float,
         dest="dts",
         default=120.,
-        help="Specify time window length before and after the " +
-        "SKS arrival. The total window length is 2*dst. " +
-        "[Default 120 s]")
+        help="Specify time window length before and after the SKS "
+        "arrival. The total window length is 2*dst (sec). [Default 120]")
     ConstGroup.add_argument(
         "--max-delay",
         action="store",
@@ -734,7 +487,7 @@ def get_arguments_offline(argv=None):
         description="Settings associated with " +
         "refining the events to include in matching station pairs")
     EventGroup.add_argument(
-        "--start-time",
+        "--start",
         action="store",
         type=str,
         dest="startT",
@@ -743,7 +496,7 @@ def get_arguments_offline(argv=None):
         "start time for the event search. This will override any station " +
         "start times. [Default more recent start date for each station pair]")
     EventGroup.add_argument(
-        "--end-time",
+        "--end",
         action="store",
         type=str,
         dest="endT",
@@ -760,44 +513,6 @@ def get_arguments_offline(argv=None):
         "event and works towards most recent. Specify reverse order and " +
         "instead the program will start with the most recent events and " +
         "work towards older")
-    EventGroup.add_argument(
-        "--min-mag",
-        action="store",
-        type=float,
-        dest="minmag",
-        default=6.0,
-        help="Specify the minimum magnitude of event for which to search. " +
-        "[Default 6.0]")
-    EventGroup.add_argument(
-        "--max-mag",
-        action="store",
-        type=float,
-        dest="maxmag",
-        default=None,
-        help="Specify the maximum magnitude of event for which to search. " +
-        "[Default None, ie no limit]")
-
-    # Geometry Settings
-    GeomGroup = parser.add_argument_group(
-        title="Geometry Settings",
-        description="Settings associatd with "
-        "the event-station geometries")
-    GeomGroup.add_argument(
-        "--min-dist",
-        action="store",
-        type=float,
-        dest="mindist",
-        default=85.,
-        help="Specify the minimum great circle distance (degrees) " +
-        "between the station and event. [Default 85]")
-    GeomGroup.add_argument(
-        "--max-dist",
-        action="store",
-        type=float,
-        dest="maxdist",
-        default=120.,
-        help="Specify the maximum great circle distance (degrees) " +
-        "between the station and event. [Default 120]")
 
     args = parser.parse_args(argv)
 
@@ -832,12 +547,12 @@ def get_arguments_offline(argv=None):
     return args
 
 
-def get_arguments_plot(argv=None):
+def get_arguments_average(argv=None):
 
     parser = ArgumentParser(
-        usage="Usage: %prog [arguments] <station database>",
+        usage="%(prog)s [arguments] <station database>",
         description="Script to plot the average splitting results for a " +
-        "given station. Loads the available pkl files in the specified " +
+        "given station. Loads the available .pkl files in the specified " +
         "Station Directory.")
 
     # General Settings
@@ -859,12 +574,18 @@ def get_arguments_plot(argv=None):
         "with all stations in the IU network [Default " +
         "processes all stations in the database]")
     parser.add_argument(
-        "--no-figure",
-        action="store_false",
+        "-v", "-V", "--verbose",
+        action="store_true",
+        dest="verb",
+        default=False,
+        help="Specify to increase verbosity.")
+    parser.add_argument(
+        "--show-fig",
+        action="store_true",
         dest="showfig",
-        default=True,
-        help="Specify to prevent plots from opening during processing; " +
-        "they are still saved to disk. [Default plots open and save]")
+        default=False,
+        help="Specify show plots during processing - " +
+        "they are still saved to disk. [Default only saves]")
 
     # Null Settings
     NullGroup = parser.add_argument_group(

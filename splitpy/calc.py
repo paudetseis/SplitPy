@@ -487,7 +487,7 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
         dof = 3.01
         print(
             "Degrees of freedom < 3. Fixing to DOF = 3, which may " +
-            "result in accurate errors")
+            "result in inaccurate errors")
     n_par = 2
 
     # Fisher transformation
