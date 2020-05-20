@@ -281,7 +281,7 @@ def main():
                 # Save LQT Traces
                 pickle.dump(split.dataLQT, open(LQTfile, "wb"))
 
-                if args.analyze:
+                if args.calc:
                     # Analyze
                     split.analyze(verbose=args.verb)
 
@@ -299,7 +299,7 @@ def main():
                 # Display results
                 if args.verb:
                     split.display_meta()
-                    if args.analyze:
+                    if args.calc:
                         split.display_results()
                         split.display_null_quality()
 
@@ -309,7 +309,7 @@ def main():
                 # Save Station Data
                 pickle.dump(split.sta, open(stafile, "wb"))
 
-                if args.analyze:
+                if args.calc:
                     # Save Split Data
                     file = open(splitfile, "wb")
                     pickle.dump(split.SC_res, file)

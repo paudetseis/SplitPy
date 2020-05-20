@@ -97,9 +97,9 @@ def get_arguments_calc_auto(argv=None):
         "negate each other, and both are set to " +
         "False (every repeat is prompted). [Default False]")
     parser.add_argument(
-        "-A", "--analyze",
+        "-C", "--calc",
         action="store_true",
-        dest="analyze",
+        dest="calc",
         default=False,
         help="Analyze data for shear-wave splitting. [Default saves data "+
         "to folders for subsequent analysis]")
@@ -444,29 +444,13 @@ def get_arguments_calc_manual(argv=None):
         title='Parameter Settings',
         description="Miscellaneous default values and settings")
     ConstGroup.add_argument(
-        "--Vp",
-        action="store",
-        type=float,
-        dest="vp",
-        default=6.,
-        help="Specify default P velocity value. [Default 6.0 km/s]")
-    ConstGroup.add_argument(
-        "--SNR",
-        action="store",
-        type=float,
-        dest="msnr",
-        default=7.5,
-        help="Specify the SNR threshold used to determine whether " +
-        "events are processedc. [Default 7.5]")
-    ConstGroup.add_argument(
         "--window",
         action="store",
         type=float,
         dest="dts",
         default=120.,
-        help="Specify time window length before and after the " +
-        "SKS arrival. The total window length is 2*dst. " +
-        "[Default 120 s]")
+        help="Specify time window length before and after the SKS "
+        "arrival. The total window length is 2*dst (sec). [Default 120]")
     ConstGroup.add_argument(
         "--max-delay",
         action="store",
@@ -503,7 +487,7 @@ def get_arguments_calc_manual(argv=None):
         description="Settings associated with " +
         "refining the events to include in matching station pairs")
     EventGroup.add_argument(
-        "--start-time",
+        "--start",
         action="store",
         type=str,
         dest="startT",
@@ -512,7 +496,7 @@ def get_arguments_calc_manual(argv=None):
         "start time for the event search. This will override any station " +
         "start times. [Default more recent start date for each station pair]")
     EventGroup.add_argument(
-        "--end-time",
+        "--end",
         action="store",
         type=str,
         dest="endT",
@@ -529,44 +513,6 @@ def get_arguments_calc_manual(argv=None):
         "event and works towards most recent. Specify reverse order and " +
         "instead the program will start with the most recent events and " +
         "work towards older")
-    EventGroup.add_argument(
-        "--min-mag",
-        action="store",
-        type=float,
-        dest="minmag",
-        default=6.0,
-        help="Specify the minimum magnitude of event for which to search. " +
-        "[Default 6.0]")
-    EventGroup.add_argument(
-        "--max-mag",
-        action="store",
-        type=float,
-        dest="maxmag",
-        default=None,
-        help="Specify the maximum magnitude of event for which to search. " +
-        "[Default None, ie no limit]")
-
-    # Geometry Settings
-    GeomGroup = parser.add_argument_group(
-        title="Geometry Settings",
-        description="Settings associatd with "
-        "the event-station geometries")
-    GeomGroup.add_argument(
-        "--min-dist",
-        action="store",
-        type=float,
-        dest="mindist",
-        default=85.,
-        help="Specify the minimum great circle distance (degrees) " +
-        "between the station and event. [Default 85]")
-    GeomGroup.add_argument(
-        "--max-dist",
-        action="store",
-        type=float,
-        dest="maxdist",
-        default=120.,
-        help="Specify the maximum great circle distance (degrees) " +
-        "between the station and event. [Default 120]")
 
     args = parser.parse_args(argv)
 
@@ -627,6 +573,12 @@ def get_arguments_average(argv=None):
         "dictionary. For instance, providing IU will match " +
         "with all stations in the IU network [Default " +
         "processes all stations in the database]")
+    parser.add_argument(
+        "-v", "-V", "--verbose",
+        action="store_true",
+        dest="verb",
+        default=False,
+        help="Specify to increase verbosity.")
     parser.add_argument(
         "--show-fig",
         action="store_true",

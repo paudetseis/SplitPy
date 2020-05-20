@@ -49,8 +49,6 @@ from math import ceil
 import numpy as np
 from splitpy import utils, calc
 from obspy import Trace, Stream
-# import matplotlib
-# matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 
@@ -981,7 +979,8 @@ class PickPlot(object):
 
         # L component seismogram
         ax1 = fig.add_subplot(gs[0:7])  # 0:3
-        ax1 = init_pickw(ax=ax1, title=self.split.sta.station, ylab='L')
+        title = self.split.sta.network+'.'+self.split.sta.station
+        ax1 = init_pickw(ax=ax1, title=title, ylab='L')
 
         # Q component seismogram
         ax2 = fig.add_subplot(gs[8:15])  # 3:7
@@ -1298,6 +1297,7 @@ class DiagPlot(object):
             End time of picking window
 
         """
+        import matplotlib
 
         if t1 is None and t2 is None:
             t1 = self.split.meta.time + self.split.meta.ttime - 5.

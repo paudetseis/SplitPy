@@ -22,73 +22,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""
-Program sks_plot_results.py
----------------------------
-
-Plots the results for a given station based on ``.pkl`` files present in the
-running directory.
-
-Usage
------
-
-.. code-block::
-
-   $ sks_plot_results.py -h
-    Usage: sks_plot_results.py [options] <Folder> [Folder 2]
-
-    Script to plot the average splitting results for a given station. Loads the
-    available pkl files in the specified Station Directory.
-
-    Options:
-      -h, --help            show this help message and exit
-      --no-figure           Specify to prevent plots from opening during
-                            processing; they are still saved to disk. [Default
-                            plots open and save]
-
-      Null Selection Settings:
-        Settings associated with selecting which Null or Non-Null data is
-        included
-
-        --nulls, --Nulls    Specify this flag to include Null Values in the
-                            average. [Default Non-Nulls only]
-        --no-nons, --No-Nons
-                            Specify this flag to exclude Non-Nulls from the
-                            average [Default False]
-
-      Quality Selection Settings:
-        Settings associated with selecting the qualities to include in the
-        selection.
-
-        --No-Good, --no-good
-                            Specify to exclude 'Good' measurements from the
-                            average. [Default Good + Fair]
-        --No-Fair, --no-fair
-                            Specify to exclude 'Fair' measurements from the
-                            average [Default Good + Fair]
-        --Poor, --poor      Specify to include 'Poor' measurements in the average
-                            [Default No Poors]
-
-      Split Type Settings:
-        Settings to Select which Split types are included in the selection.
-
-        --RC-Only, --rc-only, --RC-only
-                            Specify to only include RC splits in the average.
-                            [Default RC + SC]
-        --SC-Only, --sc-only, --SC-only
-                            Specify to only include SC splits in the average.
-                            [Default RC + SC]
-"""
 
 # -*- coding: utf-8 -*-
-import numpy as np
-from matplotlib import pyplot as plt
-import matplotlib.gridspec as gspec
-from glob import glob
-from os.path import exists, join
-from math import ceil
 import pickle
-from splitpy import arguments
+import stdb
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gspec
+from math import ceil
+from splitpy import arguments, Split
+from pathlib import Path
 
 
 def angle_mean(dt, phi, ddt, dphi):
@@ -107,7 +50,7 @@ def angle_mean(dt, phi, ddt, dphi):
 
 def main():
 
-    args = arguments.get_arguments_plot()
+    args = arguments.get_arguments_average()
 
     print("---------------------------")
     print("Selection Criteria ")
@@ -142,15 +85,17 @@ def main():
         # Extract station information from dictionary
         sta = db[stkey]
 
+        split = Split(sta)
+
         # Results directory
-        splitdir = Path("RESULTS") / stkey
-        if not splitdir.is_dir():
-            print('Path to ' + str(splitdir) + ' doesn`t exist - continuing')
+        datapath = Path("DATA") / stkey
+        if not datapath.is_dir():
+            print('Path to ' + str(datapath) + ' doesn`t exist - continuing')
             continue
 
-        splitfiles = [x for x in splitdir.iterdir()
-                      if (x.is_file() and x.name.split(".")[0] == 'Split')]
-        splitfiles.sort()
+        evs = [str(x) for x in datapath.iterdir() if x.is_dir()]
+        evs.sort()
+        ievs = range(0, len(evs))
 
         # Initialize Storage
         baz = []
@@ -166,24 +111,28 @@ def main():
         Qual = []
         Null = []
 
-        print("  Processing {0:d} Events...".format(len(splitfiles)))
+        print("  Processing {0:d} Events...".format(len(evs)))
 
         # Loop over Pickle Files and read in required data
         ic = 0
-        for splitfile in splitfiles:
+        for iev in ievs:
 
-            # Get Pickle File Contents
-            ic += 1
-            print(("  {0:d}) {1:s}".format(ic, str(splitfile))))
-            try:
-                fpkl = open(splitfile, 'rb')
-            except:
-                print("     Error Opening")
-                continue
+            # Event Name
+            evSTR = evs[iev]
 
-            # Read in all data
-            split = pickle.load(fpkl)
-            fpkl.close()
+            # Event data
+            metafile = Path(evSTR) / "Meta_data.pkl"
+            meta = pickle.load(open(metafile, "rb"))
+            split.meta = meta
+
+            # Split results
+            splitfile = Path(evSTR) / "split_results_auto.pkl"
+            file = open(splitfile, "rb")
+            split.SC_res = pickle.load(file)
+            split.RC_res = pickle.load(file)
+            split.null = pickle.load(file)
+            split.quality = pickle.load(file)
+            file.close()
 
             # Determine whether to accept based on Null Value
             Naccept = False
@@ -383,7 +332,7 @@ def main():
         # Save plot
         plotdir = Path("PLOTS")
         if not plotdir.is_dir():
-            plotdir.mkdir()
+            plotdir.mkdir(parents=True)
 
         # Output Names
         outdata = plotdir / (args.TypeName + args.NullName +
@@ -421,21 +370,21 @@ def main():
             dPHI = stdphiRC
             dDT = stddtRC
 
-        print("")
-        print("*** Station Average from {0} measurements ***".format(len(baz)))
-        print("   " + arg)
-        print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
-        print("   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI))
-        print("   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT))
-        print("   Saved to: "+str(outdata))
-        print("")
+        if args.verb:
+            print("")
+            print("*** Station Average from {0} measurements ***".format(len(baz)))
+            print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
+            print("   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI))
+            print("   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT))
+            print("   Saved to: "+str(outdata))
+            print("")
 
         # Write out Final Results
         fid = open(outdata, 'w')
         fid.writelines(
-            "{0}  {1:8.4f}  {2:7.4f}   {3:7.3f} {4:7.3f}   " +
-            "{5:5.3f} {6:5.3f}".format(
-                arg, stlon, stlat, PHI, dPHI, DT, dDT))
+            "{01:8.4f}  {1:7.4f}   {2:7.3f} {3:7.3f}   " +
+            "{4:5.3f} {5:5.3f}".format(
+                stlon, stlat, PHI, dPHI, DT, dDT))
         fid.close()
 
         # Save Plot

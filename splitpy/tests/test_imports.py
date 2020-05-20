@@ -10,5 +10,3 @@ def test_splitpy_modules():
     from splitpy.classes import Meta, Result, Split
     from splitpy import Pick, Keep, Save, Repeat
     from splitpy import PickPlot, DiagPlot
-    # import matplotlib
-    # matplotlib.use('Qt5Agg')

@@ -74,6 +74,9 @@ def main():
         # Get only directories for which the key is available
         evs = [str(x) for x in datapath.iterdir() if x.is_dir()]
 
+        # Add condition for data range
+        #############################
+
         # Get List of events to process
         evs.sort()
         nevs = len(evs)
@@ -124,10 +127,10 @@ def main():
             split.dataLQT = dataLQT
 
             # Split results
-            splitfile = Path(evSTR) / "split_results_auto.pkl"
+            splitfile = Path(evSTR) / "Split_results_auto.pkl"
             if not splitfile.exists():
 
-                print("* Split results not available... computing")
+                print("* Split results not available... calculating")
                 split.analyze(verbose=args.verb)
                 split.is_null(args.snrTlim, verbose=args.verb)
                 split.get_quality(verbose=args.verb)
@@ -237,7 +240,7 @@ def main():
                         split.display_results()
 
                         # Save split results
-                        splitfile = Path(evSTR) / "split_results_manual.pkl"
+                        splitfile = Path(evSTR) / "Split_results_manual.pkl"
                         file = open(splitfile, "wb")
                         split.SC_res = pickle.dump(split.SC_res, file)
                         split.RC_res = pickle.dump(split.RC_res, file)
@@ -246,7 +249,7 @@ def main():
                         file.close()
 
                         # Save diagnostic plot
-                        dplotfile = Path(evSTR) / "plot_diagnostic_manual.png"
+                        dplotfile = Path(evSTR) / "Plot_diagnostic_manual.png"
                         dplot.save(dplotfile)
 
                         print("* Estimate Saved")
