@@ -1,3 +1,6 @@
+.. figure:: ../splitpy/examples/figures/SplitPy_logo.png
+   :align: center
+
 GitHub Repositories
 -------------------
 

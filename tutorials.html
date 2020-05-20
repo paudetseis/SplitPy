@@ -1,0 +1,573 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorials &mdash; SplitPy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Scripts" href="scripts.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> SplitPy
+          
+
+          
+            
+            <img src="_static/SplitPy_logo.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Quick Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="links.html">GitHub Repositories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="links.html#references">References</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="splitpy.html">Licence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="splitpy.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="splitpy.html#basic-usage">Basic Usage</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#module-splitpy.gui">GUI classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html#modules">Modules</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Scripts &amp; Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="scripts.html">Scripts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#creating-the-stdb-database">Creating the <code class="docutils literal notranslate"><span class="pre">StDb</span></code> Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#automated-analysis">Automated analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-data">Downloading data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#downloading-and-processing">Downloading and Processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#re-processing">Re-Processing</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#manual-analysis">Manual analysis</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#re-picking">Re-picking</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#station-average">Station average</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">SplitPy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Tutorials</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/tutorials.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="creating-the-stdb-database">
+<h2>Creating the <code class="docutils literal notranslate"><span class="pre">StDb</span></code> Database<a class="headerlink" href="#creating-the-stdb-database" title="Permalink to this headline">¶</a></h2>
+<p>All the scripts provided require a <code class="docutils literal notranslate"><span class="pre">StDb</span></code> database containing station
+information and metadata. Let’s first create this database for station
+LOBS3 and send the prompt to a logfile</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ query_fdsn_stdb.py -N TA -C HH? -S TGTN TGTN &gt; logfile
+</pre></div>
+</div>
+<p>To check the station info for TGTN, use the program <code class="docutils literal notranslate"><span class="pre">ls_stdb.py</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ls_stdb.py TGTN.pkl
+Listing Station Pickle: TGTN.pkl
+NY.TGTN
+--------------------------------------------------------------------------
+1) NY.TGTN
+     Station: NY TGTN
+      Alternate Networks: None
+      Channel: HH ;  Location: --
+      Lon, Lat, Elev:  61.52670, -128.27269,   0.000
+      StartTime: 2013-07-01 00:00:00
+      EndTime:   2020-05-20 13:34:38
+      Status:    partial
+      Polarity: 1
+      Azimuth Correction: 0.000000
+</pre></div>
+</div>
+</div>
+<div class="section" id="automated-analysis">
+<h2>Automated analysis<a class="headerlink" href="#automated-analysis" title="Permalink to this headline">¶</a></h2>
+<p>There are two modes for producing shear-wave splitting estimates: Automated or Manual. In
+the automated mode, the code uses default uniform settings for all available seismograms
+to produce splitting estimates. In the manual mode, the code will search for available
+(pre-processed) data on disk and use a Graphical-User Interface (GUI) to refine the analysis
+window based on new picks. If the automated estimates are not available, they will first be
+determined before refining the window.</p>
+<div class="section" id="downloading-data">
+<h3>Downloading data<a class="headerlink" href="#downloading-data" title="Permalink to this headline">¶</a></h3>
+<p>Simply run <a class="reference internal" href="scripts.html#splitauto"><span class="std std-ref">split_calc_auto.py</span></a> with <code class="docutils literal notranslate"><span class="pre">TGTN.pkl</span></code> to download all available
+seismic data suitable for shear-wave splitting analysis.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ split_calc_auto.py --keys=NY.TGTN --local-data=/mnt/datadisk/DaySac/ --start=2020-01-01 --end=2020-05-20 TGTN.pkl
+</pre></div>
+</div>
+<p>This uses all default settings for window lengths, magnitude criteria, etc.
+In this example, data will be used from IRIS as well as any local data
+on disk (defined with the <code class="docutils literal notranslate"><span class="pre">--local-data</span></code> flag - this needs to be customized for
+your own file structure). If no data exists on disk, then
+the program will search on the specific data sever (through <code class="docutils literal notranslate"><span class="pre">obspy</span></code> clients). In this
+example, only events that occurred between January 1, 2020 and May 20, 2020 will
+be considered. Based on the criteria specified (see <a class="reference internal" href="scripts.html#splitauto"><span class="std std-ref">split_calc_auto.py</span></a>), seismograms will be
+downloaded where the minimum SNR threshold is exceeded. All data will be saved in separate
+time-key folders to <code class="docutils literal notranslate"><span class="pre">PATH/NY.TGTN/YYYYMMDD_HRMNSC/*</span></code>.</p>
+</div>
+<div class="section" id="downloading-and-processing">
+<h3>Downloading and Processing<a class="headerlink" href="#downloading-and-processing" title="Permalink to this headline">¶</a></h3>
+<p>You can run <a class="reference internal" href="scripts.html#splitauto"><span class="std std-ref">split_calc_auto.py</span></a> to automatically estimate the shear-wave splitting
+parameters by specifying the argument <code class="docutils literal notranslate"><span class="pre">-C</span></code> or <code class="docutils literal notranslate"><span class="pre">--calc</span></code>. Choosing <code class="docutils literal notranslate"><span class="pre">-V</span></code>
+or <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> will display
+the results to the terminal as the script proceeds. If you wish to visualize the results
+for each event, you can further select <code class="docutils literal notranslate"><span class="pre">-P</span></code> or <code class="docutils literal notranslate"><span class="pre">--plot-diagnostic</span></code>. This will pop a
+summary Figure (i.e., <code class="docutils literal notranslate"><span class="pre">Figure</span> <span class="pre">1</span></code>) of the splitting results for this particular event.</p>
+<p>As an example of a Good, non-null estimate, type the following line in the terminal
+(note the argument <code class="docutils literal notranslate"><span class="pre">-O</span></code> to overwrite existing results, and no key is specified since
+there is only one key in the database):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ split_calc_auto.py --start=2020-03-18 --end=2020-03-19 -V -C -P -O TGTN.pkl
+</pre></div>
+</div>
+<p>This will produce, in the terminal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>|==================================================|
+|                       TGTN                       |
+|==================================================|
+|  Station: NY.TGTN                                |
+|      Channel: HH; Locations: --                  |
+|      Lon: -128.27; Lat:  61.53                   |
+|      Start time: 2013-07-01 00:00:00             |
+|      End time:   2020-05-20 13:34:38             |
+|--------------------------------------------------|
+| Searching Possible events:                       |
+|   Start: 2020-03-18 00:00:00                     |
+|   End:   2020-03-19 00:00:00                     |
+|   Mag:   &gt;{0:3.1f} 6.0                           |
+| ...                                              |
+|  Found     2 possible events                     |
+|==================================================|
+
+|**************************************************|
+* #1 (2/2):  20200318_031345 NY.TGTN
+*   Phase: SKS
+*   Origin Time: 2020-03-18 03:13:45
+*   Lat: -13.14;        Lon:  167.03
+*   Dep: 176.00 km;     Mag: 6.1
+*   Dist: 10000.87 km;   Epi dist:  89.94 deg
+*   Baz:  241.82 deg;   Az:  25.63 deg
+* Requesting Waveforms:
+*    Startime: 2020-03-18 03:34:38
+*    Endtime:  2020-03-18 03:38:38
+*     TGTN.HH - ZNE:
+*          HH[ZNE].-- - Checking Network
+*              - ZNE Data Downloaded
+* Start times are not all close to true start:
+*   HHE 2020-03-18T03:34:38.110000Z 2020-03-18T03:38:39.100000Z
+*   HHN 2020-03-18T03:34:38.110000Z 2020-03-18T03:38:39.100000Z
+*   HHZ 2020-03-18T03:34:38.110000Z 2020-03-18T03:38:39.100000Z
+*   True start: 2020-03-18T03:34:38.107273Z
+* -&gt; Shifting traces to true start
+* Waveforms Retrieved...
+* SNRQ: 12.51340359244245
+* SNRT: 8.8889144288134
+* --&gt; Calculating Rotation-Correlation (RC) Splitting
+* --&gt; Calculating Silver-Chan (SC) Splitting
+*     Null Classification:
+*       SNR T Pass: 8.89 &gt; 1.00
+*       dPhi Pass:  3.00 outside 22. &lt; X &lt; 68.
+*     Quality Estimate: Non-Null -- Good
+*         rho: 1.00; dphi: 3.00
+*           Good: 0.8 &lt; rho &lt; 1.1  &amp;&amp;  dphi &lt; 8
+*           Fair: 0.7 &lt; rho &lt; 1.2  &amp;&amp;  dphi &lt; 15
+*           Poor: rho &lt; 0.7 | rho &gt; 1.3 &amp;&amp;  dphi &gt; 15
+ ======= Meta data ========
+
+ SNR (dB):            13
+ Station:             TGTN
+ Time:                2020-03-18T03:13:45.742000Z
+ Event depth (km):    0
+ Magnitude (Mw):      6.1
+ Longitude (deg):     167.03
+ Latitude (deg):      -13.14
+ GAC (deg):           89.94
+ Backazimuth deg):    241.82
+ Incidence (deg):      10.17
+ SNR - Q:      12.51
+ SNR - T:      8.89
+
+ ======= Best-fit splitting results ========
+
+ Best fit values: RC method
+ Phi = -75 degrees +/-  7
+ dt = 1.3 seconds +/- 0.1
+
+ Best fit values: SC method
+ Phi = -78 degrees +/-  5
+ dt = 1.3 seconds +/- 0.2
+
+ ======= Nulls and quality ========
+
+ Is Null?      False
+ Quality:      Good
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Figure</span> <span class="pre">1</span></code> summarizes the results of the splitting calculation. The top left “Q,T”
+frame shows the un-corrected radial (Q) and tangential (T) components within the
+time window. The second row of panels correspond to the ‘Rotation-Correlation’
+results, and the third row of panels is for the ‘Silver-Chan’ results. In each
+case, the first column shows the corrected Q and T fast and slow components, the
+second column the corrected Q and T components, the third column the before and after
+particle motion, and the fourth column the map of the error surfaces. A text box
+prints out the summary of the results, including whether or not the estimate is a
+Null, and the quality of the estimate (‘good’, ‘fair’, ‘poor’).</p>
+<div class="figure align-center">
+<img alt="_images/Figure_1.png" src="_images/Figure_1.png" />
+</div>
+</div>
+<div class="section" id="re-processing">
+<h3>Re-Processing<a class="headerlink" href="#re-processing" title="Permalink to this headline">¶</a></h3>
+<p>It is also possible to re-calculate the estimates for different parameters using the
+argument <code class="docutils literal notranslate"><span class="pre">--recalc</span></code>, which will be applied uniformly to all available data.
+In this case the data will not be re-downloaded and the data files will simply be updated
+in place. Plotting can also be done as in the previous example. For example, let’s
+change the frequency settings and re-calculate the previous example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ split_calc_auto.py --start=2020-03-18 --end=2020-03-19 --fmin=0.05 --fmax=1. -V -R -P -O TGTN.pkl
+</pre></div>
+</div>
+<p>This will produce, in the terminal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>|==================================================|
+|                       TGTN                       |
+|==================================================|
+|  Station: NY.TGTN                                |
+|      Channel: HH; Locations: --                  |
+|      Lon: -128.27; Lat:  61.53                   |
+|      Start time: 2013-07-01 00:00:00             |
+|      End time:   2020-05-20 13:34:38             |
+|--------------------------------------------------|
+| Searching Possible events:                       |
+|   Start: 2020-03-18 00:00:00                     |
+|   End:   2020-03-19 00:00:00                     |
+|   Mag:   &gt;{0:3.1f} 6.0                           |
+| ...                                              |
+|  Found     2 possible events                     |
+|==================================================|
+
+|**************************************************|
+* #1 (2/2):  20200318_031345 NY.TGTN
+*   Phase: SKS
+*   Origin Time: 2020-03-18 03:13:45
+*   Lat: -13.14;        Lon:  167.03
+*   Dep: 176.00 km;     Mag: 6.1
+*   Dist: 10000.87 km;   Epi dist:  89.94 deg
+*   Baz:  241.82 deg;   Az:  25.63 deg
+* SNRQ: 13.03806173520674
+* SNRT: 8.36765404740968
+* --&gt; Calculating Rotation-Correlation (RC) Splitting
+* --&gt; Calculating Silver-Chan (SC) Splitting
+*     Null Classification:
+*       SNR T Pass: 8.37 &gt; 1.00
+*       dPhi Pass:  2.00 outside 22. &lt; X &lt; 68.
+*     Quality Estimate: Non-Null -- Good
+*         rho: 1.00; dphi: 2.00
+*           Good: 0.8 &lt; rho &lt; 1.1  &amp;&amp;  dphi &lt; 8
+*           Fair: 0.7 &lt; rho &lt; 1.2  &amp;&amp;  dphi &lt; 15
+*           Poor: rho &lt; 0.7 | rho &gt; 1.3 &amp;&amp;  dphi &gt; 15
+ ======= Meta data ========
+
+ SNR (dB):            13
+ Station:             TGTN
+ Time:                2020-03-18T03:13:45.742000Z
+ Event depth (km):    0
+ Magnitude (Mw):      6.1
+ Longitude (deg):     167.03
+ Latitude (deg):      -13.14
+ GAC (deg):           89.94
+ Backazimuth deg):    241.82
+ Incidence (deg):      10.17
+ SNR - Q:      13.04
+ SNR - T:      8.37
+
+ ======= Best-fit splitting results ========
+
+ Best fit values: RC method
+ Phi = -76 degrees +/-  6
+ dt = 1.3 seconds +/- 0.1
+
+ Best fit values: SC method
+ Phi = -78 degrees +/-  4
+ dt = 1.3 seconds +/- 0.1
+
+ ======= Nulls and quality ========
+
+ Is Null?      False
+ Quality:      Good
+</pre></div>
+</div>
+<div class="figure align-center">
+<img alt="_images/Figure_1b.png" src="_images/Figure_1b.png" />
+</div>
+</div>
+</div>
+<div class="section" id="manual-analysis">
+<h2>Manual analysis<a class="headerlink" href="#manual-analysis" title="Permalink to this headline">¶</a></h2>
+<p>In the manual mode, the script <a class="reference internal" href="scripts.html#splitmanual"><span class="std std-ref">split_calc_manual.py</span></a> will use the available
+data and/or estimates and
+use a Graphical User Interface (GUI) to refine the picking window. The script will
+search for data and splitting estimates in the folder structure. If the estimates
+are not available (i.e., not previously calculated in <a class="reference internal" href="scripts.html#splitauto"><span class="std std-ref">split_calc_auto.py</span></a>), the script
+will calculate them automatically.</p>
+<div class="section" id="re-picking">
+<h3>Re-picking<a class="headerlink" href="#re-picking" title="Permalink to this headline">¶</a></h3>
+<p>After loading/processing the automated results, the script will produce two Figures.
+<code class="docutils literal notranslate"><span class="pre">Figure</span> <span class="pre">1</span></code> shows the three
+rotated component waveforms (LQT), along with lines representing the SKS, SKKS,
+S, PKS and ScS arrivals from model <code class="docutils literal notranslate"><span class="pre">iasp91</span></code>. Red vertical lines denote the analysis
+window. This figure is interactive and the picks in red can be refined by clicking
+at the two x-positions of the new analysis window.</p>
+<p>From the previous example, examining and possibly refining the results for only
+one day of data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ split_calc_manual.py --start=2020-03-18 --end=2020-03-19 TGTN.pkl
+</pre></div>
+</div>
+<div class="figure align-center">
+<img alt="_images/Figure_2.png" src="_images/Figure_2.png" />
+</div>
+<p>The diagnostic (summary) figure (<code class="docutils literal notranslate"><span class="pre">Figure</span> <span class="pre">2</span></code>) will also open, showing the results
+from the most recent automated estimate (i.e., can be from a re-calculated estimate,
+see <a class="reference internal" href="scripts.html#splitauto"><span class="std std-ref">split_calc_auto.py</span></a>). A message box will pop up asking whether to Re-pick the
+window in <code class="docutils literal notranslate"><span class="pre">Figure</span> <span class="pre">1</span></code>. This is done to refine the signal window in
+which the measurements are made in order to eliminate possibly contaminating phases
+and improve the measurements. If the <code class="docutils literal notranslate"><span class="pre">-V</span></code> or <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> argument has been
+selected, the terminal will show a summary of the processing, as in previous examples.</p>
+<p>Once <code class="docutils literal notranslate"><span class="pre">No</span></code> is selected for the picking/re-picking of the window, a second box
+will pop up asking whether to keep the estimates. Click <code class="docutils literal notranslate"><span class="pre">Yes</span></code> to save the results,
+or <code class="docutils literal notranslate"><span class="pre">No</span></code> to discard the measurement.</p>
+</div>
+</div>
+<div class="section" id="station-average">
+<h2>Station average<a class="headerlink" href="#station-average" title="Permalink to this headline">¶</a></h2>
+<p>Plotting and subsequent processing of splitting results is carried out using
+<a class="reference internal" href="scripts.html#splitaverage"><span class="std std-ref">split_average.py</span></a>, where options are present to control selection of nulls
+and quality settings, as well as which methods are used. All available data are
+processed. By default, the script will search for the <code class="docutils literal notranslate"><span class="pre">manual</span></code> results. The user
+can specify to use the <code class="docutils literal notranslate"><span class="pre">auto</span></code> results with the argument <code class="docutils literal notranslate"><span class="pre">-A</span></code> or <code class="docutils literal notranslate"><span class="pre">--auto</span></code>. The final
+average splits are then saved in a text file for future use.</p>
+<p>For example, after running the refined processing for 4 years of data for station
+TGTN (i.e., typing <code class="docutils literal notranslate"><span class="pre">split_calc_auto.py</span> <span class="pre">--start=2016-01-01</span> <span class="pre">-V</span> <span class="pre">-C</span> <span class="pre">TGTN.pkl</span></code>, which will
+take a long time to run and process all the data), we can visualize the results
+by typing in a terminal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ split_average.py --show-fig -V TGTN.pkl
+---------------------------
+Selection Criteria
+ Null Value:
+    Non Nulls: True
+    Nulls:     False
+ Quality Value:
+    Goods:  True
+    Fairs:  True
+    Poors:  False
+---------------------------
+  Processing 141 Events...
+      20160413_135517 Good Non-Null -&gt; Retained
+      20160527_040843 Good Non-Null -&gt; Retained
+      20160607_191515 Fair Non-Null -&gt; Retained
+      20160619_094723 Fair Non-Null -&gt; Retained
+      20160713_121112 Fair Non-Null -&gt; Retained
+      20160924_212841 Good Non-Null -&gt; Retained
+      20170819_020052 Good Non-Null -&gt; Retained
+      20170926_042000 Good Non-Null -&gt; Retained
+      20180728_170723 Good Non-Null -&gt; Retained
+      20180819_042858 Good Non-Null -&gt; Retained
+      20180906_154914 Fair Non-Null -&gt; Retained
+      20180910_041902 Fair Non-Null -&gt; Retained
+      20180910_193137 Good Non-Null -&gt; Retained
+      20180916_211148 Good Non-Null -&gt; Retained
+      20181016_002812 Fair Non-Null -&gt; Retained
+      20190531_101232 Poor Non-Null -&gt; Skipped
+      20190616_051716 Good Non-Null -&gt; Retained
+      20190707_150840 Good Non-Null -&gt; Retained
+      20190731_150233 Good Non-Null -&gt; Retained
+      20190929_020251 Fair Non-Null -&gt; Retained
+      20191031_011119 Good Non-Null -&gt; Retained
+      20200318_031345 Fair Non-Null -&gt; Retained
+
+*** Station Average from 21 measurements ***
+   Loc: -128.2727, 61.5267
+   PHI:  -4.111 d +- 2.891
+   DT:    0.729 s +- 0.052
+   Saved to: PLOTS/NY.TGTN_RC-SC_Nons_G-F_results.dat
+</pre></div>
+</div>
+<div class="figure align-center">
+<img alt="_images/Figure_3.png" src="_images/Figure_3.png" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="scripts.html" class="btn btn-neutral float-left" title="Scripts" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Pascal Audet &amp; Andrew Schaeffer
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
