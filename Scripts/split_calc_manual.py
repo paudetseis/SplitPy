@@ -23,6 +23,12 @@
 # SOFTWARE.
 
 # -*- coding: utf-8 -*-
+from pathlib import Path
+from splitpy import Pick, Keep, Save, Repeat
+from splitpy import PickPlot, DiagPlot
+from splitpy import arguments, utils
+from splitpy import Split
+import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import stdb
@@ -33,12 +39,6 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 import matplotlib
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-from splitpy import Split
-from splitpy import arguments, utils
-from splitpy import PickPlot, DiagPlot
-from splitpy import Pick, Keep, Save, Repeat
-from pathlib import Path
 
 
 def main():
@@ -74,8 +74,19 @@ def main():
         # Get only directories for which the key is available
         evs = [str(x) for x in datapath.iterdir() if x.is_dir()]
 
-        # Add condition for data range
-        #############################
+        # Get catalogue search start time
+        if args.startT is None:
+            tstart = sta.startdate
+        else:
+            tstart = args.startT
+
+        # Get catalogue search end time
+        if args.endT is None:
+            tend = sta.enddate
+        else:
+            tend = args.endT
+        if tstart > sta.enddate or tend < sta.startdate:
+            continue
 
         # Get List of events to process
         evs.sort()
@@ -86,7 +97,8 @@ def main():
             print(" ")
             print(" ")
             print("|"+"="*50+"|")
-            print("|                   {0:>8s}                    |".format(stkey))
+            print(
+                "|                   {0:>8s}                    |".format(stkey))
             print("|"+"="*50+"|")
             print(
                 "|  Working on {0:5d} saved events                |".format(nevs))
@@ -101,6 +113,14 @@ def main():
 
         # Read through catalogue
         for iev in ievs:
+
+            datekey = evs[iev].split('/')[-1].split('_')[0]
+            timekey = evs[iev].split('/')[-1].split('_')[-1]
+            evdate = UTCDateTime(
+                datekey[0:4]+'-'+datekey[4:6]+'-'+datekey[6:8]+
+                'T'+timekey[0:2]+':'+timekey[2:4]+':'+timekey[4:6])
+            if not (evdate > tstart and evdate < tend):
+                continue
 
             # Event Name
             evSTR = evs[iev]
@@ -247,6 +267,10 @@ def main():
                         split.null = pickle.dump(split.null, file)
                         split.quality = pickle.dump(split.quality, file)
                         file.close()
+
+                        # Save pick plot
+                        pplotfile = Path(evSTR) / "Plot_window_manual.png"
+                        pplot.save(pplotfile)
 
                         # Save diagnostic plot
                         dplotfile = Path(evSTR) / "Plot_diagnostic_manual.png"

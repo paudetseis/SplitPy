@@ -109,6 +109,13 @@ def get_arguments_calc_auto(argv=None):
         dest="diagplot",
         default=False,
         help="Plot diagnostic window at end of process. [Default False]")
+    parser.add_argument(
+        "-R", "--recalc",
+        action="store_true",
+        dest="recalc",
+        default=False,
+        help="Re-calculate estimates and overwrite existing splitting "+
+        "results without re-downloading data. [Default False]")
 
     # Server Settings
     ServerGroup = parser.add_argument_group(
@@ -232,7 +239,7 @@ def get_arguments_calc_auto(argv=None):
         type=float,
         dest="fmin",
         default=0.02,
-        help="Specify the minimum frequency corner for SNR " +
+        help="Specify the minimum frequency corner for bandpass " +
         "filter (Hz). [Default 0.02]")
     ConstGroup.add_argument(
         "--fmax",
@@ -240,7 +247,7 @@ def get_arguments_calc_auto(argv=None):
         type=float,
         dest="fmax",
         default=0.5,
-        help="Specify the maximum frequency corner for SNR " +
+        help="Specify the maximum frequency corner for bandpass " +
         "filter (Hz). [Default 0.5]")
 
     # Event Selection Criteria
@@ -267,7 +274,7 @@ def get_arguments_calc_auto(argv=None):
         "the end time for the event search. This will override any " +
         "station end times [Default end date of each station]")
     EventGroup.add_argument(
-        "--reverse", "-R",
+        "--reverse",
         action="store_true",
         dest="reverse",
         default=False,
@@ -412,7 +419,7 @@ def get_arguments_calc_manual(argv=None):
         usage="%(prog)s [arguments] <station database>",
         description="Script to process "
         "and calculate the spliting parameters for a dataset " +
-        "that has already been downloaded by sks_prep.py. ")
+        "that has already been downloaded by split_calc_auto.py. ")
 
     # General Settings
     parser.add_argument(
@@ -586,6 +593,13 @@ def get_arguments_average(argv=None):
         default=False,
         help="Specify show plots during processing - " +
         "they are still saved to disk. [Default only saves]")
+    parser.add_argument(
+        "-A", "--auto",
+        action="store_true",
+        dest="auto",
+        default=False,
+        help="Specify to use automatically processed split results. "+
+        "[Default uses refined ('manual') split results]")
 
     # Null Settings
     NullGroup = parser.add_argument_group(

@@ -23,6 +23,10 @@
 # SOFTWARE.
 
 # -*- coding: utf-8 -*-
+from pathlib import Path
+from splitpy import arguments, utils
+from splitpy import Split, DiagPlot
+import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 import stdb
@@ -30,10 +34,6 @@ from obspy.clients.fdsn import Client
 from obspy import UTCDateTime
 import matplotlib
 matplotlib.use('Qt5Agg')
-import matplotlib.pyplot as plt
-from splitpy import Split, DiagPlot
-from splitpy import arguments, utils
-from pathlib import Path
 
 
 def main():
@@ -238,50 +238,82 @@ def main():
                         if not args.ovr:
                             continue
 
-                # Get data
-                has_data = split.download_data(
-                    client=data_client, dts=args.dts, stdata=stalcllist,
-                    ndval=args.ndval, new_sr=args.new_sampling_rate,
-                    returned=True, verbose=args.verb)
+                if args.recalc:
+                    if np.sum([file.exists() for file in
+                               [ZNEfile, metafile, stafile]]) < 3:
+                        continue
+                    sta = pickle.load(open(stafile, "rb"))
+                    split = Split(sta)
+                    meta = pickle.load(open(metafile, "rb"))
+                    split.meta = meta
+                    dataZNE = pickle.load(open(ZNEfile, "rb"))
+                    split.dataZNE = dataZNE
 
-                if not has_data:
-                    continue
+                    # Rotate from ZNE to 'LQT'
+                    split.rotate(align='LQT')
 
-                # Rotate from ZNE to 'LQT'
-                split.rotate(align='LQT')
+                    # Filter rotated traces
+                    split.dataLQT.filter('bandpass', freqmin=args.fmin,
+                                         freqmax=args.fmax)
+                    
+                    # Calculate snr over dt_snr seconds
+                    split.calc_snr()
 
-                # Calculate snr over dt_snr seconds
-                split.calc_snr(fmin=args.fmin, fmax=args.fmax)
+                    # Save LQT Traces
+                    pickle.dump(split.dataLQT, open(LQTfile, "wb"))
+
+                else:
+
+                    # Get data
+                    has_data = split.download_data(
+                        client=data_client, dts=args.dts, stdata=stalcllist,
+                        ndval=args.ndval, new_sr=args.new_sampling_rate,
+                        returned=True, verbose=args.verb)
+
+                    if not has_data:
+                        continue
+
+                    # Rotate from ZNE to 'LQT'
+                    split.rotate(align='LQT')
+
+                    # Filter rotated traces
+                    split.dataLQT.filter('bandpass', freqmin=args.fmin,
+                                         freqmax=args.fmax)
+
+                    # Calculate snr over dt_snr seconds
+                    split.calc_snr()
+
+                    # If SNR lower than user-specified threshold, continue
+                    if split.meta.snrq < args.msnr:
+                        if args.verb:
+                            print(
+                                "* SNRQ < {0:.1f}, continuing".format(args.msnr))
+                            print("*"*50)
+                        continue
+
+                    # Make sure no processing happens for NaNs
+                    if np.isnan(split.meta.snrq):
+                        if args.verb:
+                            print("* SNR NaN, continuing")
+                            print("*"*50)
+                        continue
+
+                    # Create Folder if it doesn't exist
+                    if not datadir.exists():
+                        datadir.mkdir(parents=True)
+
+                    # Save ZNE Traces
+                    pickle.dump(split.dataZNE, open(ZNEfile, "wb"))
+
+                    # Save LQT Traces
+                    pickle.dump(split.dataLQT, open(LQTfile, "wb"))
 
                 if args.verb:
                     print("* SNRQ: {}".format(split.meta.snrq))
                     print("* SNRT: {}".format(split.meta.snrt))
 
-                # If SNR lower than user-specified threshold, continue
-                if split.meta.snrq < args.msnr:
-                    if args.verb:
-                        print("* SNRQ < {0:.1f}, continuing".format(args.msnr))
-                        print("*"*50)
-                    continue
+                if args.calc or args.recalc:
 
-                # Make sure no processing happens for NaNs
-                if np.isnan(split.meta.snrq):
-                    if args.verb:
-                        print("* SNR NaN, continuing")
-                        print("*"*50)
-                    continue
-
-                # Create Folder if it doesn't exist
-                if not datadir.exists():
-                    datadir.mkdir(parents=True)
-
-                # Save ZNE Traces
-                pickle.dump(split.dataZNE, open(ZNEfile, "wb"))
-
-                # Save LQT Traces
-                pickle.dump(split.dataLQT, open(LQTfile, "wb"))
-
-                if args.calc:
                     # Analyze
                     split.analyze(verbose=args.verb)
 
@@ -299,7 +331,7 @@ def main():
                 # Display results
                 if args.verb:
                     split.display_meta()
-                    if args.calc:
+                    if args.calc or args.recalc:
                         split.display_results()
                         split.display_null_quality()
 
@@ -309,7 +341,7 @@ def main():
                 # Save Station Data
                 pickle.dump(split.sta, open(stafile, "wb"))
 
-                if args.calc:
+                if args.calc or args.recalc:
                     # Save Split Data
                     file = open(splitfile, "wb")
                     pickle.dump(split.SC_res, file)

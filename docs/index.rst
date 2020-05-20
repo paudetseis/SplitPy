@@ -9,16 +9,15 @@ Matlab Tool SplitLab, developed by
 `Wustefeld et al (2008) <https://doi.org/doi:10.1016/j.cageo.2007.08.002>`_.
 
 The software is bundled with executable ``Python`` scripts that enable 
-SKS splitting analysis in two different environments:
+teleseismic shear-wave splitting analysis in two different modes:
 
-1) On-the-fly processing where waveforms are downloaded and
-   analyzed for SKS splitting (:ref:`split`).
-2) Offline processing where waveforms are first downloaded
-   and saved to disk (:ref:`prep`), and later processed offline (:ref:`offline`).
+1) Automated processing where waveforms are downloaded and
+   analyzed using default parameters (:ref:`splitauto`).
+2) Manual processing where picking window can be refined (:ref:`splitmanual`).
 
 Once the splitting analysis has been done, the results can be 
 aggregated to produce averaged splitting parameters and plotted 
-(:ref:`plot`). The tutorials below show an example using data
+(:ref:`splitaverage`). The tutorials below show an example using data
 from `one station <http://ds.iris.edu/mda/TA/EPYK/>`_ of the 
 USArray Transportable Array network.
 
@@ -26,12 +25,14 @@ USArray Transportable Array network.
 
     The software ``SplitPy`` uses a `StDb <https://github.com/schaefferaj/StDb>`_
     database for processing. Check out `StDb <https://github.com/schaefferaj/StDb>`_ 
-    for more details. An example is shown in the program :ref:`split`.
+    for more details. An example is shown in the tutorials.
 
 .. image:: https://zenodo.org/badge/211722700.svg
-   :target: https://zenodo.org/badge/latestdoi/211722700
+    :target: https://zenodo.org/badge/latestdoi/211722700
 .. image:: https://travis-ci.org/paudetseis/SplitPy.svg?branch=master
-    :target: https://travis-ci.org/paudetseis/SplitPy
+    :target: https://travis-ci.org/paudetseis/
+.. image:: https://codecov.io/gh/paudetseis/SplitPy/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/paudetseis/SplitPy
 
 .. toctree::
    :maxdepth: 1
@@ -40,26 +41,21 @@ USArray Transportable Array network.
    links
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Getting Started
+
+   splitpy
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Documentation
 
    api
 
 .. toctree::
-   :maxdepth: 1
-   :caption: API Documentation
-
-   classes
-   calc
-   utils
-   gui
-
-.. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Scripts & Tutorials
 
-   split
-   prep
-   offline
-   plot
+   scripts
+   tutorials
 
