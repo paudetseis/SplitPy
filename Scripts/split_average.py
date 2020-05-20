@@ -126,7 +126,12 @@ def main():
             split.meta = meta
 
             # Split results
-            splitfile = Path(evSTR) / "split_results_auto.pkl"
+            if args.auto:
+                splitfile = Path(evSTR) / "split_results_auto.pkl"
+            else:
+                splitfile = Path(evSTR) / "split_results_manual.pkl"
+            if not splitfile.exists():
+                continue
             file = open(splitfile, "rb")
             split.SC_res = pickle.load(file)
             split.RC_res = pickle.load(file)
@@ -163,11 +168,13 @@ def main():
             accept = False
             if Qaccept and Naccept:
 
-                if split.null:
-                    print("      {0} Null -> Retained".format(split.quality))
-                else:
-                    print(
-                        "      {0} Non-Null -> Retained".format(split.quality))
+                if args.verb:
+                    if split.null:
+                        print("      {0} {1} Null -> Retained".format(
+                            str(Path(evSTR).name), split.quality))
+                    else:
+                        print("      {0} {1} Non-Null -> Retained".format(
+                            str(Path(evSTR).name), split.quality))
 
                 # BAZ, null and quality
                 baz.append(split.meta.baz)
@@ -192,11 +199,13 @@ def main():
 
             else:
 
-                if split.null:
-                    print("      {0} Null -> Skipped".format(split.quality))
-                else:
-                    print(
-                        "      {0} Non-Null -> Skipped".format(split.quality))
+                if args.verb:
+                    if split.null:
+                        print("      {0} {1} Null -> Skipped".format(
+                            str(Path(evSTR).name), split.quality))
+                    else:
+                        print("      {0} {1} Non-Null -> Skipped".format(
+                            str(Path(evSTR).name), split.quality))
 
         if not baz:
             return
@@ -285,7 +294,7 @@ def main():
             # Plot individual SC results
             ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='orange', label='SC')
 
-        ax2.set_title('Station: ' + sta)
+        ax2.set_title('Station: ' + stkey)
         ax2.set_ylabel(r'Fast axis, $\phi$ (degree)')
         ax2.set_ylim(-95, 95)
         ax2.legend(loc=0, numpoints=1)
@@ -335,9 +344,9 @@ def main():
             plotdir.mkdir(parents=True)
 
         # Output Names
-        outdata = plotdir / (args.TypeName + args.NullName +
+        outdata = plotdir / (stkey+args.TypeName + args.NullName +
                              args.QualName + "_results.dat")
-        outplot = plotdir / (args.TypeName + args.NullName +
+        outplot = plotdir / (stkey+args.TypeName + args.NullName +
                              args.QualName + "_results.png")
 
         # Final estimates (average of SC and RC)
@@ -372,7 +381,8 @@ def main():
 
         if args.verb:
             print("")
-            print("*** Station Average from {0} measurements ***".format(len(baz)))
+            print(
+                "*** Station Average from {0} measurements ***".format(len(baz)))
             print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
             print("   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI))
             print("   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT))

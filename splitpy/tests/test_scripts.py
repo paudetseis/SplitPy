@@ -234,7 +234,7 @@ def test_split(tmp_path):
                 split.rotate(align='LQT')
 
                 # Calculate snr over dt_snr seconds
-                split.calc_snr(fmin=args.fmin, fmax=args.fmax)
+                split.calc_snr()
                 if args.verb:
                     print("* SNRQ: {}".format(split.meta.snrq))
                     print("* SNRT: {}".format(split.meta.snrt))

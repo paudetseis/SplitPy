@@ -31,12 +31,12 @@ The class :class:`~splitpy.classes.Split` contains attributes
 and methods for the analysis of teleseismic shear-wave splitting 
 from three-component seismograms. 
 
-The class :class:`~splitpy.classes.PickPlot` contains figure handles 
+The class :class:`~splitpy.classes.PickPlot` defines figure handles 
 for a picking window showing the seismograms and the predicted teleseismic
 shear-wave phase arrivals. This figure is interactive and new picks can
 be generated to refine the analysis.
 
-The class :class:`~splitpy.classes.DiagPlot` contains figure handles
+The class :class:`~splitpy.classes.DiagPlot` defines figure handles
 for a diagnostic figure showing a summary of the splitting results. It can
 be called after each application of the `split.analyze` method to show 
 the summary of the analysis as a figure. This figure can also be saved as
@@ -55,9 +55,8 @@ import matplotlib.gridspec as gspec
 
 class Meta(object):
     """
-    A Result object contains attributes associated with the result
-    of a single splitting analysis. These are equally applicable
-    to the RC or SC method - see :func:`~splitpy.classes.analyze`.
+    A Meta object contains attributes associated with the station-event
+    data for a single Teleseismic event. 
 
     Attributes
     ----------
@@ -226,32 +225,10 @@ class Split(object):
         Object containing station information - from :mod:`~stdb` database.
     meta : :class:`~splitpy.classes.Meta`
         Object of metadata information for single event.
-    data : :class:`~splitpy.classes.Data`
-        Object containing trace data in :class:`~obspy.core.Trace` format
-    RC_res : :class:`~splitpy.classes.Result`
-        Object containing results of Rotation-Correlation metnod
-    SC_res : :class:`~splitpy.classes.Result`
-        Object containing results of Silver-Chan metnod
-    err : bool
-        Whether or not the `get_data_NEZ` successfully retrieved waveforms
-    null : bool
-        Whether or not estiamate is null result
-    quality : str
-        Quality of estimate ('good', 'fair', 'poor')
-    ts : float
-        Predicted travel time for SKS phase
-    ph : str
-        Name of SKS phase ('SKS')
-    snrq : float
-        Signal-to-noise ratio for radial (Q) component
-    snrt : float
-        Signal-to-noise ratio for tangential (T) component
-    maxdt : float
-        Max delay time between slow and fast axes in search
-    ddt : float
-        Sampling distance (in sec) for delay time search
-    dphi : float
-        Sampling distance (in degrees) for azimuth search 
+    dataZNE : :class:`~splitpy.classes.Data`
+        Object containing raw trace data in :class:`~obspy.core.Trace` format
+    dataLQT : :class:`~splitpy.classes.Data`
+        Object containing rotated trace data in :class:`~obspy.core.Trace` format
 
     """
 
@@ -278,17 +255,12 @@ class Split(object):
     def add_event(self, event, gacmin=85., gacmax=120., phase='SKS',
                   returned=False):
         """
-        Adds event metadata to Split object. 
+        Adds event metadata to Split object as Meta object. 
 
         Parameters
         ----------
         event : :class:`~obspy.core.event`
             Event metadata
-
-        Attributes
-        ----------
-        meta :
-            Object containing metadata information
 
         """
 
@@ -322,7 +294,7 @@ class Split(object):
 
     def add_data(self, stream, returned=False, new_sr=5.):
         """
-        Adds stream as object attribute
+        Adds stream of raw data as object attribute
 
         Parameters
         ----------
@@ -330,11 +302,6 @@ class Split(object):
             Stream container for NEZ seismograms
         returned : bool
             Whether or not to return the ``accept`` attribute
-
-        Attributes
-        ----------
-        zne_data : :class:`~obspy.core.Stream`
-            Stream container for NEZ seismograms
 
         Returns
         -------
@@ -363,16 +330,16 @@ class Split(object):
             raise(Exception("Event has incorrect type"))
 
         try:
-            self.data = stream
+            self.dataZNE = stream
 
             if not np.allclose(
                     [tr.stats.npts for tr in stream[1:]], stream[0].stats.npts):
                 self.meta.accept = False
 
             # Filter Traces
-            self.data.filter('lowpass', freq=0.5*new_sr,
+            self.dataZNE.filter('lowpass', freq=0.5*new_sr,
                              corners=2, zerophase=True)
-            self.data.resample(new_sr, no_filter=False)
+            self.dataZNE.resample(new_sr, no_filter=False)
 
         except:
             print("Error: Not all channels are available")
@@ -385,7 +352,7 @@ class Split(object):
                       dts=120., returned=False, verbose=False):
         """
         Downloads seismograms based on event origin time and
-        P phase arrival.
+        P phase arrival and adds as object attribute.
 
         Parameters
         ----------
@@ -406,11 +373,6 @@ class Split(object):
         -------
         accept : bool
             Whether or not the object is accepted for further analysis
-
-        Attributes
-        ----------
-        data : :class:`~obspy.core.Stream`
-            Stream containing :class:`~obspy.core.Trace` objects
 
         """
 
@@ -486,18 +448,9 @@ class Split(object):
             Alignment of coordinate system for rotation
             ('ZNE' or 'LQT')
 
-        Returns
-        -------
-        rotated : bool
-            Whether or not the object has been rotated
-
         """
 
         if not self.meta.accept:
-            return
-
-        if self.meta.rotated:
-            print("Data have been rotated already - continuing")
             return
 
         # Use default values from meta data if arguments are not specified
@@ -531,9 +484,9 @@ class Split(object):
             data.rotate('ZNE->LQT',
                              back_azimuth=self.meta.baz,
                              inclination=self.meta.inc)
-            for tr in data:
-                if tr.stats.channel.endswith('Q'):
-                    tr.data = -tr.data
+            # for tr in data:
+            #     if tr.stats.channel.endswith('Q'):
+            #         tr.data = -tr.data
             self.meta.align = align
             self.meta.rotated = True
             self.dataLQT = data.copy()
@@ -541,7 +494,7 @@ class Split(object):
         else:
             raise(Exception("incorrect 'align' argument"))
 
-    def calc_snr(self, t1=None, dt=30., fmin=0.02, fmax=0.5):
+    def calc_snr(self, t1=None, dt=30.):
         """
         Calculates signal-to-noise ratio on either Z, L or P component
 
@@ -558,7 +511,7 @@ class Split(object):
 
         Attributes
         ----------
-        snr : float
+        snrq : float
             Signal-to-noise ratio on vertical component (dB)
         snrh : float
             Signal-to-noise ratio on radial component (dB)
@@ -581,16 +534,6 @@ class Split(object):
         trNzeQ.detrend().taper(max_percentage=0.05)
         trSigT.detrend().taper(max_percentage=0.05)
         trNzeT.detrend().taper(max_percentage=0.05)
-
-        # Filter between 0.1 and 1.0 (dominant P wave frequencies)
-        trSigQ.filter('bandpass', freqmin=fmin, freqmax=fmax,
-                      corners=2, zerophase=True)
-        trNzeQ.filter('bandpass', freqmin=fmin, freqmax=fmax,
-                      corners=2, zerophase=True)
-        trSigT.filter('bandpass', freqmin=fmin, freqmax=fmax,
-                      corners=2, zerophase=True)
-        trNzeT.filter('bandpass', freqmin=fmin, freqmax=fmax,
-                      corners=2, zerophase=True)
 
         # Trim around S-wave arrival
         trSigQ.trim(t1, t1 + dt)
@@ -629,6 +572,7 @@ class Split(object):
             Object containing results of Silver-Chan method
 
         """
+
 
         if t1 is None and t2 is None:
             t1 = self.meta.time + self.meta.ttime - 5.
@@ -1119,6 +1063,18 @@ class PickPlot(object):
         # Update figure
         self.axes[0].canvas.draw()
 
+    def save(self, file):
+        """
+        Saves current figure into file
+
+        Parameters
+        ----------
+        file : str
+            File name for diagnostic figure
+
+        """
+
+        self.axes[0].savefig(file)
 
 class DiagPlot(object):
     """
@@ -1426,9 +1382,15 @@ class DiagPlot(object):
         self.axes[4].plot(taxis, self.split.RC_res.trQ_c.data/mmax, 'b--')
         self.axes[4].plot(taxis, self.split.RC_res.trT_c.data/mmax, 'r')
 
-        # Prticle motion
+        # Particle motion
         self.axes[5].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
         self.axes[5].plot(E_RC/mmax, N_RC/mmax, 'r')
+        ang = 360. - self.split.meta.baz
+        x1pos = -np.sin(ang*np.pi/180.)
+        y1pos = np.cos(ang*np.pi/180.)
+        x2pos = -x1pos
+        y2pos = -y1pos
+        self.axes[5].plot([x1pos, x2pos], [y1pos,y2pos], 'k:', lw=2)
 
         # Map of energy
         plt.sca(self.axes[6])
@@ -1482,6 +1444,7 @@ class DiagPlot(object):
         # Particle motion
         self.axes[9].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
         self.axes[9].plot(E_SC/mmax, N_SC/mmax, 'r')
+        self.axes[9].plot([x1pos, x2pos], [y1pos,y2pos], 'k:', lw=2)
 
         # Map of energy
         plt.sca(self.axes[10])
