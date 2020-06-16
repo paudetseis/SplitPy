@@ -24,6 +24,8 @@ those in [Audet et al. (2016)](#references)
 Installation, Usage, API documentation and tutorials are described at 
 https://paudetseis.github.io/SplitPy/.
 
+Authors: [`Pascal Audet`](https://www.uogeophysics.com/authors/admin/) (Developer and Maintainer) & [`Andrew Schaeffer`](https://schaeffer.ca) (Contributor)
+
 #### Citing
 
 If you use `SplitPy` in your work, please cite the 
