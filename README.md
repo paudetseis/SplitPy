@@ -50,3 +50,7 @@ Examples of straightforward contributions include notebooks that describe publis
 - Wustefeld, A., Bokelmann, G., Zeroli, C., and Barruol, G. (2008). SplitLab: 
   A shear-wave splitting environment in Matlab. Computers & Geoscience, 34, 
   515-528, https://doi.org/10.1016/j.cageo.2007.08.002
+
+#### Use Cases
+
+- Esteve, C., Audet, P., Schaeffer, A.J., Schutt, D.L., Aster, R.A., and Cubley, J. (2020). Seismic evidence for craton chiseling and displacement of lithospheric mantle by the Tintina Fault in the Northern Canadian Cordilleras, Geology, accepted.
