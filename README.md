@@ -33,7 +33,7 @@ If you use `SplitPy` in your work, please cite the
 
 #### Contributing
 
-All constructive contributions are welcome, e.g. bug reports, discussions or suggestions for new features. You can either [open an issue on GitHub](https://github.com/paudetseis/PlateFlex/issues) or make a pull request with your proposed changes. Before making a pull request, check if there is a corresponding issue opened and reference it in the pull request. If there isn't one, it is recommended to open one with your rationale for the change. New functionality or significant changes to the code that alter its behavior should come with corresponding tests and documentation. If you are new to contributing, you can open a work-in-progress pull request and have it iteratively reviewed.
+All constructive contributions are welcome, e.g. bug reports, discussions or suggestions for new features. You can either [open an issue on GitHub](https://github.com/paudetseis/SplitPy/issues) or make a pull request with your proposed changes. Before making a pull request, check if there is a corresponding issue opened and reference it in the pull request. If there isn't one, it is recommended to open one with your rationale for the change. New functionality or significant changes to the code that alter its behavior should come with corresponding tests and documentation. If you are new to contributing, you can open a work-in-progress pull request and have it iteratively reviewed.
 
 Examples of straightforward contributions include notebooks that describe published examples of teleseismic shear-wave splitting. Suggestions for improvements (speed, accuracy, etc.) are also welcome.
 
@@ -53,4 +53,4 @@ Examples of straightforward contributions include notebooks that describe publis
 
 #### Use Cases
 
-- Esteve, C., Audet, P., Schaeffer, A.J., Schutt, D.L., Aster, R.A., and Cubley, J. (2020). Seismic evidence for craton chiseling and displacement of lithospheric mantle by the Tintina Fault in the Northern Canadian Cordilleras, Geology, accepted.
+- Esteve, C., Audet, P., Schaeffer, A.J., Schutt, D.L., Aster, R.A., and Cubley, J. (2020). Seismic evidence for craton chiseling and displacement of lithospheric mantle by the Tintina Fault in the Northern Canadian Cordilleras, Geology, in press.
