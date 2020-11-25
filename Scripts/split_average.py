@@ -108,6 +108,10 @@ def main():
         DphiSC = []
         dtSC = []
         DdtSC = []
+        evlon = []
+        evlat = []
+        evmag = []
+        evtime = []
         Qual = []
         Null = []
 
@@ -193,9 +197,16 @@ def main():
                 dtSC.append(split.SC_res.dtt)
                 DdtSC.append(split.SC_res.edtt)
 
+                # Station info
                 stlat = split.sta.latitude
                 stlon = split.sta.longitude
                 sta = split.sta.station
+
+                # Event info
+                evlat.append(split.meta.lat)
+                evlon.append(split.meta.lon)
+                evmag.append(split.meta.mag)
+                evtime.append(split.meta.time)
 
             else:
 
@@ -344,8 +355,10 @@ def main():
             plotdir.mkdir(parents=True)
 
         # Output Names
-        outdata = plotdir / (stkey+args.TypeName + args.NullName +
-                             args.QualName + "_results.dat")
+        outav = plotdir / (stkey+args.TypeName + args.NullName +
+                           args.QualName + "_results.dat")
+        outev = plotdir / (stkey+args.TypeName + args.NullName +
+                           args.QualName + "_events.dat")
         outplot = plotdir / (stkey+args.TypeName + args.NullName +
                              args.QualName + "_results.png")
 
@@ -382,19 +395,44 @@ def main():
         if args.verb:
             print("")
             print(
-                "*** Station Average from {0} measurements ***".format(len(baz)))
+                "*** Station Average from {0} measurements ***".format(
+                    len(baz)))
             print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
             print("   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI))
             print("   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT))
-            print("   Saved to: "+str(outdata))
+            print("   Saved to: "+str(outav))
+            print("")
+            print(
+                "*** Catalogue of events and results ***")
+            print("   Saved to: "+str(outev))
             print("")
 
         # Write out Final Results
-        fid = open(outdata, 'w')
+        fid = open(outav, 'w')
         fid.writelines(
-            "{01:8.4f}  {1:7.4f}   {2:7.3f} {3:7.3f}   " +
-            "{4:5.3f} {5:5.3f}".format(
-                stlon, stlat, PHI, dPHI, DT, dDT))
+            "sta_lon, sta_lat, PHI (deg), dPHI (deg), DT (s), dDT (s) \n")
+        line = "{0:8.4f},{1:7.4f},{2:7.3f},{3:7.3f},{4:5.3f},{5:5.3f}\n".format(
+                stlon, stlat, PHI, dPHI, DT, dDT)
+        fid.writelines(line.replace(" ",""))
+        fid.close()
+
+        # Write out events
+        fid = open(outev, 'w')
+        fid.writelines(
+            "eq_time (UTC), eq_lon, eq_lat, eq_mag, PHI_RC (deg), " +
+            "dPHI_RC (deg), DT_RC (s), dDT_RC (s), " +
+            "PHI_SC (deg), dPHI_SC (deg), DT_SC (s), dDT_SC (s)\n")
+        for i in range(len(evlon)):
+            line1 = "{0},{1:8.4f},{2:7.4f},{3:3.1f},".format(
+                    evtime[i], evlon[i], evlat[i], evmag[i])
+            line2 = "{0:7.3f},{1:7.3f},{2:5.3f},{3:5.3f},".format(
+                    phiRC[i], DphiRC[i], dtRC[i], DdtRC[i])
+            line3 = "{0:7.3f},{1:7.3f},{2:5.3f},{3:5.3f}\n".format(
+                    phiSC[i], DphiSC[i], dtSC[i], DdtSC[i])
+            fid.writelines(
+                line1.replace(" ", "") + line2.replace(" ",
+                                                       "") + line3.replace(" ", ""))
+
         fid.close()
 
         # Save Plot

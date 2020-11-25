@@ -28,17 +28,17 @@
 - :class:`~splitpy.classes.DiagPlot`
 
 The class :class:`~splitpy.classes.Split` contains attributes
-and methods for the analysis of teleseismic shear-wave splitting 
-from three-component seismograms. 
+and methods for the analysis of teleseismic shear-wave splitting
+from three-component seismograms.
 
-The class :class:`~splitpy.classes.PickPlot` defines figure handles 
+The class :class:`~splitpy.classes.PickPlot` defines figure handles
 for a picking window showing the seismograms and the predicted teleseismic
 shear-wave phase arrivals. This figure is interactive and new picks can
 be generated to refine the analysis.
 
 The class :class:`~splitpy.classes.DiagPlot` defines figure handles
 for a diagnostic figure showing a summary of the splitting results. It can
-be called after each application of the `split.analyze` method to show 
+be called after each application of the `split.analyze` method to show
 the summary of the analysis as a figure. This figure can also be saved as
 a .png file.
 
@@ -56,7 +56,7 @@ import matplotlib.gridspec as gspec
 class Meta(object):
     """
     A Meta object contains attributes associated with the station-event
-    data for a single Teleseismic event. 
+    data for a single Teleseismic event.
 
     Attributes
     ----------
@@ -181,13 +181,13 @@ class Result(object):
         Azimuth of fast axis (deg)
     dtt: float
         Delay time between fast and slow axes (sec)
-    phi_min: float  
+    phi_min: float
         Azimuth used in plotting method
     ephi: float
         Error on azimuth of fast axis (deg)
     edtt: float
         Error on delay time between fast and slow axes (sec)
-    errc: float  
+    errc: float
         Error contours on `Emat`
     """
 
@@ -210,8 +210,8 @@ class Result(object):
 class Split(object):
     """
     A Split object contains dictionary attributes that associate
-    station information with single event (i.e., earthquake) 
-    metadata, corresponding raw and rotated seismograms and 
+    station information with single event (i.e., earthquake)
+    metadata, corresponding raw and rotated seismograms and
     splitting results.
 
     Note
@@ -255,7 +255,7 @@ class Split(object):
     def add_event(self, event, gacmin=85., gacmax=120., phase='SKS',
                   returned=False):
         """
-        Adds event metadata to Split object as Meta object. 
+        Adds event metadata to Split object as Meta object.
 
         Parameters
         ----------
@@ -435,11 +435,11 @@ class Split(object):
     def rotate(self, align=None):
         """
         Rotates 3-component seismograms from vertical (Z),
-        east (E) and north (N) to longitudinal (L), 
+        east (E) and north (N) to longitudinal (L),
         radial (Q) and tangential (T) components of motion.
         Note that the method 'rotate' from ``obspy.core.stream.Stream``
         is used for the rotation ``'ZNE->ZRT'`` and ``'ZNE->LQT'``.
-        Rotation ``'ZNE->PVH'`` is implemented separately here 
+        Rotation ``'ZNE->PVH'`` is implemented separately here
         due to different conventions.
 
         Parameters
@@ -552,7 +552,7 @@ class Split(object):
 
     def analyze(self, t1=None, t2=None, verbose=False):
         """
-        Calculates the shear-wave splitting parameters based 
+        Calculates the shear-wave splitting parameters based
         on two alternative method: the Rotation-Correlation (RC)
         method and the Silver-Chan (SC) method. Each set of results
         is stored in a Dictionary as attributes of the split object.
@@ -587,7 +587,7 @@ class Split(object):
             print("* --> Calculating Rotation-Correlation (RC) Splitting")
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
             calc.split_RotCorr(
-                trQ, trT, self.meta.baz, t1, t2, 
+                trQ, trT, self.meta.baz, t1, t2,
                 self.meta.maxdt, self.meta.ddt, self.meta.dphi)
 
         # Calculate error
@@ -628,7 +628,7 @@ class Split(object):
 
         Attributes
         ----------
-        null : bool 
+        null : bool
             Boolean for Null result
 
         """
@@ -838,18 +838,18 @@ class Split(object):
 
 class PickPlot(object):
     """
-    A PickPlot object contains figure handles and method to plot 
+    A PickPlot object contains figure handles and method to plot
     seismic data for picking/refining the SKS time window.
-    The figure displays the LQT seismograms and predicted arrival 
-    times for common shear-wave arrivals in the time window. 
+    The figure displays the LQT seismograms and predicted arrival
+    times for common shear-wave arrivals in the time window.
     The figure can be picked to refine the time window for
     calculating the  splitting results.
 
     Note
     ----
     The object is initialized with a :class:`~splitpy.classes.Split` object,
-    which is temporarily stored as an attribute. All the split attributes 
-    are therefore available to the :class:`~splitpy.clases.PickPlot` object 
+    which is temporarily stored as an attribute. All the split attributes
+    are therefore available to the :class:`~splitpy.clases.PickPlot` object
     for plotting.
 
     Attributes
@@ -950,7 +950,7 @@ class PickPlot(object):
 
         Parameters
         ----------
-        tt : :class:`~obspy.taup.TauPyModel` 
+        tt : :class:`~obspy.taup.TauPyModel`
             Taup object containing travel time and phase info
         dts : float
             Time interval (?)
@@ -1079,16 +1079,16 @@ class PickPlot(object):
 class DiagPlot(object):
     """
     A DiagPlot object contains figure handles and methods to plot
-    the diagnostic figure, which displays the LQT seismograms, 
+    the diagnostic figure, which displays the LQT seismograms,
     the corrected/un-corrected seismograms, the particle motions,
-    the minimization matrix and a text box with a summary of the 
+    the minimization matrix and a text box with a summary of the
     analysis - for each of the two analysis methods ('RC' or 'SC')
 
     Note
     ----
     The object is initialized with a :class:`~splitpy.classes.Split` object,
-    which is temporarily stored as an attribute. All the split attributes 
-    are therefore available to the :class:`~splitpy.clases.DiagPlot` object 
+    which is temporarily stored as an attribute. All the split attributes
+    are therefore available to the :class:`~splitpy.clases.DiagPlot` object
     for plotting.
 
     Attributes
@@ -1272,7 +1272,7 @@ class DiagPlot(object):
 
             Returns
             -------
-            M : :class:`~numpy.ndarray` 
+            M : :class:`~numpy.ndarray`
                 Rotation matrix
 
             """
