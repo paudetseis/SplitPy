@@ -158,6 +158,17 @@ def get_arguments_calc_auto(argv=None):
         "disk, it is selected preferentially over downloading " +
         "the data using the Client interface")
     DataGroup.add_argument(
+        "--dtype",
+        action="store",
+        type=str,
+        dest="dtype",
+        default='SAC',
+        help="Specify the data archive file type, either SAC " +
+        " or MSEED. Note the default behaviour is to search for " +
+        "SAC files. Local archive files must have extensions of '.SAC' "+
+        " or '.MSEED. These are case dependent, so specify the correct case"+
+        "here.")
+    DataGroup.add_argument(
         "--no-data-zero",
         action="store_true",
         dest="ndval",
