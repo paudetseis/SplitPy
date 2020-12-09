@@ -333,12 +333,12 @@ class Split(object):
             self.dataZNE = stream
 
             if not np.allclose(
-                    [tr.stats.npts for tr in stream[1:]], stream[0].stats.npts):
+                    [t.stats.npts for t in stream[1:]], stream[0].stats.npts):
                 self.meta.accept = False
 
             # Filter Traces
             self.dataZNE.filter('lowpass', freq=0.5*new_sr,
-                             corners=2, zerophase=True)
+                                corners=2, zerophase=True)
             self.dataZNE.resample(new_sr, no_filter=False)
 
         except:
@@ -406,7 +406,7 @@ class Split(object):
 
             # Filter Traces and resample
             self.dataZNE.filter('lowpass', freq=0.5*new_sr,
-                             corners=2, zerophase=True)
+                                corners=2, zerophase=True)
             self.dataZNE.resample(new_sr, no_filter=False)
 
         # If there is no ZNE, perhaps there is Z12?
@@ -423,7 +423,7 @@ class Split(object):
 
                 # Filter Traces and resample
                 self.dataZNE.filter('lowpass', freq=0.5*new_sr,
-                                 corners=2, zerophase=True)
+                                    corners=2, zerophase=True)
                 self.dataZNE.resample(new_sr, no_filter=False)
 
             except:
@@ -482,8 +482,8 @@ class Split(object):
         elif align == 'LQT':
             data = self.dataZNE.copy()
             data.rotate('ZNE->LQT',
-                             back_azimuth=self.meta.baz,
-                             inclination=self.meta.inc)
+                        back_azimuth=self.meta.baz,
+                        inclination=self.meta.inc)
             # for tr in data:
             #     if tr.stats.channel.endswith('Q'):
             #         tr.data = -tr.data
@@ -572,7 +572,6 @@ class Split(object):
             Object containing results of Silver-Chan method
 
         """
-
 
         if t1 is None and t2 is None:
             t1 = self.meta.time + self.meta.ttime - 5.
@@ -1020,13 +1019,13 @@ class PickPlot(object):
 
             self.axes[1].axvline(time - self.split.meta.ttime, color='k')
             self.axes[1].text(time - self.split.meta.ttime + 5., -1.,
-                            name, rotation=90, ha='center', va='bottom')
+                              name, rotation=90, ha='center', va='bottom')
             self.axes[2].axvline(time - self.split.meta.ttime, color='k')
             self.axes[2].text(time - self.split.meta.ttime + 5., -1.,
-                            name, rotation=90, ha='center', va='bottom')
+                              name, rotation=90, ha='center', va='bottom')
             self.axes[3].axvline(time - self.split.meta.ttime, color='k')
             self.axes[3].text(time - self.split.meta.ttime + 5., -1.,
-                            name, rotation=90, ha='center', va='bottom')
+                              name, rotation=90, ha='center', va='bottom')
 
         # Update plot
         self.axes[0].canvas.draw()
@@ -1075,6 +1074,7 @@ class PickPlot(object):
         """
 
         self.axes[0].savefig(file)
+
 
 class DiagPlot(object):
     """
@@ -1233,7 +1233,7 @@ class DiagPlot(object):
         axSC4 = init_emap(ax=axSC4, title='Energy map of T')
 
         axes = [fig, ax0, axt, axRC1, axRC2, axRC3, axRC4,
-              axSC1, axSC2, axSC3, axSC4]
+                axSC1, axSC2, axSC3, axSC4]
 
         # # Make sure figure is open
         axes[0].show()
@@ -1325,8 +1325,10 @@ class DiagPlot(object):
 
         self.axes[1].plot(taxis, trQ_tmp.data/mmax, 'b--')
         self.axes[1].plot(taxis, trT_tmp.data/mmax, 'r')
-        self.axes[1].text(taxis[0],1,'Q',verticalalignment='top',horizontalalignment='left',color='b')
-        self.axes[1].text(taxis[0],-1,'T',verticalalignment='bottom',horizontalalignment='left',color='r')
+        self.axes[1].text(taxis[0], 1, 'Q', verticalalignment='top',
+                          horizontalalignment='left', color='b')
+        self.axes[1].text(taxis[0], -1, 'T', verticalalignment='bottom',
+                          horizontalalignment='left', color='r')
 
         # Text box
         self.axes[2].text(
@@ -1379,8 +1381,10 @@ class DiagPlot(object):
 
         self.axes[3].plot(taxis, self.split.RC_res.trFast.data/mmax, 'b--')
         self.axes[3].plot(taxis, sig*self.split.RC_res.trSlow.data/mmax, 'r')
-        self.axes[3].text(taxis[0],1,'Fast',verticalalignment='top',horizontalalignment='left',color='b')
-        self.axes[3].text(taxis[0],-1,'Slow',verticalalignment='bottom',horizontalalignment='left',color='r')
+        self.axes[3].text(taxis[0], 1, 'Fast', verticalalignment='top',
+                          horizontalalignment='left', color='b')
+        self.axes[3].text(taxis[0], -1, 'Slow', verticalalignment='bottom',
+                          horizontalalignment='left', color='r')
 
         # Corrected Q and T
         self.axes[4].plot(taxis, self.split.RC_res.trQ_c.data/mmax, 'b--')
@@ -1389,14 +1393,16 @@ class DiagPlot(object):
         # Particle motion
         self.axes[5].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
         self.axes[5].plot(E_RC/mmax, N_RC/mmax, 'r')
-        self.axes[5].text(-1,1,'Raw',verticalalignment='top',horizontalalignment='left',color='b')
-        self.axes[5].text(-1,-1,'RC',verticalalignment='bottom',horizontalalignment='left',color='r')
+        self.axes[5].text(-1, 1, 'Raw', verticalalignment='top',
+                          horizontalalignment='left', color='b')
+        self.axes[5].text(-1, -1, 'RC', verticalalignment='bottom',
+                          horizontalalignment='left', color='r')
         ang = 360. - self.split.meta.baz
         x1pos = -np.sin(ang*np.pi/180.)
         y1pos = np.cos(ang*np.pi/180.)
         x2pos = -x1pos
         y2pos = -y1pos
-        self.axes[5].plot([x1pos, x2pos], [y1pos,y2pos], 'k:', lw=2)
+        self.axes[5].plot([x1pos, x2pos], [y1pos, y2pos], 'k:', lw=2)
 
         # Map of energy
         plt.sca(self.axes[6])
@@ -1450,9 +1456,11 @@ class DiagPlot(object):
         # Particle motion
         self.axes[9].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
         self.axes[9].plot(E_SC/mmax, N_SC/mmax, 'r')
-        self.axes[9].plot([x1pos, x2pos], [y1pos,y2pos], 'k:', lw=2)
-        self.axes[9].text(-1,1,'Raw',verticalalignment='top',horizontalalignment='left',color='b')
-        self.axes[9].text(-1,-1,'SC',verticalalignment='bottom',horizontalalignment='left',color='r')
+        self.axes[9].plot([x1pos, x2pos], [y1pos, y2pos], 'k:', lw=2)
+        self.axes[9].text(-1, 1, 'Raw', verticalalignment='top',
+                          horizontalalignment='left', color='b')
+        self.axes[9].text(-1, -1, 'SC', verticalalignment='bottom',
+                          horizontalalignment='left', color='r')
 
         # Map of energy
         plt.sca(self.axes[10])
