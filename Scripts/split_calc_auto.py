@@ -131,8 +131,8 @@ def main():
         print("|   End:   {0:19s}                     |".format(
             tend.strftime("%Y-%m-%d %H:%M:%S")))
         if args.maxmag is None:
-            print("|   Mag:   >{0:3.1f}", format(args.minmag) +
-                  "                           |")
+            print("|   Mag:   >{0:3.1f}".format(args.minmag) +
+                  "                                     |")
         else:
             msg = "|   Mag:   {0:3.1f}".format(args.minmag) + \
                 " - {0:3.1f}".format(args.maxmag) + \
@@ -161,15 +161,13 @@ def main():
             if args.useNet:
                 stalcllist = utils.list_local_data_stn(
                     lcldrs=args.localdata, sta=sta.station,
-                    net=sta.network, altnet=sta.altnet)
-                print("|   {0:>2s}.{1:5s}: {2:6d} files              " +
-                      "        |".format(
+                    net=sta.network, dtype=args.dtype, altnet=sta.altnet)
+                print("|   {0:>2s}.{1:5s}: {2:6d} files              ".format(
                           sta.network, sta.station, len(stalcllist)))
             else:
                 stalcllist = utils.list_local_data_stn(
-                    lcldrs=args.localdata, sta=sta.station)
-                print("|   {0:5s}: {1:6d} files                      " +
-                      "   |".format(
+                    lcldrs=args.localdata, dtype=args.dtype, sta=sta.station)
+                print("|   {0:5s}: {1:6d} files                      ".format(
                           sta.station, len(stalcllist)))
         else:
             stalcllist = []
@@ -273,7 +271,7 @@ def main():
                     # Get data
                     has_data = split.download_data(
                         client=data_client, dts=args.dts, stdata=stalcllist,
-                        ndval=args.ndval, new_sr=args.new_sampling_rate,
+                        dtype=args.dtype, ndval=args.ndval, new_sr=args.new_sampling_rate,
                         returned=True, verbose=args.verb)
 
                     if not has_data:
