@@ -1325,13 +1325,15 @@ class DiagPlot(object):
 
         self.axes[1].plot(taxis, trQ_tmp.data/mmax, 'b--')
         self.axes[1].plot(taxis, trT_tmp.data/mmax, 'r')
+        self.axes[1].text(taxis[0],1,'Q',verticalalignment='top',horizontalalignment='left',color='b')
+        self.axes[1].text(taxis[0],-1,'T',verticalalignment='bottom',horizontalalignment='left',color='r')
 
         # Text box
         self.axes[2].text(
             0.5, 0.9, 'Event: ' + self.split.meta.time.ctime() + '     ' +
             str(self.split.meta.lat) + 'N  ' +
             str(self.split.meta.lon) + 'E   ' +
-            str(np.int(self.split.meta.dep/1000.)) + 'km   ' + 'Mw=' +
+            str(np.int(self.split.meta.dep)) + 'km   ' + 'Mw=' +
             str(self.split.meta.mag), horizontalalignment='center')
         self.axes[2].text(
             0.5, 0.7, 'Station: ' + self.split.sta.station +
@@ -1377,6 +1379,8 @@ class DiagPlot(object):
 
         self.axes[3].plot(taxis, self.split.RC_res.trFast.data/mmax, 'b--')
         self.axes[3].plot(taxis, sig*self.split.RC_res.trSlow.data/mmax, 'r')
+        self.axes[3].text(taxis[0],1,'Fast',verticalalignment='top',horizontalalignment='left',color='b')
+        self.axes[3].text(taxis[0],-1,'Slow',verticalalignment='bottom',horizontalalignment='left',color='r')
 
         # Corrected Q and T
         self.axes[4].plot(taxis, self.split.RC_res.trQ_c.data/mmax, 'b--')
@@ -1385,6 +1389,8 @@ class DiagPlot(object):
         # Particle motion
         self.axes[5].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
         self.axes[5].plot(E_RC/mmax, N_RC/mmax, 'r')
+        self.axes[5].text(-1,1,'Raw',verticalalignment='top',horizontalalignment='left',color='b')
+        self.axes[5].text(-1,-1,'RC',verticalalignment='bottom',horizontalalignment='left',color='r')
         ang = 360. - self.split.meta.baz
         x1pos = -np.sin(ang*np.pi/180.)
         y1pos = np.cos(ang*np.pi/180.)
@@ -1445,6 +1451,8 @@ class DiagPlot(object):
         self.axes[9].plot(trE_tmp.data/mmax, trN_tmp.data/mmax, 'b--')
         self.axes[9].plot(E_SC/mmax, N_SC/mmax, 'r')
         self.axes[9].plot([x1pos, x2pos], [y1pos,y2pos], 'k:', lw=2)
+        self.axes[9].text(-1,1,'Raw',verticalalignment='top',horizontalalignment='left',color='b')
+        self.axes[9].text(-1,-1,'SC',verticalalignment='bottom',horizontalalignment='left',color='r')
 
         # Map of energy
         plt.sca(self.axes[10])
