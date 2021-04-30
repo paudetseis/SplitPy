@@ -85,7 +85,7 @@ class Meta(object):
 
     """
 
-    def __init__(self, sta, event, gacmin=85., gacmax=120., phase='SKS',
+    def __init__(self, sta, event, gacmin=85., gacmax=180., phase='SKS',
                  maxdt=4., ddt=0.1, dphi=1.):
 
         from obspy.geodetics.base import gps2dist_azimuth as epi

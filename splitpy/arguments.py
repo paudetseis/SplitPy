@@ -402,21 +402,29 @@ def get_arguments_calc_auto(argv=None):
         args.ndval = nan
 
     # Check selected phase
-    if args.phase not in ['SKS', 'SKKS']:
+    if args.phase not in ['SKS', 'SKKS', 'PKS']:
         parser.error(
-            "Error: choose between 'SKS' and 'SKKS.")
-    if not args.phase == 'SKS' or 'SKKS':
-        parser.error("--phase should be either 'SKS' or 'SKKS'")
+            "Error: choose between 'SKS', 'SKKS and 'PKS'.")
 
-    # Check distances for SKS and SKKS phases
+    # Check distances for all phases
     if not args.mindist:
-        args.mindist = 85.
+        if args.phase == 'SKS':
+            args.mindist = 85.
+        elif args.phase == 'SKKS':
+            args.mindist = 90.
+        elif args.phase == 'PKS':
+            args.mindist = 130.
     if not args.maxdist:
-        args.maxdist = 120.
-    if args.mindist < 85. or args.maxdist > 140.:
+        if args.phase == 'SKS':
+            args.maxdist = 120.
+        elif args.phase == 'SKKS':
+            args.maxdist = 130.
+        elif args.phase == 'PKS':
+            args.maxdist = 150.
+    if args.mindist < 85. or args.maxdist > 180.:
         parser.error(
-            "Distances should be between 85 and 140 deg. for " +
-            "teleseismic 'SKS' and 'SKKS' waves.")
+            "Distances should be between 85 and 180 deg. for " +
+            "teleseismic 'SKS', 'SKKS' and 'PKS' waves.")
 
     return args
 
