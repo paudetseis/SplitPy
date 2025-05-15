@@ -108,10 +108,12 @@ Usage
       SAC or MSEED files.
 
       --local-data LOCALDATA
-                            Specify path containing day-long sac or mseed files of data already
-                            downloaded. If data exists for a seismogram is already present on
-                            disk, it is selected preferentially over downloading the data using
-                            the FDSN Client interface
+                            Specify absolute path to a SeisComP Data Structure (SDS) archive
+                            containing day-long SAC or MSEED files(e.g., --local-
+                            data=/Home/username/Data/SDS). See
+                            https://www.seiscomp.de/seiscomp3/doc/applications/slarchive/SDS.html
+                            for details on the SDS format. If this option is used, it takes
+                            precedence over the --server settings.
       --dtype DTYPE         Specify the data archive file type, either SAC or MSEED. Note the
                             default behaviour is to search for SAC files. Local archive files
                             must have extensions of '.SAC' or '.MSEED'. These are case dependent,
