@@ -75,7 +75,7 @@ def get_arguments_calc_manual(argv=None):
         "with all stations in the IU network [Default " +
         "processes all stations in the database]")
     parser.add_argument(
-        "-v", "-V", "--verbose",
+        "-V", "--verbose",
         action="store_true",
         dest="verb",
         default=False,
@@ -147,7 +147,7 @@ def get_arguments_calc_manual(argv=None):
         "end time for the event search. This will override any station " +
         "end times [Default older end date for each the pair of stations]")
     EventGroup.add_argument(
-        "--reverse-order", "-R",
+        "--reverse-order",
         action="store_true",
         dest="reverse",
         default=False,
