@@ -1335,7 +1335,7 @@ class DiagPlot(object):
             0.5, 0.9, 'Event: ' + self.split.meta.time.ctime() + '     ' +
             str(self.split.meta.lat) + 'N  ' +
             str(self.split.meta.lon) + 'E   ' +
-            str(np.int(self.split.meta.dep)) + 'km   ' + 'Mw=' +
+            str(int(self.split.meta.dep)) + 'km   ' + 'Mw=' +
             str(self.split.meta.mag), horizontalalignment='center')
         self.axes[2].text(
             0.5, 0.7, 'Station: ' + self.split.sta.station +
@@ -1345,7 +1345,7 @@ class DiagPlot(object):
             horizontalalignment='center')
         self.axes[2].text(
             0.5, 0.5, r'Best fit RC values: $\phi$=' +
-            str(np.int(self.split.RC_res.phi)) + r'$\pm$' +
+            str(int(self.split.RC_res.phi)) + r'$\pm$' +
             str("{:.2f}").format(self.split.RC_res.ephi) +
             r'   $\delta t$=' +
             str(self.split.RC_res.dtt) + r'$\pm$' +
@@ -1353,7 +1353,7 @@ class DiagPlot(object):
             's', horizontalalignment='center')
         self.axes[2].text(
             0.5, 0.3, r'Best fit SC values: $\phi$=' +
-            str(np.int(self.split.SC_res.phi)) + r'$\pm$' +
+            str(int(self.split.SC_res.phi)) + r'$\pm$' +
             str("{:.2f}").format(self.split.SC_res.ephi) +
             r'   $\delta t$=' +
             str(self.split.SC_res.dtt) + r'$\pm$' +
@@ -1411,7 +1411,7 @@ class DiagPlot(object):
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
-        E2 = np.roll(self.split.RC_res.Emat, np.int(
+        E2 = np.roll(self.split.RC_res.Emat, int(
             self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
 
         Emin = self.split.RC_res.Emat.min()
@@ -1470,7 +1470,7 @@ class DiagPlot(object):
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
 
-        E2 = np.roll(self.split.SC_res.Emat, np.int(
+        E2 = np.roll(self.split.SC_res.Emat, int(
             self.split.SC_res.phi-self.split.SC_res.phi_min), axis=0)
 
         Emin = self.split.SC_res.Emat.min()
