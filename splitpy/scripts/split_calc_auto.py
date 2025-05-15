@@ -28,6 +28,7 @@ import matplotlib
 import numpy as np
 import pickle
 import stdb
+import copy
 
 from obspy.clients.fdsn import Client
 from obspy import UTCDateTime
