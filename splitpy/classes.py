@@ -252,7 +252,7 @@ class Split(object):
 
     """
 
-    def __init__(self, sta):
+    def __init__(self, sta, zcomp='Z'):
 
         # # Load example data if initializing empty object
         # if sta == 'demo' or sta == 'Demo':
@@ -271,6 +271,7 @@ class Split(object):
         self.meta = None
         self.dataZNE = None
         self.dataLQT = None
+        self.zcomp = zcomp
 
     def add_event(self, event, gacmin=85., gacmax=120., phase='SKS',
                   returned=False):
@@ -418,7 +419,7 @@ class Split(object):
         """
 
         if self.meta is None:
-            raise Exception("Requires event data as attribute - aborting"))
+            raise Exception("Requires event data as attribute - aborting")
 
         if not self.meta.accept:
             return

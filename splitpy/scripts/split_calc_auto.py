@@ -90,6 +90,13 @@ def get_arguments_calc_auto(argv=None):
         "negate each other, and both are set to " +
         "false (every repeat is prompted). [Default False]")
     parser.add_argument(
+        "--zcomp", 
+        dest="zcomp",
+        type=str,
+        default="Z",
+        help="Specify the Vertical Component Channel Identifier. "+
+        "[Default Z].")
+    parser.add_argument(
         "--skip-existing",
         action="store_true",
         dest="skip",
@@ -433,6 +440,18 @@ def get_arguments_calc_auto(argv=None):
 
 def main(args=None):
 
+    print()
+    print("###################################################################")
+    print("#            _ _ _                _                     _         #")
+    print("#  ___ _ __ | (_) |_     ___ __ _| | ___     __ _ _   _| |_ ___   #")
+    print("# / __| '_ \| | | __|   / __/ _` | |/ __|   / _` | | | | __/ _ \  #")
+    print("# \__ \ |_) | | | |_   | (_| (_| | | (__   | (_| | |_| | || (_) | #")
+    print("# |___/ .__/|_|_|\__|___\___\__,_|_|\___|___\__,_|\__,_|\__\___/  #")
+    print("#     |_|          |_____|             |_____|                    #")
+    print("#                                                                 #")
+    print("###################################################################")
+    print()
+
     if args is None:
         # Run Input Parser
         args = get_arguments_calc_auto()
@@ -497,13 +516,12 @@ def main(args=None):
             continue
 
         # Temporary print locations
-        tlocs = sta.location
+        tlocs = copy.copy(sta.location)
         if len(tlocs) == 0:
             tlocs = ['']
         for il in range(0, len(tlocs)):
             if len(tlocs[il]) == 0:
-                tlocs[il] = "--"
-        sta.location = tlocs
+                tlocs.append("--")
 
         # Update Display
         print(" ")
