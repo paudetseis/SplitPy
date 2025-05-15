@@ -30,7 +30,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 from math import ceil
+
 from splitpy import arguments, Split
+
+from argparse import ArgumentParser
+from os.path import exists as exist
 from pathlib import Path
 
 
@@ -47,10 +51,184 @@ def angle_mean(dt, phi, ddt, dphi):
 
     return phase, dphase, radius, dradius
 
+def get_arguments_average(argv=None):
 
-def main():
+    parser = ArgumentParser(
+        usage="%(prog)s [arguments] <station database>",
+        description="Script to plot the average splitting results for a " +
+        "given station. Loads the available .pkl files in the specified " +
+        "Station Directory.")
 
-    args = arguments.get_arguments_average()
+    # General Settings
+    parser.add_argument(
+        "indb",
+        help="Station Database to process from.",
+        type=str)
+    parser.add_argument(
+        "--keys",
+        action="store",
+        type=str,
+        dest="stkeys",
+        default="",
+        help="Specify a comma separated list of station keys " +
+        "for which to perform analysis. These must be " +
+        "contained within the station database. Partial keys " +
+        "will be used to match against those in the " +
+        "dictionary. For instance, providing IU will match " +
+        "with all stations in the IU network [Default " +
+        "processes all stations in the database]")
+    parser.add_argument(
+        "-v", "-V", "--verbose",
+        action="store_true",
+        dest="verb",
+        default=False,
+        help="Specify to increase verbosity.")
+    parser.add_argument(
+        "--show-fig",
+        action="store_true",
+        dest="showfig",
+        default=False,
+        help="Specify show plots during processing - " +
+        "they are still saved to disk. [Default only saves]")
+    parser.add_argument(
+        "-A", "--auto",
+        action="store_true",
+        dest="auto",
+        default=False,
+        help="Specify to use automatically processed split results. "+
+        "[Default uses refined ('manual') split results]")
+
+    # Null Settings
+    NullGroup = parser.add_argument_group(
+        title="Null Selection Settings",
+        description="Settings "
+        "associated with selecting which Null or Non-Null data is included")
+    NullGroup.add_argument(
+        "--nulls", "--Nulls",
+        action="store_true",
+        dest="nulls",
+        default=False,
+        help="Specify this flag to include Null Values in the average. " +
+        "[Default Non-Nulls only]")
+    NullGroup.add_argument(
+        "--no-nons", "--No-Nons",
+        action="store_false",
+        dest="nons",
+        default=True,
+        help="Specify this flag to exclude Non-Nulls from the average " +
+        "[Default False]")
+
+    # Quality Settings
+    QualGroup = parser.add_argument_group(
+        title="Quality Selection Settings",
+        description="Settings associated with selecting the qualities " +
+        "to include in the selection.")
+    QualGroup.add_argument(
+        "--No-Good", "--no-good",
+        action="store_false",
+        dest="goods",
+        default=True,
+        help="Specify to exclude 'Good' measurements from the average. " +
+        "[Default Good + Fair]")
+    QualGroup.add_argument(
+        "--No-Fair", "--no-fair",
+        action="store_false",
+        dest="fairs",
+        default=True,
+        help="Specify to exclude 'Fair' measurements from the average " +
+        "[Default Good + Fair]")
+    QualGroup.add_argument(
+        "--Poor", "--poor",
+        action="store_true",
+        dest="poors",
+        default=False,
+        help="Specify to include 'Poor' measurements in the average " +
+        "[Default No Poors]")
+
+    # Split Type Settings
+    SpTypGroup = parser.add_argument_group(
+        title="Split Type Settings",
+        description="Settings to Select "
+        "which Split types are included in the selection.")
+    SpTypGroup.add_argument(
+        "--RC-Only", "--rc-only", "--RC-only",
+        action="store_false",
+        dest="SCinc",
+        default=True,
+        help="Specify to only include RC splits in the average. " +
+        "[Default RC + SC]")
+    SpTypGroup.add_argument(
+        "--SC-Only", "--sc-only", "--SC-only",
+        action="store_false",
+        dest="RCinc",
+        default=True,
+        help="Specify to only include SC splits in the average. " +
+        "[Default RC + SC]")
+
+    args = parser.parse_args(argv)
+
+    # Check inputs
+    if not exist(args.indb):
+        parser.error("Input file " + args.indb + " does not exist")
+
+    # Check Nulls
+    if not args.nons and not args.nulls:
+        parser.error("One of Non-Nulls or Nulls must be included.")
+
+    # Check Quality
+    if not args.goods and not args.fairs and not args.poors:
+        parser.error("At least one Quality must be included.")
+
+    # Check Types
+    if not args.RCinc and not args.SCinc:
+        parser.error("At leat one Splitting Tyhpe must be included.")
+
+    # Construct Null FileName Components
+    NullName = ""
+    if args.nons:
+        NullName = "_Nons"
+        if args.nulls:
+            NullName = NullName + "-Nulls"
+    else:
+        if args.nulls:
+            NullName = "_Nulls"
+    args.NullName = NullName
+
+    # Construct Quality FileName Components
+    QualName = ""
+    if args.goods:
+        QualName = "_G"
+        if args.fairs:
+            QualName = QualName + "-F"
+        if args.poors:
+            QualName = QualName + "-P"
+    else:
+        if args.fairs:
+            QualName = "_F"
+            if args.poors:
+                QualName = QualName + "-P"
+        else:
+            if args.poors:
+                QualName = "_P"
+    args.QualName = QualName
+
+    # Construct Type FileName Components
+    TypeName = ""
+    if args.RCinc and args.SCinc:
+        TypeName = "_RC-SC"
+    elif args.RCinc and not args.SCinc:
+        TypeName = "_RC"
+    elif not args.RCinc and args.SCinc:
+        TypeName = "_SC"
+    args.TypeName = TypeName
+
+    return args
+
+def main(args=None):
+
+    if args is None:
+        # Run Input Parser
+        args = get_arguments_average()
 
     print("---------------------------")
     print("Selection Criteria ")

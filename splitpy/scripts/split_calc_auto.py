@@ -23,23 +23,419 @@
 # SOFTWARE.
 
 # -*- coding: utf-8 -*-
-from pathlib import Path
-from splitpy import arguments, utils
-from splitpy import Split, DiagPlot
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 import pickle
 import stdb
+
 from obspy.clients.fdsn import Client
 from obspy import UTCDateTime
-import matplotlib
+
+from splitpy import utils
+from splitpy import Split, DiagPlot
+
+from argparse import ArgumentParser
+from os.path import exists as exist
+from pathlib import Path
+
 matplotlib.use('Qt5Agg')
 
 
-def main():
+def get_arguments_calc_auto(argv=None):
 
-    # Run Input Parser
-    args = arguments.get_arguments_calc_auto()
+    parser = ArgumentParser(
+        usage="%(prog)s [arguments] <station database>",
+        description="Script wrapping "
+        "together the python-based implementation of SplitLab by " +
+        "Wustefeld and others. This version " +
+        "requests data on the fly for a given date range. Data is " +
+        "requested from the internet using " +
+        "the client services framework or from data provided on a " +
+        "local disk. The stations are processed " +
+        "one by one with the SKS Splitting parameters measured " +
+        "individually using both the " +
+        "Rotation-Correlation (RC) and Silver & Chan (SC) methods.")
+    parser.add_argument(
+        "indb",
+        help="Station Database to process from.",
+        type=str)
+    parser.add_argument(
+        "--keys",
+        action="store",
+        type=str,
+        dest="stkeys",
+        default="",
+        help="Specify a comma separated list of station keys for " +
+        "which to perform the analysis. These must be " +
+        "contained within the station database. Partial keys " +
+        "will be used to match against those in the " +
+        "dictionary. For instance, providing IU will match with " +
+        "all stations in the IU network [Default processes " +
+        "all stations in the database]")
+    parser.add_argument(
+        "-V", "--verbose",
+        action="store_true",
+        dest="verb",
+        default=False,
+        help="Specify to increase verbosity.")
+    parser.add_argument(
+        "-O", "--overwrite",
+        action="store_true",
+        dest="ovr",
+        default=False,
+        help="Force the overwriting of pre-existing Split results. " +
+        "Default behaviour prompts for those that " +
+        "already exist. Selecting overwrite and skip (ie, both flags) " +
+        "negate each other, and both are set to " +
+        "false (every repeat is prompted). [Default False]")
+    parser.add_argument(
+        "-K", "--skip-existing",
+        action="store_true",
+        dest="skip",
+        default=False,
+        help="Skip any event for which existing splitting results are " +
+        "saved to disk. Default behaviour prompts for " +
+        "each event. Selecting skip and overwrite (ie, both flags) " +
+        "negate each other, and both are set to " +
+        "False (every repeat is prompted). [Default False]")
+    parser.add_argument(
+        "-C", "--calc",
+        action="store_true",
+        dest="calc",
+        default=False,
+        help="Analyze data for shear-wave splitting. [Default saves data "+
+        "to folders for subsequent analysis]")
+    parser.add_argument(
+        "-P", "--plot-diagnostic",
+        action="store_true",
+        dest="diagplot",
+        default=False,
+        help="Plot diagnostic window at end of process. [Default False]")
+    parser.add_argument(
+        "-R", "--recalc",
+        action="store_true",
+        dest="recalc",
+        default=False,
+        help="Re-calculate estimates and overwrite existing splitting "+
+        "results without re-downloading data. [Default False]")
+
+    # Server Settings
+    ServerGroup = parser.add_argument_group(
+        title="Server Settings",
+        description="Settings associated with which " +
+        "datacenter to log into.")
+    ServerGroup.add_argument(
+        "-S", "--server",
+        action="store",
+        type=str,
+        dest="Server",
+        default="IRIS",
+        help="Specify the server to connect to. Options include: " +
+        "BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU, NCEDC, " +
+        "NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS, USP. [Default IRIS]")
+    ServerGroup.add_argument(
+        "-U", "--user-auth",
+        action="store",
+        type=str,
+        dest="UserAuth",
+        default="",
+        help="Enter your IRIS Authentification Username and Password " +
+        "(--User-Auth='username:authpassword') to access and download " +
+        "restricted data. [Default no user and password]")
+
+    # Database Settings
+    DataGroup = parser.add_argument_group(
+        title="Local Data Settings",
+        description="Settings associated with defining and using a " +
+        "local data base of pre-downloaded day-long SAC files.")
+    DataGroup.add_argument(
+        "--local-data",
+        action="store",
+        type=str,
+        dest="localdata",
+        default=None,
+        help="Specify a comma separated list of paths containing " +
+        "day-long sac files of data already downloaded. " +
+        "If data exists for a seismogram is already present on " +
+        "disk, it is selected preferentially over downloading " +
+        "the data using the Client interface")
+    DataGroup.add_argument(
+        "--dtype",
+        action="store",
+        type=str,
+        dest="dtype",
+        default='SAC',
+        help="Specify the data archive file type, either SAC " +
+        " or MSEED. Note the default behaviour is to search for " +
+        "SAC files. Local archive files must have extensions of '.SAC' "+
+        " or '.MSEED. These are case dependent, so specify the correct case"+
+        "here.")
+    DataGroup.add_argument(
+        "--no-data-zero",
+        action="store_true",
+        dest="ndval",
+        default=False,
+        help="Specify to force missing data to be set as zero, rather " +
+        "than default behaviour which sets to nan.")
+    DataGroup.add_argument(
+        "--no-local-net",
+        action="store_false",
+        dest="useNet",
+        default=True,
+        help="Specify to prevent using the Network code in the " +
+        "search for local data (sometimes for CN stations " +
+        "the dictionary name for a station may disagree with that " +
+        "in the filename. [Default Network used]")
+
+    # Constants Settings
+    ConstGroup = parser.add_argument_group(
+        title='Parameter Settings',
+        description="Miscellaneous default values and settings")
+    ConstGroup.add_argument(
+        "--sampling-rate",
+        action="store",
+        type=float,
+        dest="new_sampling_rate",
+        default=10.,
+        help="Specify new sampling rate in Hz. [Default 10.]")
+    ConstGroup.add_argument(
+        "--min-snr",
+        action="store",
+        type=float,
+        dest="msnr",
+        default=5.,
+        help="Minimum SNR value calculated on the radial (Q) component "+
+        "to proceed with analysis (dB). [Default 5.]")
+    ConstGroup.add_argument(
+        "--window",
+        action="store",
+        type=float,
+        dest="dts",
+        default=120.,
+        help="Specify time window length before and after the SKS "
+        "arrival. The total window length is 2*dst (sec). [Default 120]")
+    ConstGroup.add_argument(
+        "--max-delay",
+        action="store",
+        type=float,
+        dest="maxdt",
+        default=4.,
+        help="Specify the maximum delay time in search (sec). "+
+        "[Default 4]")
+    ConstGroup.add_argument(
+        "--dt-delay",
+        action="store",
+        type=float,
+        dest="ddt",
+        default=0.1,
+        help="Specify the time delay increment in search (sec). "+
+        "[Default 0.1]")
+    ConstGroup.add_argument(
+        "--dphi",
+        action="store",
+        type=float,
+        dest="dphi",
+        default=1.,
+        help="Specify the fast angle increment in search (degree). "+
+        "[Default 1.]")
+    ConstGroup.add_argument(
+        "--snrT",
+        action="store",
+        type=float,
+        dest="snrTlim",
+        default=1.,
+        help="Specify the minimum SNR Threshold for the Transverse " +
+        "component to be considered Non-Null. [Default 1.]")
+    ConstGroup.add_argument(
+        "--fmin",
+        action="store",
+        type=float,
+        dest="fmin",
+        default=0.02,
+        help="Specify the minimum frequency corner for bandpass " +
+        "filter (Hz). [Default 0.02]")
+    ConstGroup.add_argument(
+        "--fmax",
+        action="store",
+        type=float,
+        dest="fmax",
+        default=0.5,
+        help="Specify the maximum frequency corner for bandpass " +
+        "filter (Hz). [Default 0.5]")
+
+    # Event Selection Criteria
+    EventGroup = parser.add_argument_group(
+        title="Event Settings",
+        description="Settings associated with refining "
+        "the events to include in matching station pairs")
+    EventGroup.add_argument(
+        "--start",
+        action="store",
+        type=str,
+        dest="startT",
+        default="",
+        help="Specify a UTCDateTime compatible string representing " +
+        "the start time for the event search. This will override any " +
+        "station start times. [Default start date of each station]")
+    EventGroup.add_argument(
+        "--end",
+        action="store",
+        type=str,
+        dest="endT",
+        default="",
+        help="Specify a UTCDateTime compatible string representing " +
+        "the end time for the event search. This will override any " +
+        "station end times [Default end date of each station]")
+    EventGroup.add_argument(
+        "--reverse",
+        action="store_true",
+        dest="reverse",
+        default=False,
+        help="Reverse order of events. Default behaviour starts at " +
+        "oldest event and works towards most recent. " +
+        "Specify reverse order and instead the program will start " +
+        "with the most recent events and work towards older")
+    EventGroup.add_argument(
+        "--min-mag",
+        action="store",
+        type=float,
+        dest="minmag",
+        default=6.0,
+        help="Specify the minimum magnitude of event for which to " +
+        "search. [Default 6.0]")
+    EventGroup.add_argument(
+        "--max-mag",
+        action="store",
+        type=float,
+        dest="maxmag",
+        default=None,
+        help="Specify the maximum magnitude of event for which to " +
+        "search. [Default None, i.e. no limit]")
+
+    # Geometry Settings
+    GeomGroup = parser.add_argument_group(
+        title="Geometry Settings",
+        description="Settings associatd with the "
+        "event-station geometries")
+    GeomGroup.add_argument(
+        "--min-dist",
+        action="store",
+        type=float,
+        dest="mindist",
+        default=85.,
+        help="Specify the minimum great circle distance (degrees) " +
+        "between the station and event. [Default 85]")
+    GeomGroup.add_argument(
+        "--max-dist",
+        action="store",
+        type=float,
+        dest="maxdist",
+        default=120.,
+        help="Specify the maximum great circle distance (degrees) " +
+        "between the station and event. [Default 120]")
+    GeomGroup.add_argument(
+        "--phase",
+        action="store",
+        type=str,
+        dest="phase",
+        default='SKS',
+        help="Specify the phase name to use. Be careful with the distance. " +
+        "setting. Options are 'SKS' or 'SKKS'. [Default 'SKS']")
+
+    args = parser.parse_args(argv)
+
+    # Check inputs
+    if not exist(args.indb):
+        parser.error("Input file " + args.indb + " does not exist")
+
+    # create station key list
+    if len(args.stkeys) > 0:
+        args.stkeys = args.stkeys.split(',')
+
+    # construct start time
+    if len(args.startT) > 0:
+        try:
+            args.startT = UTCDateTime(args.startT)
+        except:
+            parser.error(
+                "Cannot construct UTCDateTime from start time: " +
+                args.startT)
+    else:
+        args.startT = None
+
+    # construct end time
+    if len(args.endT) > 0:
+        try:
+            args.endT = UTCDateTime(args.endT)
+        except:
+            parser.error(
+                "Cannot construct UTCDateTime from end time: " +
+                args.endT)
+    else:
+        args.endT = None
+
+    # Parse User Authentification
+    if not len(args.UserAuth) == 0:
+        tt = args.UserAuth.split(':')
+        if not len(tt) == 2:
+            parser.error(
+                "Error: Incorrect Username and Password Strings for " +
+                "User Authentification")
+        else:
+            args.UserAuth = tt
+    else:
+        args.UserAuth = []
+
+    # Check existing file behaviour
+    if args.skip and args.ovr:
+        args.skip = False
+        args.ovr = False
+
+    # Parse Local Data directories
+    if args.localdata is not None:
+        args.localdata = args.localdata.split(',')
+    else:
+        args.localdata = []
+
+    # Check NoData Value
+    if args.ndval:
+        args.ndval = 0.0
+    else:
+        args.ndval = nan
+
+    # Check selected phase
+    if args.phase not in ['SKS', 'SKKS', 'PKS']:
+        parser.error(
+            "Error: choose between 'SKS', 'SKKS and 'PKS'.")
+
+    # Check distances for all phases
+    if not args.mindist:
+        if args.phase == 'SKS':
+            args.mindist = 85.
+        elif args.phase == 'SKKS':
+            args.mindist = 90.
+        elif args.phase == 'PKS':
+            args.mindist = 130.
+    if not args.maxdist:
+        if args.phase == 'SKS':
+            args.maxdist = 120.
+        elif args.phase == 'SKKS':
+            args.maxdist = 130.
+        elif args.phase == 'PKS':
+            args.maxdist = 150.
+    if args.mindist < 85. or args.maxdist > 180.:
+        parser.error(
+            "Distances should be between 85 and 180 deg. for " +
+            "teleseismic 'SKS', 'SKKS' and 'PKS' waves.")
+
+    return args
+
+def main(args=None):
+
+    if args is None:
+        # Run Input Parser
+        args = get_arguments_calc_auto()
 
     # Load Database
     # stdb=0.1.4
@@ -79,7 +475,9 @@ def main():
             data_client = Client(args.Server)
         else:
             data_client = Client(
-                args.Server, user=args.UserAuth[0], password=args.UserAuth[1])
+                args.Server,
+                user=args.UserAuth[0],
+                password=args.UserAuth[1])
 
         # Establish client for events
         event_client = Client()
@@ -143,8 +541,10 @@ def main():
 
         # Get catalogue using deployment start and end
         cat = event_client.get_events(
-            starttime=tstart, endtime=tend,
-            minmagnitude=args.minmag, maxmagnitude=args.maxmag)
+            starttime=tstart,
+            endtime=tend,
+            minmagnitude=args.minmag,
+            maxmagnitude=args.maxmag)
 
         # Total number of events in Catalogue
         nevK = 0
@@ -160,13 +560,18 @@ def main():
             print("| Cataloging Local Data...                         |")
             if args.useNet:
                 stalcllist = utils.list_local_data_stn(
-                    lcldrs=args.localdata, sta=sta.station,
-                    net=sta.network, dtype=args.dtype, altnet=sta.altnet)
+                    lcldrs=args.localdata,
+                    sta=sta.station,
+                    net=sta.network,
+                    dtype=args.dtype,
+                    altnet=sta.altnet)
                 print("|   {0:>2s}.{1:5s}: {2:6d} files              ".format(
                           sta.network, sta.station, len(stalcllist)))
             else:
                 stalcllist = utils.list_local_data_stn(
-                    lcldrs=args.localdata, dtype=args.dtype, sta=sta.station)
+                    lcldrs=args.localdata,
+                    dtype=args.dtype,
+                    sta=sta.station)
                 print("|   {0:5s}: {1:6d} files                      ".format(
                           sta.station, len(stalcllist)))
         else:
@@ -190,8 +595,11 @@ def main():
 
             # Add event to split object
             accept = split.add_event(
-                ev, gacmin=args.mindist, gacmax=args.maxdist,
-                phase=args.phase, returned=True)
+                ev,
+                gacmin=args.mindist,
+                gacmax=args.maxdist,
+                phase=args.phase,
+                returned=True)
 
             # Define time stamp
             yr = str(split.meta.time.year).zfill(4)
@@ -257,8 +665,10 @@ def main():
                     split.rotate(align='LQT')
 
                     # Filter rotated traces
-                    split.dataLQT.filter('bandpass', freqmin=args.fmin,
-                                         freqmax=args.fmax)
+                    split.dataLQT.filter(
+                        'bandpass',
+                        freqmin=args.fmin,
+                        freqmax=args.fmax)
 
                     # Calculate snr over dt_snr seconds
                     split.calc_snr()
@@ -270,9 +680,14 @@ def main():
 
                     # Get data
                     has_data = split.download_data(
-                        client=data_client, dts=args.dts, stdata=stalcllist,
-                        dtype=args.dtype, ndval=args.ndval, new_sr=args.new_sampling_rate,
-                        returned=True, verbose=args.verb)
+                        client=data_client,
+                        dts=args.dts,
+                        stdata=stalcllist,
+                        dtype=args.dtype,
+                        ndval=args.ndval,
+                        new_sr=args.new_sampling_rate,
+                        returned=True,
+                        verbose=args.verb)
 
                     if not has_data:
                         continue
@@ -281,8 +696,10 @@ def main():
                     split.rotate(align='LQT')
 
                     # Filter rotated traces
-                    split.dataLQT.filter('bandpass', freqmin=args.fmin,
-                                         freqmax=args.fmax)
+                    split.dataLQT.filter(
+                        'bandpass',
+                        freqmin=args.fmin,
+                        freqmax=args.fmax)
 
                     # Calculate snr over dt_snr seconds
                     split.calc_snr()
