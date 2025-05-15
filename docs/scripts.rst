@@ -85,31 +85,37 @@ Usage
     Server Settings:
       Settings associated with which datacenter to log into.
 
-      --server SERVER
-                            Specify the server to connect to. Options include:
-                            BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU,
-                            NCEDC, NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS,
-                            USP. [Default IRIS]
-      --user-auth USERAUTH
-                            Enter your IRIS Authentification Username and Password
-                            (--user-auth='username:authpassword') to access and
-                            download restricted data. [Default no user and
-                            password]
+      --server SERVER       Base URL of FDSN web service compatible server (e.g.
+                            “http://service.iris.edu”) or key string for recognized server (one
+                            of 'AUSPASS', 'BGR', 'EARTHSCOPE', 'EIDA', 'EMSC', 'ETH', 'GEOFON',
+                            'GEONET', 'GFZ', 'ICGC', 'IESDMC', 'INGV', 'IPGP', 'IRIS', 'IRISPH5',
+                            'ISC', 'KNMI', 'KOERI', 'LMU', 'NCEDC', 'NIEP', 'NOA', 'NRCAN',
+                            'ODC', 'ORFEUS', 'RASPISHAKE', 'RESIF', 'RESIFPH5', 'SCEDC',
+                            'TEXNET', 'UIB-NORSAR', 'USGS', 'USP'). [Default 'IRIS']
+      --user-auth USERAUTH  Authentification Username and Password for the waveform server
+                            (--user-auth='username:authpassword') to access and download
+                            restricted data. [Default no user and password]
+      --eida-token TOKENFILE
+                            Token for EIDA authentication mechanism, see http://geofon.gfz-
+                            potsdam.de/waveform/archive/auth/index.php. If a token is provided,
+                            argument --user-auth will be ignored. This mechanism is only
+                            available on select EIDA nodes. The token can be provided in form of
+                            the PGP message as a string, or the filename of a local file with the
+                            PGP message in it. [Default None]
 
     Local Data Settings:
-      Settings associated with defining and using a local data base of pre-
-      downloaded day-long SAC files.
+      Settings associated with defining and using a local data base of pre-downloaded day-long
+      SAC or MSEED files.
 
       --local-data LOCALDATA
-                            Specify a comma separated list of paths containing
-                            day-long sac files of data already downloaded. If data
-                            exists for a seismogram is already present on disk, it
-                            is selected preferentially over downloading the data
-                            using the Client interface
+                            Specify path containing day-long sac or mseed files of data already
+                            downloaded. If data exists for a seismogram is already present on
+                            disk, it is selected preferentially over downloading the data using
+                            the FDSN Client interface
       --dtype DTYPE         Specify the data archive file type, either SAC or MSEED. Note the
                             default behaviour is to search for SAC files. Local archive files
-                            must have extensions of '.SAC' or '.MSEED. These are case dependent,
-                            so specify the correct casehere.
+                            must have extensions of '.SAC' or '.MSEED'. These are case dependent,
+                            so specify the correct case here.
 
     Parameter Settings:
       Miscellaneous default values and settings
