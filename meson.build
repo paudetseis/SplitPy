@@ -18,7 +18,16 @@ py.install_sources(
   'splitpy/scripts/split_calc_manual.py',
   'splitpy/scripts/split_average.py',
   'splitpy/scripts/__init__.py',
+  'splitpy/tests/get_meta.py',
+  'splitpy/tests/test_args.py',
+  'splitpy/tests/test_imports.py',
+  'splitpy/tests/test_scripts.py',
+  'splitpy/tests/__init__.py',
   pure: false,
   preserve_path: true,
   )
   
+  install_data(
+    'splitpy/examples/data/MMPY.pkl',
+    install_dir: py.get_install_dir(pure: false) / 'splitpy/examples/data',
+)

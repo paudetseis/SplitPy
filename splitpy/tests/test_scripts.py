@@ -2,6 +2,7 @@ from obspy import UTCDateTime
 import numpy as np
 import pickle
 import stdb
+import copy
 from obspy.clients.fdsn import Client
 from splitpy import Split, utils
 from . import test_args, get_meta
@@ -41,10 +42,12 @@ def test_split(tmp_path):
 
         # Establish client
         if len(args.UserAuth) == 0:
-            data_client = Client(args.Server)
+            data_client = Client(args.server)
         else:
             data_client = Client(
-                args.Server, user=args.UserAuth[0], password=args.UserAuth[1])
+                args.Server,
+                user=args.UserAuth[0],
+                password=args.UserAuth[1])
 
         # Establish client for events
         event_client = Client()
@@ -64,13 +67,12 @@ def test_split(tmp_path):
             continue
 
         # Temporary print locations
-        tlocs = sta.location
+        tlocs = copy.copy(sta.location)
         if len(tlocs) == 0:
             tlocs = ['']
         for il in range(0, len(tlocs)):
             if len(tlocs[il]) == 0:
-                tlocs[il] = "--"
-        sta.location = tlocs
+                tlocs.append("--")
 
         # Update Display
         print(" ")
@@ -110,8 +112,10 @@ def test_split(tmp_path):
 
         # Get catalogue using deployment start and end
         cat = event_client.get_events(
-            starttime=tstart, endtime=tend,
-            minmagnitude=args.minmag, maxmagnitude=args.maxmag)
+            starttime=tstart,
+            endtime=tend,
+            minmagnitude=args.minmag,
+            maxmagnitude=args.maxmag)
 
         # Total number of events in Catalogue
         nevK = 0
@@ -120,27 +124,6 @@ def test_split(tmp_path):
             "|  Found {0:5d}".format(nevtT) +
             " possible events                  |")
         ievs = range(0, nevtT)
-
-        # Get Local Data Availabilty
-        if len(args.localdata) > 0:
-            print("|-----------------------------------------------|")
-            print("| Cataloging Local Data...                      |")
-            if args.useNet:
-                stalcllist = utils.list_local_data_stn(
-                    lcldrs=args.localdata, sta=sta.station,
-                    net=sta.network, altnet=sta.altnet)
-                print("|   {0:>2s}.{1:5s}: {2:6d} files              " +
-                      "        |".format(
-                          sta.network, sta.station, len(stalcllist)))
-            else:
-                stalcllist = utils.list_local_data_stn(
-                    lcldrs=args.localdata, sta=sta.station)
-                print("|   {0:5s}: {1:6d} files                      " +
-                      "   |".format(
-                          sta.station, len(stalcllist)))
-        else:
-            stalcllist = []
-        print("|===============================================|")
 
         # Select order of processing
         if args.reverse:
@@ -159,8 +142,11 @@ def test_split(tmp_path):
 
             # Add event to split object
             accept = split.add_event(
-                ev, gacmin=args.mindist, gacmax=args.maxdist,
-                phase=args.phase, returned=True)
+                ev,
+                gacmin=args.mindist,
+                gacmax=args.maxdist,
+                phase=args.phase,
+                returned=True)
 
             # Define time stamp
             yr = str(split.meta.time.year).zfill(4)
@@ -214,9 +200,11 @@ def test_split(tmp_path):
 
                 # Get data
                 has_data = split.download_data(
-                    client=data_client, dts=args.dts, stdata=stalcllist,
-                    ndval=args.ndval, new_sr=args.new_sampling_rate,
-                    returned=True, verbose=args.verb)
+                    client=data_client,
+                    dts=args.dts,
+                    new_sr=args.new_sampling_rate,
+                    returned=True,
+                    verbose=args.verb)
 
                 if not has_data:
                     continue

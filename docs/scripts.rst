@@ -59,6 +59,7 @@ Usage
                             exist. Selecting overwrite and skip (ie, both flags)
                             negate each other, and both are set to false (every
                             repeat is prompted). [Default False]
+      --zcomp ZCOMP         Specify the Vertical Component Channel Identifier. [Default Z].
       --skip-existing       Skip any event for which existing splitting results
                             are saved to disk. Default behaviour prompts for each
                             event. Selecting skip and overwrite (ie, both flags)
