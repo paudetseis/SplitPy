@@ -6,17 +6,17 @@ Creating the ``StDb`` Database
 
 All the scripts provided require a ``StDb`` database containing station
 information and metadata. Let's first create this database for station
-LOBS3 and send the prompt to a logfile
+TGTN and send the prompt to a logfile
 
 .. code-block::
 
-    $ query_fdsn_stdb.py -N TA -C HH? -S TGTN TGTN > logfile
+    $ query_fdsn_stdb -N NY -C HH -S TGTN TGTN > logfile
 
-To check the station info for TGTN, use the program ``ls_stdb.py``:
+To check the station info for TGTN, use the program ``ls_stdb``:
 
 .. code-block::
 
-    $ ls_stdb.py TGTN.pkl
+    $ ls_stdb TGTN.pkl
     Listing Station Pickle: TGTN.pkl
     NY.TGTN
     --------------------------------------------------------------------------
@@ -49,13 +49,11 @@ seismic data suitable for shear-wave splitting analysis.
 
 .. code-block::
 
-   $ split_calc_auto.py --keys=NY.TGTN --local-data=/mnt/datadisk/DaySac/ --start=2020-01-01 --end=2020-05-20 TGTN.pkl
+   $ split_calc_auto --keys=NY.TGTN --local-data=/mnt/datadisk/DaySac/ --start=2020-01-01 --end=2020-05-20 TGTN.pkl
 
 This uses all default settings for window lengths, magnitude criteria, etc. 
-In this example, data will be used from IRIS as well as any local data 
-on disk (defined with the ``--local-data`` flag - this needs to be customized for
-your own file structure). If no data exists on disk, then 
-the program will search on the specific data sever (through ``obspy`` clients). In this
+In this example, the program will search on the specific data server
+(through ``obspy`` clients) to download the waveforms. In this
 example, only events that occurred between January 1, 2020 and May 20, 2020 will 
 be considered. Based on the criteria specified (see :ref:`splitauto`), seismograms will be 
 downloaded where the minimum SNR threshold is exceeded. All data will be saved in separate 
@@ -65,10 +63,10 @@ Downloading and Processing
 --------------------------
 
 You can run :ref:`splitauto` to automatically estimate the shear-wave splitting 
-parameters by specifying the argument ``-C`` or ``--calc``. Choosing ``-V`` 
+parameters by specifying the argument or ``--calc``. Choosing ``-V`` 
 or ``--verbose`` will display
 the results to the terminal as the script proceeds. If you wish to visualize the results
-for each event, you can further select ``-P`` or ``--plot-diagnostic``. This will pop a
+for each event, you can further select ``--plot-diagnostic``. This will pop a
 summary Figure (i.e., ``Figure 1``) of the splitting results for this particular event.
 
 As an example of a Good, non-null estimate, type the following line in the terminal
@@ -77,7 +75,7 @@ there is only one key in the database):
 
 .. code-block::
 
-    $ split_calc_auto.py --start=2020-03-18 --end=2020-03-19 -V -C -P -O TGTN.pkl
+    $ split_calc_auto --start=2020-03-18 --end=2020-03-19 -V --calc --plot-diagnostic -O TGTN.pkl
 
 This will produce, in the terminal:
 
@@ -187,7 +185,7 @@ change the frequency settings and re-calculate the previous example:
 
 .. code-block::
 
-    $ split_calc_auto.py --start=2020-03-18 --end=2020-03-19 --fmin=0.05 --fmax=1. -V -R -P -O TGTN.pkl
+    $ split_calc_auto --start=2020-03-18 --end=2020-03-19 --fmin=0.05 --fmax=1. -V --recalc --plot-diagnostic -O TGTN.pkl
 
 This will produce, in the terminal:
 
@@ -288,7 +286,7 @@ one day of data:
 
 .. code-block::
 
-    $ split_calc_manual.py --start=2020-03-18 --end=2020-03-19 TGTN.pkl
+    $ split_calc_manual --start=2020-03-18 --end=2020-03-19 TGTN.pkl
 
 .. figure:: ../splitpy/examples/figures/Figure_2.png
    :align: center
@@ -312,17 +310,17 @@ Plotting and subsequent processing of splitting results is carried out using
 :ref:`splitaverage`, where options are present to control selection of nulls 
 and quality settings, as well as which methods are used. All available data are
 processed. By default, the script will search for the ``manual`` results. The user
-can specify to use the ``auto`` results with the argument ``-A`` or ``--auto``. The final 
+can specify to use the ``auto`` results with the argument ``--auto``. The final 
 average splits are then saved in a text file for future use.
 
 For example, after running the refined processing for 4 years of data for station
-TGTN (i.e., typing ``split_calc_auto.py --start=2016-01-01 -V -C TGTN.pkl``, which will 
+TGTN (i.e., typing ``split_calc_auto --start=2016-01-01 -V --calc TGTN.pkl``, which will 
 take a long time to run and process all the data), we can visualize the results
 by typing in a terminal:
 
 .. code-block::
 
-    $ split_average.py --show-fig -V TGTN.pkl
+    $ split_average --show-fig -V TGTN.pkl
     ---------------------------
     Selection Criteria 
      Null Value: 
