@@ -13,8 +13,8 @@ a station database provided as a :class:`~stdb.StDb` dictionary.
 
 .. _splitauto:
 
-``split_calc_auto.py``
-++++++++++++++++++++++
+``split_calc_auto``
++++++++++++++++++++
 
 Description
 -----------
@@ -31,8 +31,8 @@ Usage
 
 .. code-block::
 
-    $ split_calc_auto.py -h
-    usage: split_calc_auto.py [arguments] <station database>
+    $ split_calc_auto -h
+    usage: split_calc_auto [arguments] <station database>
 
     Script wrapping together the python-based implementation of SplitLab by
     Wustefeld and others. This version requests data on the fly for a given date
@@ -53,34 +53,34 @@ Usage
                             instance, providing IU will match with all stations in
                             the IU network [Default processes all stations in the
                             database]
-      -v, -V, --verbose     Specify to increase verbosity.
+      -V, --verbose         Specify to increase verbosity.
       -O, --overwrite       Force the overwriting of pre-existing Split results.
                             Default behaviour prompts for those that already
                             exist. Selecting overwrite and skip (ie, both flags)
                             negate each other, and both are set to false (every
                             repeat is prompted). [Default False]
-      -K, --skip-existing   Skip any event for which existing splitting results
+      --skip-existing       Skip any event for which existing splitting results
                             are saved to disk. Default behaviour prompts for each
                             event. Selecting skip and overwrite (ie, both flags)
                             negate each other, and both are set to False (every
                             repeat is prompted). [Default False]
-      -C, --calc            Analyze data for shear-wave splitting. [Default saves
+      --calc                Analyze data for shear-wave splitting. [Default saves
                             data to folders for subsequent analysis]
-      -P, --plot-diagnostic
+      --plot-diagnostic
                             Plot diagnostic window at end of process. [Default
                             False]
 
     Server Settings:
       Settings associated with which datacenter to log into.
 
-      -S SERVER, --Server SERVER
+      --server SERVER
                             Specify the server to connect to. Options include:
                             BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU,
                             NCEDC, NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS,
                             USP. [Default IRIS]
-      -U USERAUTH, --User-Auth USERAUTH
+      --user-auth USERAUTH
                             Enter your IRIS Authentification Username and Password
-                            (--User-Auth='username:authpassword') to access and
+                            (--user-auth='username:authpassword') to access and
                             download restricted data. [Default no user and
                             password]
 
@@ -94,12 +94,10 @@ Usage
                             exists for a seismogram is already present on disk, it
                             is selected preferentially over downloading the data
                             using the Client interface
-      --no-data-zero        Specify to force missing data to be set as zero,
-                            rather than default behaviour which sets to nan.
-      --no-local-net        Specify to prevent using the Network code in the
-                            search for local data (sometimes for CN stations the
-                            dictionary name for a station may disagree with that
-                            in the filename. [Default Network used]
+      --dtype DTYPE         Specify the data archive file type, either SAC or MSEED. Note the
+                            default behaviour is to search for SAC files. Local archive files
+                            must have extensions of '.SAC' or '.MSEED. These are case dependent,
+                            so specify the correct casehere.
 
     Parameter Settings:
       Miscellaneous default values and settings
@@ -136,7 +134,7 @@ Usage
                             the end time for the event search. This will override
                             any station end times [Default end date of each
                             station]
-      --reverse, -R         Reverse order of events. Default behaviour starts at
+      --reverse             Reverse order of events. Default behaviour starts at
                             oldest event and works towards most recent. Specify
                             reverse order and instead the program will start with
                             the most recent events and work towards older
@@ -158,8 +156,8 @@ Usage
 
 .. _splitmanual:
 
-``split_calc_manual.py``
-++++++++++++++++++++++++
+``split_calc_manual``
++++++++++++++++++++++
 
 Description
 -----------
@@ -174,11 +172,11 @@ Usage
 
 .. code-block::
 
-    $ split_calc_manual.py -h
-    usage: split_calc_manual.py [arguments] <station database>
+    $ split_calc_manual -h
+    usage: split_calc_manual [arguments] <station database>
 
     Script to process and calculate the spliting parameters for a dataset that has
-    already been downloaded by split_calc_auto.py.
+    already been downloaded by split_calc_auto.
 
     positional arguments:
       indb                  Station Database to process from.
@@ -220,15 +218,15 @@ Usage
                             the end time for the event search. This will override
                             any station end times [Default older end date for each
                             the pair of stations]
-      --reverse-order, -R   Reverse order of events. Default behaviour starts at
+      --reverse-order       Reverse order of events. Default behaviour starts at
                             oldest event and works towards most recent. Specify
                             reverse order and instead the program will start with
                             the most recent events and work towards older
 
 .. _splitaverage:
 
-``split_average.py``
-++++++++++++++++++++
+``split_average``
++++++++++++++++++
 
 Description
 -----------
@@ -244,55 +242,46 @@ Usage
 
 .. code-block::
 
-    $ split_average.py -h
-    usage: split_average.py [arguments] <station database>
+    $ split_average -h
+    usage: split_average [arguments] <station database>
 
-    Script to plot the average splitting results for a given station. Loads the
-    available .pkl files in the specified Station Directory.
+    Script to plot the average splitting results for a given station. Loads the available .pkl
+    files in the specified Station Directory.
 
     positional arguments:
-      indb                  Station Database to process from.
+      indb           Station Database to process from.
 
-    optional arguments:
-      -h, --help            show this help message and exit
-      --keys STKEYS         Specify a comma separated list of station keys for
-                            which to perform analysis. These must be contained
-                            within the station database. Partial keys will be used
-                            to match against those in the dictionary. For
-                            instance, providing IU will match with all stations in
-                            the IU network [Default processes all stations in the
-                            database]
-      -v, -V, --verbose     Specify to increase verbosity.
-      --show-fig            Specify show plots during processing - they are still
-                            saved to disk. [Default only saves]
-      -A, --auto            Specify to use automatically processed split results.
-                            [Default uses refined ('manual') split results]
+    options:
+      -h, --help     show this help message and exit
+      --keys STKEYS  Specify a comma separated list of station keys for which to perform
+                     analysis. These must be contained within the station database. Partial keys
+                     will be used to match against those in the dictionary. For instance,
+                     providing IU will match with all stations in the IU network [Default
+                     processes all stations in the database]
+      -V, --verbose  Specify to increase verbosity.
+      --show-fig     Specify show plots during processing - they are still saved to disk.
+                     [Default only saves]
+      --auto         Specify to use automatically processed split results. [Default uses refined
+                     ('manual') split results]
 
     Null Selection Settings:
       Settings associated with selecting which Null or Non-Null data is included
 
-      --nulls, --Nulls      Specify this flag to include Null Values in the
-                            average. [Default Non-Nulls only]
-      --no-nons, --No-Nons  Specify this flag to exclude Non-Nulls from the
-                            average [Default False]
+      --nulls        Specify this flag to include Null Values in the average. [Default Non-Nulls
+                     only]
+      --no-nons      Specify this flag to exclude Non-Nulls from the average [Default False]
 
     Quality Selection Settings:
-      Settings associated with selecting the qualities to include in the
-      selection.
+      Settings associated with selecting the qualities to include in the selection.
 
-      --No-Good, --no-good  Specify to exclude 'Good' measurements from the
-                            average. [Default Good + Fair]
-      --No-Fair, --no-fair  Specify to exclude 'Fair' measurements from the
-                            average [Default Good + Fair]
-      --Poor, --poor        Specify to include 'Poor' measurements in the average
-                            [Default No Poors]
+      --no-good      Specify to exclude 'Good' measurements from the average. [Default Good +
+                     Fair]
+      --no-fair      Specify to exclude 'Fair' measurements from the average [Default Good +
+                     Fair]
+      --poor         Specify to include 'Poor' measurements in the average [Default No Poors]
 
     Split Type Settings:
       Settings to Select which Split types are included in the selection.
 
-      --RC-Only, --rc-only, --RC-only
-                            Specify to only include RC splits in the average.
-                            [Default RC + SC]
-      --SC-Only, --sc-only, --SC-only
-                            Specify to only include SC splits in the average.
-                            [Default RC + SC]
+      --RC-only      Specify to only include RC splits in the average. [Default RC + SC]
+      --SC-only      Specify to only include SC splits in the average. [Default RC + SC]
