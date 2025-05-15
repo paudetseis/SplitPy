@@ -1,7 +1,8 @@
 import os.path
 from os import listdir
 import re
-from numpy.distutils.core import setup
+from setuptools import setup
+# from numpy.distutils.core import setup
 from pathlib import Path
 
 

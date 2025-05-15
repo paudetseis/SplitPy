@@ -1,0 +1,37 @@
+[build-system]
+build-backend = "mesonpy"
+requires = ["meson-python>0.15.0", "numpy >= 1.25.0"]
+
+
+[project]
+name = "splitpy"
+version = "0.2.0"
+description = "Software for teleseismic shear-wave splitting analysis"
+authors = [
+    { name = "Pascal Audet", email = "pascal.audet@uottawa.ca" },
+    { name = "Andrew Schaeffer", email = "andrew.schaeffer@NRCan-RNCan.gc.ca"}
+]
+maintainers = [
+    { name = "Pascal Audet", email = "pascal.audet@uottawa.ca" },
+    { name = "Andrew Schaeffer", email = "andrew.schaeffer@NRCan-RNCan.gc.ca"}
+]
+requires-python = ">=3.9"
+readme = "README.md"
+dependencies = ["numpy>=1.25", "obspy"]
+classifiers = [
+    "Development Status :: 5 - Stable",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+[project.urls]
+Homepage = "https://github.com/paudetseis/SplitPy"
+Documentation = "https://paudetseis.github.io/SplitPy"
+"Bug Tracker" = "https://github.com/paudetseis/SplitPy/issues"
+
+[project.scripts]
+split_calc_auto = "scplitpy.scripts.split_calc_auto:main"
+split_calc_manual = "scplitpy.scripts.split_calc_manual:main"
+split_average = "scplitpy.scripts.split_average:main"
