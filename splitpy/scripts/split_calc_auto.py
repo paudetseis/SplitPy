@@ -700,11 +700,8 @@ def main(args=None):
                     # Get data
                     has_data = split.download_data(
                         client=data_client,
-                        dts=args.dts,
-                        stdata=stalcllist,
-                        dtype=args.dtype,
-                        ndval=args.ndval,
                         new_sr=args.new_sampling_rate,
+                        dts=args.dts,
                         returned=True,
                         verbose=args.verb)
 
