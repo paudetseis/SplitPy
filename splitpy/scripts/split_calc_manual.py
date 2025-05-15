@@ -34,7 +34,7 @@ from obspy import UTCDateTime
 
 from splitpy import Pick, Keep, Save, Repeat
 from splitpy import PickPlot, DiagPlot
-from splitpy import arguments, utils
+from splitpy import utils
 from splitpy import Split
 
 from PyQt5.QtCore import pyqtSlot

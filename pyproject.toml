@@ -32,6 +32,6 @@ Documentation = "https://paudetseis.github.io/SplitPy"
 "Bug Tracker" = "https://github.com/paudetseis/SplitPy/issues"
 
 [project.scripts]
-split_calc_auto = "scplitpy.scripts.split_calc_auto:main"
-split_calc_manual = "scplitpy.scripts.split_calc_manual:main"
-split_average = "scplitpy.scripts.split_average:main"
+split_calc_auto = "splitpy.scripts.split_calc_auto:main"
+split_calc_manual = "splitpy.scripts.split_calc_manual:main"
+split_average = "splitpy.scripts.split_average:main"

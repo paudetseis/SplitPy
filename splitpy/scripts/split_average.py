@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 from math import ceil
 
-from splitpy import arguments, Split
+from splitpy import Split
 
 from argparse import ArgumentParser
 from os.path import exists as exist
@@ -78,7 +78,7 @@ def get_arguments_average(argv=None):
         "with all stations in the IU network [Default " +
         "processes all stations in the database]")
     parser.add_argument(
-        "-v", "-V", "--verbose",
+        "-V", "--verbose",
         action="store_true",
         dest="verb",
         default=False,
@@ -91,7 +91,7 @@ def get_arguments_average(argv=None):
         help="Specify show plots during processing - " +
         "they are still saved to disk. [Default only saves]")
     parser.add_argument(
-        "-A", "--auto",
+        "--auto",
         action="store_true",
         dest="auto",
         default=False,
@@ -104,14 +104,14 @@ def get_arguments_average(argv=None):
         description="Settings "
         "associated with selecting which Null or Non-Null data is included")
     NullGroup.add_argument(
-        "--nulls", "--Nulls",
+        "--nulls",
         action="store_true",
         dest="nulls",
         default=False,
         help="Specify this flag to include Null Values in the average. " +
         "[Default Non-Nulls only]")
     NullGroup.add_argument(
-        "--no-nons", "--No-Nons",
+        "--no-nons",
         action="store_false",
         dest="nons",
         default=True,
@@ -124,21 +124,21 @@ def get_arguments_average(argv=None):
         description="Settings associated with selecting the qualities " +
         "to include in the selection.")
     QualGroup.add_argument(
-        "--No-Good", "--no-good",
+        "--no-good",
         action="store_false",
         dest="goods",
         default=True,
         help="Specify to exclude 'Good' measurements from the average. " +
         "[Default Good + Fair]")
     QualGroup.add_argument(
-        "--No-Fair", "--no-fair",
+        "--no-fair",
         action="store_false",
         dest="fairs",
         default=True,
         help="Specify to exclude 'Fair' measurements from the average " +
         "[Default Good + Fair]")
     QualGroup.add_argument(
-        "--Poor", "--poor",
+        "--poor",
         action="store_true",
         dest="poors",
         default=False,
@@ -151,14 +151,14 @@ def get_arguments_average(argv=None):
         description="Settings to Select "
         "which Split types are included in the selection.")
     SpTypGroup.add_argument(
-        "--RC-Only", "--rc-only", "--RC-only",
+        "--RC-only",
         action="store_false",
         dest="SCinc",
         default=True,
         help="Specify to only include RC splits in the average. " +
         "[Default RC + SC]")
     SpTypGroup.add_argument(
-        "--SC-Only", "--sc-only", "--SC-only",
+        "--SC-only",
         action="store_false",
         dest="RCinc",
         default=True,

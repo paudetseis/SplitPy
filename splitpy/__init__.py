@@ -25,6 +25,6 @@ __version__ = '0.2.0'
 __author__ = 'Pascal Audet & Andrew Schaeffer'
 
 # -*- coding: utf-8 -*-
-from . import utils, calc, arguments
+from . import utils, calc
 from .classes import Split, PickPlot, DiagPlot
 from .gui import Pick, Keep, Save, Repeat
