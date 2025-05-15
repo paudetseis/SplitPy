@@ -398,11 +398,11 @@ def get_arguments_calc_auto(argv=None):
     else:
         args.localdata = []
 
-    # Check NoData Value
-    if args.ndval:
-        args.ndval = 0.0
-    else:
-        args.ndval = nan
+    # # Check NoData Value
+    # if args.ndval:
+    #     args.ndval = 0.0
+    # else:
+    #     args.ndval = nan
 
     # Check selected phase
     if args.phase not in ['SKS', 'SKKS', 'PKS']:
