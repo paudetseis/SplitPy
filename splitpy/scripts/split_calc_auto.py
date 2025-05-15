@@ -30,7 +30,8 @@ import pickle
 import stdb
 import copy
 
-from obspy.clients.fdsn import Client
+from obspy.clients.fdsn import Client as FDSN_Client
+from obspy.clients.filesystem.sds import Client as SDS_Client
 from obspy import UTCDateTime
 
 from splitpy import utils
@@ -131,7 +132,7 @@ def get_arguments_calc_auto(argv=None):
     # Server Settings
     ServerGroup = parser.add_argument_group(
         title="Server Settings",
-        description="Settings associated with which " +
+        description="Settings associated with which "
         "datacenter to log into.")
     ServerGroup.add_argument(
         "--server",
@@ -139,46 +140,63 @@ def get_arguments_calc_auto(argv=None):
         type=str,
         dest="server",
         default="IRIS",
-        help="Specify the server to connect to. Options include: " +
-        "BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU, NCEDC, " +
-        "NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS, USP. [Default IRIS]")
+        help="Base URL of FDSN web service compatible "
+        "server (e.g. “http://service.iris.edu”) or key string for recognized "
+        "server (one of 'AUSPASS', 'BGR', 'EARTHSCOPE', 'EIDA', 'EMSC', 'ETH', "
+        "'GEOFON', 'GEONET', 'GFZ', 'ICGC', 'IESDMC', 'INGV', 'IPGP', 'IRIS', "
+        "'IRISPH5', 'ISC', 'KNMI', 'KOERI', 'LMU', 'NCEDC', 'NIEP', 'NOA', "
+        "'NRCAN', 'ODC', 'ORFEUS', 'RASPISHAKE', 'RESIF', 'RESIFPH5', 'SCEDC', "
+        "'TEXNET', 'UIB-NORSAR', 'USGS', 'USP'). [Default 'IRIS']")
     ServerGroup.add_argument(
         "--user-auth",
         action="store",
         type=str,
-        dest="UserAuth",
-        default="",
-        help="Enter your IRIS Authentification Username and Password " +
-        "(--user-auth='username:authpassword') to access and download " +
-        "restricted data. [Default no user and password]")
+        dest="userauth",
+        default=None,
+        help="Authentification Username and Password for the " +
+        "waveform server (--user-auth='username:authpassword') to access " +
+        "and download restricted data. [Default no user and password]")
+    ServerGroup.add_argument(
+        "--eida-token", 
+        action="store", 
+        type=str,
+        dest="tokenfile", 
+        default=None, 
+        help="Token for EIDA authentication mechanism, see " +
+        "http://geofon.gfz-potsdam.de/waveform/archive/auth/index.php. "
+        "If a token is provided, argument --user-auth will be ignored. "
+        "This mechanism is only available on select EIDA nodes. The token can "
+        "be provided in form of the PGP message as a string, or the filename of "
+        "a local file with the PGP message in it. [Default None]")
 
     # Database Settings
     DataGroup = parser.add_argument_group(
         title="Local Data Settings",
-        description="Settings associated with defining and using a " +
-        "local data base of pre-downloaded day-long SAC files.")
+        description="Settings associated with defining " +
+        "and using a local data base of pre-downloaded " +
+        "day-long SAC or MSEED files.")
     DataGroup.add_argument(
         "--local-data",
         action="store",
         type=str,
         dest="localdata",
         default=None,
-        help="Specify a comma separated list of paths containing " +
-        "day-long sac files of data already downloaded. " +
-        "If data exists for a seismogram is already present on " +
-        "disk, it is selected preferentially over downloading " +
-        "the data using the Client interface")
+        help="Specify path containing " +
+        "day-long sac or mseed files of data already downloaded. " +
+        "If data exists for a seismogram is already present on disk, " +
+        "it is selected preferentially over downloading " +
+        "the data using the FDSN Client interface")
     DataGroup.add_argument(
         "--dtype",
         action="store",
         type=str,
         dest="dtype",
-        default='SAC',
+        default='MSEED',
         help="Specify the data archive file type, either SAC " +
         " or MSEED. Note the default behaviour is to search for " +
-        "SAC files. Local archive files must have extensions of '.SAC' "+
-        " or '.MSEED. These are case dependent, so specify the correct case"+
-        "here.")
+        "SAC files. Local archive files must have extensions of " +
+        "'.SAC'  or '.MSEED'. These are case dependent, so specify " +
+        "the correct case here.")
     # DataGroup.add_argument(
     #     "--no-data-zero",
     #     action="store_true",
@@ -383,34 +401,33 @@ def get_arguments_calc_auto(argv=None):
     else:
         args.endT = None
 
-    # Parse User Authentification
-    if not len(args.UserAuth) == 0:
-        tt = args.UserAuth.split(':')
-        if not len(tt) == 2:
-            parser.error(
-                "Error: Incorrect Username and Password Strings for " +
-                "User Authentification")
-        else:
-            args.UserAuth = tt
+    # Parse restricted data settings
+    if args.tokenfile is not None:
+        args.userauth = [None, None]
     else:
-        args.UserAuth = []
+        if args.userauth is not None:
+            tt = args.userauth.split(':')
+            if not len(tt) == 2:
+                msg = (
+                    "Error: Incorrect Username and Password Strings " +
+                    "for User Authentification")
+                parser.error(msg)
+            else:
+                args.userauth = tt
+        else:
+            args.userauth = [None, None]
 
     # Check existing file behaviour
     if args.skip and args.ovr:
         args.skip = False
         args.ovr = False
 
-    # Parse Local Data directories
-    if args.localdata is not None:
-        args.localdata = args.localdata.split(',')
-    else:
-        args.localdata = []
-
-    # # Check NoData Value
-    # if args.ndval:
-    #     args.ndval = 0.0
-    # else:
-    #     args.ndval = nan
+    # Check Datatype specification
+    if args.dtype.upper() not in ['MSEED', 'SAC']:
+        parser.error(
+            "Error: Local Data Archive must be of types 'SAC'" +
+            "or MSEED. These must match the file extensions for " +
+            " the archived data.")
 
     # Check selected phase
     if args.phase not in ['SKS', 'SKKS', 'PKS']:
@@ -491,16 +508,19 @@ def main(args=None):
             datapath.mkdir(parents=True)
 
         # Establish client
-        if len(args.UserAuth) == 0:
-            data_client = Client(args.server)
+        if args.localdata is None:
+            data_client = FDSN_Client(
+                base_url=args.server,
+                user=args.userauth[0],
+                password=args.userauth[1],
+                eida_token=args.tokenfile)
         else:
-            data_client = Client(
-                args.server,
-                user=args.UserAuth[0],
-                password=args.UserAuth[1])
+            data_client = SDS_Client(
+                args.localdata,
+                format=args.dtype)
 
         # Establish client for events
-        event_client = Client()
+        event_client = FDSN_Client()
 
         # Get catalogue search start time
         if args.startT is None:
