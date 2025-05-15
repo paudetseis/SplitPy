@@ -90,7 +90,7 @@ def get_arguments_calc_auto(argv=None):
         "negate each other, and both are set to " +
         "false (every repeat is prompted). [Default False]")
     parser.add_argument(
-        "-K", "--skip-existing",
+        "--skip-existing",
         action="store_true",
         dest="skip",
         default=False,
@@ -100,20 +100,20 @@ def get_arguments_calc_auto(argv=None):
         "negate each other, and both are set to " +
         "False (every repeat is prompted). [Default False]")
     parser.add_argument(
-        "-C", "--calc",
+        "--calc",
         action="store_true",
         dest="calc",
         default=False,
         help="Analyze data for shear-wave splitting. [Default saves data "+
         "to folders for subsequent analysis]")
     parser.add_argument(
-        "-P", "--plot-diagnostic",
+        "--plot-diagnostic",
         action="store_true",
         dest="diagplot",
         default=False,
         help="Plot diagnostic window at end of process. [Default False]")
     parser.add_argument(
-        "-R", "--recalc",
+        "--recalc",
         action="store_true",
         dest="recalc",
         default=False,
@@ -126,22 +126,22 @@ def get_arguments_calc_auto(argv=None):
         description="Settings associated with which " +
         "datacenter to log into.")
     ServerGroup.add_argument(
-        "-S", "--server",
+        "--server",
         action="store",
         type=str,
-        dest="Server",
+        dest="server",
         default="IRIS",
         help="Specify the server to connect to. Options include: " +
         "BGR, ETH, GEONET, GFZ, INGV, IPGP, IRIS, KOERI, LMU, NCEDC, " +
         "NEIP, NERIES, ODC, ORFEUS, RESIF, SCEDC, USGS, USP. [Default IRIS]")
     ServerGroup.add_argument(
-        "-U", "--user-auth",
+        "--user-auth",
         action="store",
         type=str,
         dest="UserAuth",
         default="",
         help="Enter your IRIS Authentification Username and Password " +
-        "(--User-Auth='username:authpassword') to access and download " +
+        "(--user-auth='username:authpassword') to access and download " +
         "restricted data. [Default no user and password]")
 
     # Database Settings
@@ -171,22 +171,22 @@ def get_arguments_calc_auto(argv=None):
         "SAC files. Local archive files must have extensions of '.SAC' "+
         " or '.MSEED. These are case dependent, so specify the correct case"+
         "here.")
-    DataGroup.add_argument(
-        "--no-data-zero",
-        action="store_true",
-        dest="ndval",
-        default=False,
-        help="Specify to force missing data to be set as zero, rather " +
-        "than default behaviour which sets to nan.")
-    DataGroup.add_argument(
-        "--no-local-net",
-        action="store_false",
-        dest="useNet",
-        default=True,
-        help="Specify to prevent using the Network code in the " +
-        "search for local data (sometimes for CN stations " +
-        "the dictionary name for a station may disagree with that " +
-        "in the filename. [Default Network used]")
+    # DataGroup.add_argument(
+    #     "--no-data-zero",
+    #     action="store_true",
+    #     dest="ndval",
+    #     default=False,
+    #     help="Specify to force missing data to be set as zero, rather " +
+    #     "than default behaviour which sets to nan.")
+    # DataGroup.add_argument(
+    #     "--no-local-net",
+    #     action="store_false",
+    #     dest="useNet",
+    #     default=True,
+    #     help="Specify to prevent using the Network code in the " +
+    #     "search for local data (sometimes for CN stations " +
+    #     "the dictionary name for a station may disagree with that " +
+    #     "in the filename. [Default Network used]")
 
     # Constants Settings
     ConstGroup = parser.add_argument_group(
@@ -472,10 +472,10 @@ def main(args=None):
 
         # Establish client
         if len(args.UserAuth) == 0:
-            data_client = Client(args.Server)
+            data_client = Client(args.server)
         else:
             data_client = Client(
-                args.Server,
+                args.server,
                 user=args.UserAuth[0],
                 password=args.UserAuth[1])
 
