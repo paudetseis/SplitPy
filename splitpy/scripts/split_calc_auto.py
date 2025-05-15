@@ -655,7 +655,7 @@ def main(args=None):
                 else:
                     inum = nevtT - iev + 1
                 print(" ")
-                print("|"+"*"*50+"|")
+                print("*"*50)
                 print("* #{0:d} ({1:d}/{2:d}):  {3:13s} {4}".format(
                     nevK, inum, nevtT, split.meta.time.strftime(
                         "%Y%m%d_%H%M%S"), stkey))
