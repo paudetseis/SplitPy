@@ -86,6 +86,12 @@ class Meta(object):
         Horizontal slowness of phase
     inc : float
         Incidence angle of phase at surface
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
     align : str
         Alignment of coordinate system for rotation
         ('ZRT', 'LQT', or 'PVH')
@@ -690,8 +696,6 @@ class Split(object):
         ----------
         snrTlim : float
             Threshold for snr on T component
-        ds : int
-            Number of spaces to print out to screen (verbiage)
         verbose : bool
             Output diagnostics to screen
 
@@ -745,8 +749,6 @@ class Split(object):
 
         Parameters
         ----------
-        ds : int
-            Number of spaces to print out to screen (verbiage)
         verbose : bool
             Output diagnostics to screen
 
