@@ -16,3 +16,8 @@ References
 * Wustefeld, A., and Bokelmann, G. (2007). Null detection in shear-wave splitting measurements. Bulletin of the Seismological Society of America, 97, 1204-1211, https://doi.org/10.1785/0120060190
 
 * Wustefeld, A., Bokelmann, G., Zeroli, C., and Barruol, G. (2008). SplitLab: A shear-wave splitting environment in Matlab. Computers & Geoscience, 34, 515-528, https://doi.org/10.1016/j.cageo.2007.08.002
+
+Citing SplitPy
+--------------
+
+If you use SplitPy in your work, please cite the Zenodo DOI: https://doi.org/10.5281/zenodo.3564780
