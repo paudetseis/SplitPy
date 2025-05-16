@@ -31,7 +31,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 import matplotlib
 from math import ceil
-from numpy.linalg import inv
 
 from splitpy import Split
 
@@ -41,7 +40,6 @@ from pathlib import Path
 
 
 def angle_mean(dt, phi, ddt, dphi):
-    from scipy.stats import circstd
     x = dt*np.cos(2*phi*np.pi/180.0)
     y = dt*np.sin(2*phi*np.pi/180.0)
     c = x + 1j*y
@@ -454,13 +452,13 @@ def main(args=None):
         cmap = plt.cm.RdYlBu_r
 
         # RC analysis
-        EmatRC_ = []
-        for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
-            E2 = np.roll(E, int(pRC - pRC_min), axis=0)
-            EmatRC_.append(E2)
+        # EmatRC_ = []
+        # for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
+        #     E2 = np.roll(E, int(pRC - pRC_min), axis=0)
+        #     EmatRC_.append(E2)
 
-        EmatRC_ = np.array(EmatRC_)
-        EmatRC_mean = np.mean(EmatRC_, axis=0)
+        # EmatRC_ = np.array(EmatRC)
+        EmatRC_mean = np.mean(EmatRC, axis=0)
 
         # Find indices of minimum value of Energy matrix
         ind = np.where(EmatRC_mean == EmatRC_mean.min())
@@ -476,13 +474,11 @@ def main(args=None):
         levelsRC = np.linspace(Emin, Emax, 20)
 
         # SC analysis
-        EmatSC_mean = 0.
+        # for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
+        #     E2 = np.roll(E, int(pSC - pSC_min), axis=0)
+        #     EmatSC_mean += E2
 
-        for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
-            E2 = np.roll(E, int(pSC - pSC_min), axis=0)
-            EmatSC_mean += E2
-
-        EmatSC_mean = EmatSC_mean/len(EmatSC)
+        EmatSC_mean = np.mean(EmatSC, axis=0)
 
         # Find indices of minimum value of Energy matrix
         ind = np.where(EmatSC_mean == EmatSC_mean.min())

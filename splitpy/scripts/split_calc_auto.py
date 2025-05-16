@@ -671,13 +671,14 @@ def main(args=None):
                                [ZNEfile, metafile, stafile]]) < 3:
                         continue
                     sta = pickle.load(open(stafile, "rb"))
-                    split = Split(sta)
+                    split = Split(sta, zcomp=args.zcomp)
                     meta = pickle.load(open(metafile, "rb"))
                     split.meta = meta
                     dataZNE = pickle.load(open(ZNEfile, "rb"))
                     split.dataZNE = dataZNE
 
                     # Rotate from ZNE to 'LQT'
+                    split.meta.rotated = False
                     split.rotate(align='LQT')
 
                     # Filter rotated traces
