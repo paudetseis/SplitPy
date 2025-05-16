@@ -83,6 +83,17 @@ Installing from source
 
    pip install .
 
+Testing
+-------
+
+A series of tests are located in the ``tests`` subdirectory.
+In order to perform these tests, run ``pytest``:
+
+.. sourcecode:: bash
+
+   conda install pytest
+   pytest -v --pyargs splitpy
+
 Using local data
 ================
 
