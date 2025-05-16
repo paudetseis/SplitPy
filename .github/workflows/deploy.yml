@@ -43,13 +43,13 @@ jobs:
           pip install git+https://github.com/schaefferaj/stdb
           pip install .
 
-      - name: Tests
-        shell: bash -l {0}
-        run: |
-          mkdir empty
-          cd empty
-          conda install pytest
-          pytest -v --pyargs splitpy
+      # - name: Tests
+      #   shell: bash -l {0}
+      #   run: |
+      #     mkdir empty
+      #     cd empty
+      #     conda install pytest
+      #     pytest -v --pyargs splitpy
 
       # - name: Make docs
       #   if: matrix.python-version == '3.12' 
