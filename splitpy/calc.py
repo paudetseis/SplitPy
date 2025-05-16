@@ -151,7 +151,9 @@ def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     trFast = Trace(data=tmpFast, header=trT_tmp.stats)
     trSlow = Trace(data=tmpSlow, header=trQ_tmp.stats)
 
-    return Ematrix, trQ_c, trT_c, trFast, trSlow, \
+    Erolled = np.roll(Ematrix, int(phiSC - phiSC_min), axis=0)
+
+    return Erolled, trQ_c, trT_c, trFast, trSlow, \
         phiSC, shift, phiSC_min
 
 
@@ -317,6 +319,8 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
 
     trQ_c = Trace(data=corrected_QT[0], header=trQ_tmp.stats)
     trT_c = Trace(data=corrected_QT[1], header=trT_tmp.stats)
+
+    Crolled = np.roll(Cmap, int(phiRC - phiRC_max), axis=0)
 
     return Cmap, trQ_c, trT_c, trFast, trSlow, \
         phiRC, dtRC, phiRC_max
