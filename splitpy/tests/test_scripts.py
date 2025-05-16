@@ -41,13 +41,13 @@ def test_split(tmp_path):
             datapath.mkdir()
 
         # Establish client
-        if len(args.UserAuth) == 0:
+        if len(args.userauth) == 0:
             data_client = Client(args.server)
         else:
             data_client = Client(
                 args.Server,
-                user=args.UserAuth[0],
-                password=args.UserAuth[1])
+                user=args.userauth[0],
+                password=args.userauth[1])
 
         # Establish client for events
         event_client = Client()
