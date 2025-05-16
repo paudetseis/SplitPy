@@ -108,7 +108,7 @@ This will produce, in the terminal:
     |  Found     2 possible events                     |
     |==================================================|
      
-    |**************************************************|
+    **************************************************
     * #1 (2/2):  20200318_031345 NY.TGTN
     *   Phase: SKS
     *   Origin Time: 2020-03-18 03:13:45
@@ -228,7 +228,7 @@ This will produce, in the terminal:
     |  Found     2 possible events                     |
     |==================================================|
      
-    |**************************************************|
+    **************************************************
     * #1 (2/2):  20200318_031345 NY.TGTN
     *   Phase: SKS
     *   Origin Time: 2020-03-18 03:13:45
@@ -362,7 +362,8 @@ by typing in a terminal:
         Fairs:  True
         Poors:  False
     ---------------------------
-      Processing 136 Events...
+      Found 136 event folders...
+      Checking 'auto' results...
           20160302_124948 Poor Null -> Skipped
           20160401_192455 Good Non-Null -> Retained
           20160403_082352 Poor Non-Null -> Skipped
