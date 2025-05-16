@@ -340,7 +340,7 @@ by typing in a terminal:
 
 .. code-block::
 
-    $ split_average --show-fig -V TGTN.pkl
+    $ split_average --show-fig -V --auto TGTN.pkl
     
     ###############################################################
     #            _ _ _                                            #
@@ -362,35 +362,26 @@ by typing in a terminal:
         Fairs:  True
         Poors:  False
     ---------------------------
-      Processing 141 Events...
-          20160413_135517 Good Non-Null -> Retained
+      Processing 136 Events...
+          20160302_124948 Poor Null -> Skipped
+          20160401_192455 Good Non-Null -> Retained
+          20160403_082352 Poor Non-Null -> Skipped
+          20160406_065848 Poor Null -> Skipped
+          20160407_033253 Good Non-Null -> Retained
+          20160413_135517 Fair Non-Null -> Retained
+          20160414_215027 Poor Null -> Skipped
+          20160428_193324 Poor Non-Null -> Skipped
           20160527_040843 Good Non-Null -> Retained
-          20160607_191515 Fair Non-Null -> Retained
-          20160619_094723 Fair Non-Null -> Retained
-          20160713_121112 Fair Non-Null -> Retained
-          20160924_212841 Good Non-Null -> Retained
-          20170819_020052 Good Non-Null -> Retained
-          20170926_042000 Good Non-Null -> Retained
-          20180728_170723 Good Non-Null -> Retained
-          20180819_042858 Good Non-Null -> Retained
-          20180906_154914 Fair Non-Null -> Retained
-          20180910_041902 Fair Non-Null -> Retained
-          20180910_193137 Good Non-Null -> Retained
-          20180916_211148 Good Non-Null -> Retained
-          20181016_002812 Fair Non-Null -> Retained
-          20190531_101232 Poor Non-Null -> Skipped
-          20190616_051716 Good Non-Null -> Retained
-          20190707_150840 Good Non-Null -> Retained
-          20190731_150233 Good Non-Null -> Retained
-          20190929_020251 Fair Non-Null -> Retained
-          20191031_011119 Good Non-Null -> Retained
-          20200318_031345 Fair Non-Null -> Retained
-
-    *** Station Average from 21 measurements ***
+          ...
+          
+    *** Station Average from 41 measurements ***
        Loc: -128.2727, 61.5267
-       PHI:  -4.111 d +- 2.891
-       DT:    0.729 s +- 0.052
+       PHI: -81.802 d +- 3.080
+       DT:    0.921 s +- 0.071
        Saved to: PLOTS/NY.TGTN_RC-SC_Nons_G-F_results.dat
+
+    *** Catalogue of events and results ***
+       Saved to: PLOTS/NY.TGTN_RC-SC_Nons_G-F_events.dat
 
 .. figure:: ../splitpy/examples/figures/Figure_3.png
    :align: center
