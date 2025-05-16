@@ -29,7 +29,9 @@ import stdb
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
+import matplotlib
 from math import ceil
+from numpy.linalg import inv
 
 from splitpy import Split
 
@@ -39,6 +41,7 @@ from pathlib import Path
 
 
 def angle_mean(dt, phi, ddt, dphi):
+    from scipy.stats import circstd
     x = dt*np.cos(2*phi*np.pi/180.0)
     y = dt*np.sin(2*phi*np.pi/180.0)
     c = x + 1j*y
@@ -46,8 +49,10 @@ def angle_mean(dt, phi, ddt, dphi):
 
     phase = np.angle(m, deg=True)/2.
     radius = np.abs(m)
-    dphase = np.sqrt(np.sum(dphi**2))/len(x)
-    dradius = np.sqrt(np.sum(ddt**2))/len(x)
+
+    # Uncertainty given by RMSE
+    dradius = np.sqrt(np.mean(np.square(ddt)))
+    dphase = np.sqrt(np.mean(np.square(dphi)))
 
     return phase, dphase, radius, dradius
 
@@ -301,13 +306,17 @@ def main(args=None):
         baz = []
         baz_null = []
         phiRC = []
+        phiRC_min = []
         DphiRC = []
         dtRC = []
         DdtRC = []
+        EmatRC = []
         phiSC = []
+        phiSC_min = []
         DphiSC = []
         dtSC = []
         DdtSC = []
+        EmatSC = []
         evlon = []
         evlat = []
         evmag = []
@@ -332,6 +341,9 @@ def main(args=None):
             metafile = Path(evSTR) / "Meta_data.pkl"
             meta = pickle.load(open(metafile, "rb"))
             split.meta = meta
+            maxdt = meta.maxdt
+            ddt = meta.ddt
+            dphi = meta.dphi
 
             # Split results
             if args.auto:
@@ -391,15 +403,19 @@ def main(args=None):
 
                 # RC Results
                 phiRC.append(split.RC_res.phi)
+                phiRC_min.append(split.RC_res.phi_min)
                 DphiRC.append(split.RC_res.ephi)
                 dtRC.append(split.RC_res.dtt)
                 DdtRC.append(split.RC_res.edtt)
+                EmatRC.append(split.RC_res.Emat)
 
                 # SC Results
                 phiSC.append(split.SC_res.phi)
+                phiSC_min.append(split.SC_res.phi_min)
                 DphiSC.append(split.SC_res.ephi)
                 dtSC.append(split.SC_res.dtt)
                 DdtSC.append(split.SC_res.edtt)
+                EmatSC.append(split.SC_res.Emat)
 
                 # Station info
                 stlat = split.sta.latitude
@@ -425,6 +441,95 @@ def main(args=None):
         if len(baz) == 0:
             print("  No splitting results to average")
             return
+
+        #########################
+        # FIRST FIGURE
+
+        # Average error surfaces
+        dt = np.arange(0., maxdt, ddt)
+        phi = np.arange(-90., 90., dphi)
+
+        extent = [phi.min(), phi.max(), dt.min(), dt.max()]
+        X, Y = np.meshgrid(dt, phi)
+        cmap = plt.cm.RdYlBu_r
+
+        # RC analysis
+        EmatRC_ = []
+        for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
+            E2 = np.roll(E, int(pRC - pRC_min), axis=0)
+            EmatRC_.append(E2)
+
+        EmatRC_ = np.array(EmatRC_)
+        EmatRC_mean = np.mean(EmatRC_, axis=0)
+
+        # Find indices of minimum value of Energy matrix
+        ind = np.where(EmatRC_mean == EmatRC_mean.min())
+        ind_phi = ind[0][0]
+        ind_dtt = ind[1][0]
+
+        # Get best-fit phi and dt
+        dtt_bestRC = dt[ind_dtt]
+        phi_bestRC = phi[ind_phi]
+
+        Emin = EmatRC_mean.min()
+        Emax = EmatRC_mean.max()
+        levelsRC = np.linspace(Emin, Emax, 20)
+
+        # SC analysis
+        EmatSC_mean = 0.
+
+        for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
+            E2 = np.roll(E, int(pSC - pSC_min), axis=0)
+            EmatSC_mean += E2
+
+        EmatSC_mean = EmatSC_mean/len(EmatSC)
+
+        # Find indices of minimum value of Energy matrix
+        ind = np.where(EmatSC_mean == EmatSC_mean.min())
+        ind_phi = ind[0][0]
+        ind_dtt = ind[1][0]
+
+        # Get best-fit phi and dt
+        dtt_bestSC = dt[ind_dtt]
+        phi_bestSC = phi[ind_phi]
+
+        Emin = EmatSC_mean.min()
+        Emax = EmatSC_mean.max()
+        levelsSC = np.linspace(Emin, Emax, 20)
+
+        # Plot
+        matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
+        f, (ax1, ax2) = plt.subplots(1, 2, figsize=(6,3))
+        ax1.contour(
+            X, Y, EmatSC_mean, levelsSC,
+            cmap=plt.cm.get_cmap(cmap, len(levelsSC)))
+        ax1.axvline(dtt_bestSC)
+        ax1.axhline(phi_bestSC)
+        ax1.set_title('Silver-Chan')
+        ax1.set_xlabel(r'$\delta t$ (sec)')
+        ax1.set_ylabel(r'$\phi$ (deg)')
+        ax2.contour(
+            X, Y, EmatRC_mean, levelsRC,
+            cmap=plt.cm.get_cmap(cmap, len(levelsRC)))
+        ax2.axvline(dtt_bestRC)
+        ax2.axhline(phi_bestRC)
+        ax2.set_title('Rotation-Correlation')
+        ax2.set_xlabel(r'$\delta t$ (sec)')
+        plt.tight_layout()
+
+        # Display Plot
+        if args.showfig:
+            plt.show()
+        else:
+            plt.close()
+
+        if args.verb:
+            print('\n*** Estimates from averaging {0} error surfaces ***'.format(len(baz)))
+            print('   Best dt RC: {0:.1f} sec; Best phi RC: {1:.1f} deg'.format(dtt_bestRC, phi_bestRC))
+            print('   Best dt SC: {0:.1f} sec; Best phi SC: {1:.1f} deg'.format(dtt_bestSC, phi_bestSC))
+
+        #########################
+        # SECOND FIGURE
 
         # Gridspec for polar plot
         gs1 = gspec.GridSpec(1, 1)
@@ -454,7 +559,7 @@ def main(args=None):
 
         # Add RC results to plot
         if args.RCinc:
-            ax1.scatter(phi*np.pi/180., dt, c='b')
+            ax1.scatter(phi*np.pi/180., dt, c='b', alpha=0.5)
             ax1.plot(np.array([meanphiRC, meanphiRC])*np.pi /
                      180., [0, meandtRC], 'b', linewidth=2)
 
@@ -469,7 +574,7 @@ def main(args=None):
 
         # Add SC results to plot
         if args.SCinc:
-            ax1.scatter(phi*np.pi/180., dt, c='coral')
+            ax1.scatter(phi*np.pi/180., dt, c='orange', alpha=0.5)
             ax1.plot(np.array([meanphiSC, meanphiSC])*np.pi /
                      180., [0, meandtSC], 'coral', linewidth=2)
 
@@ -495,7 +600,7 @@ def main(args=None):
             ax2.axhline(meanphiRC, c='b')
 
             # Plot individual RC results
-            ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='b', label='RC')
+            ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='b', label='RC', alpha=0.5)
 
         phi = np.array([float(i) for i in phiSC])
         Dphi = np.array([float(i) for i in DphiSC])
@@ -508,7 +613,7 @@ def main(args=None):
             ax2.axhline(meanphiSC, c='coral')
 
             # Plot individual SC results
-            ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='orange', label='SC')
+            ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='orange', label='SC', alpha=0.5)
 
         ax2.set_title('Station: ' + stkey)
         ax2.set_ylabel(r'Fast axis, $\phi$ (degree)')
@@ -528,7 +633,7 @@ def main(args=None):
             ax3.axhline(meandtRC, c='b')
 
             # Plot individual RC results
-            ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='b', label='RC')
+            ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='b', label='RC', alpha=0.5)
 
         dt = np.array([float(i) for i in dtSC])
         Ddt = np.array([float(i) for i in DdtSC])
@@ -541,7 +646,7 @@ def main(args=None):
             ax3.axhline(meandtSC, c='coral')
 
             # Plot individual SC results
-            ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='orange', label='SC')
+            ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='orange', label='SC', alpha=0.5)
 
         ax3.set_ylabel(r'Delay time, $\delta t$ (seconds)')
         ax3.set_ylim(0, dtmax)
@@ -600,11 +705,11 @@ def main(args=None):
         if args.verb:
             print("")
             print(
-                "*** Station Average from {0} measurements ***".format(
+                "*** Estimates from averaging {0} individual measurements ***".format(
                     len(baz)))
             print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
-            print("   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI))
-            print("   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT))
+            print("   PHI: {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
+            print("   DT:    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
             print("   Saved to: "+str(outav))
             print("")
             print(
