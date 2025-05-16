@@ -468,7 +468,7 @@ class Split(object):
 
                 # Filter Traces and resample
                 self.dataZNE.filter('lowpass', freq=0.5*new_sr,
-                                 corners=2, zerophase=True)
+                                    corners=2, zerophase=True)
                 self.dataZNE.resample(new_sr, no_filter=True)
 
                 # Save Z12 components in case it's necessary for later
