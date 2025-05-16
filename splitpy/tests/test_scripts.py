@@ -45,7 +45,7 @@ def test_split(tmp_path):
             data_client = Client(args.server)
         else:
             data_client = Client(
-                args.Server,
+                args.server,
                 user=args.userauth[0],
                 password=args.userauth[1])
 
