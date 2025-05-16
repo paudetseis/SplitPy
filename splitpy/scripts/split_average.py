@@ -31,6 +31,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 import matplotlib
 from math import ceil
+from numpy.linalg import inv
 
 from splitpy import Split
 
@@ -40,6 +41,7 @@ from pathlib import Path
 
 
 def angle_mean(dt, phi, ddt, dphi):
+    from scipy.stats import circstd
     x = dt*np.cos(2*phi*np.pi/180.0)
     y = dt*np.sin(2*phi*np.pi/180.0)
     c = x + 1j*y
@@ -47,8 +49,10 @@ def angle_mean(dt, phi, ddt, dphi):
 
     phase = np.angle(m, deg=True)/2.
     radius = np.abs(m)
-    dphase = np.sqrt(np.sum(dphi**2))/len(x)
-    dradius = np.sqrt(np.sum(ddt**2))/len(x)
+
+    # Uncertainty given by RMSE
+    dradius = np.sqrt(np.mean(np.square(ddt)))
+    dphase = np.sqrt(np.mean(np.square(dphi)))
 
     return phase, dphase, radius, dradius
 
@@ -438,6 +442,9 @@ def main(args=None):
             print("  No splitting results to average")
             return
 
+        #########################
+        # FIRST FIGURE
+
         # Average error surfaces
         dt = np.arange(0., maxdt, ddt)
         phi = np.arange(-90., 90., dphi)
@@ -447,12 +454,13 @@ def main(args=None):
         cmap = plt.cm.RdYlBu_r
 
         # RC analysis
-        EmatRC_mean = 0.
+        EmatRC_ = []
         for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
             E2 = np.roll(E, int(pRC - pRC_min), axis=0)
-            EmatRC_mean += E2
+            EmatRC_.append(E2)
 
-        EmatRC_mean = EmatRC_mean/len(EmatRC)
+        EmatRC_ = np.array(EmatRC_)
+        EmatRC_mean = np.mean(EmatRC_, axis=0)
 
         # Find indices of minimum value of Energy matrix
         ind = np.where(EmatRC_mean == EmatRC_mean.min())
@@ -462,12 +470,10 @@ def main(args=None):
         # Get best-fit phi and dt
         dtt_bestRC = dt[ind_dtt]
         phi_bestRC = phi[ind_phi]
-        print('\n  Best dt RC: {0:.1f} sec; Best phi RC: {1:.1f} deg'.format(dtt_bestRC, phi_bestRC))
 
         Emin = EmatRC_mean.min()
         Emax = EmatRC_mean.max()
-        dE = (Emax - Emin)/16.
-        levelsRC = np.arange(Emin, Emax, dE)
+        levelsRC = np.linspace(Emin, Emax, 20)
 
         # SC analysis
         EmatSC_mean = 0.
@@ -486,12 +492,10 @@ def main(args=None):
         # Get best-fit phi and dt
         dtt_bestSC = dt[ind_dtt]
         phi_bestSC = phi[ind_phi]
-        print('  Best dt SC: {0:.1f} sec; Best phi SC: {1:.1f} deg\n'.format(dtt_bestSC, phi_bestSC))
 
         Emin = EmatSC_mean.min()
         Emax = EmatSC_mean.max()
-        dE = (Emax - Emin)/16.
-        levelsSC = np.arange(Emin, Emax, dE)
+        levelsSC = np.linspace(Emin, Emax, 20)
 
         # Plot
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
@@ -518,6 +522,14 @@ def main(args=None):
             plt.show()
         else:
             plt.close()
+
+        if args.verb:
+            print('\n*** Estimates from averaging {0} error surfaces ***'.format(len(baz)))
+            print('   Best dt RC: {0:.1f} sec; Best phi RC: {1:.1f} deg'.format(dtt_bestRC, phi_bestRC))
+            print('   Best dt SC: {0:.1f} sec; Best phi SC: {1:.1f} deg'.format(dtt_bestSC, phi_bestSC))
+
+        #########################
+        # SECOND FIGURE
 
         # Gridspec for polar plot
         gs1 = gspec.GridSpec(1, 1)
@@ -693,11 +705,11 @@ def main(args=None):
         if args.verb:
             print("")
             print(
-                "*** Station Average from {0} measurements ***".format(
+                "*** Estimates from averaging {0} individual measurements ***".format(
                     len(baz)))
             print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
-            print("   PHI: {0:7.3f} d +- {1:.3f}".format(PHI, dPHI))
-            print("   DT:    {0:5.3f} s +- {1:.3f}".format(DT, dDT))
+            print("   PHI: {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
+            print("   DT:    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
             print("   Saved to: "+str(outav))
             print("")
             print(
