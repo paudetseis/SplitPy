@@ -171,6 +171,10 @@ def get_arguments_average(argv=None):
     if not exist(args.indb):
         parser.error("Input file " + args.indb + " does not exist")
 
+    # Create station key list
+    if len(args.stkeys) > 0:
+        args.stkeys = args.stkeys.split(',')
+
     # Check Nulls
     if not args.nons and not args.nulls:
         parser.error("One of Non-Nulls or Nulls must be included.")
@@ -311,7 +315,11 @@ def main(args=None):
         Qual = []
         Null = []
 
-        print("  Processing {0:d} Events...".format(len(evs)))
+        print("  Found {0:d} event folders...".format(len(evs)))
+        if args.auto:
+            print("  Checking 'auto' results...")
+        else:
+            print("  Checking 'manual' results...")
 
         # Loop over Pickle Files and read in required data
         ic = 0
@@ -414,7 +422,8 @@ def main(args=None):
                         print("      {0} {1} Non-Null -> Skipped".format(
                             str(Path(evSTR).name), split.quality))
 
-        if not baz:
+        if len(baz) == 0:
+            print("  No splitting results to average")
             return
 
         # Gridspec for polar plot
@@ -637,6 +646,8 @@ def main(args=None):
         # Display Plot
         if args.showfig:
             plt.show()
+        else:
+            plt.close()
 
 
 if __name__ == "__main__":

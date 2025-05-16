@@ -594,30 +594,6 @@ def main(args=None):
             " possible events                     |")
         ievs = range(0, nevtT)
 
-        # Get Local Data Availabilty
-        if len(args.localdata) > 0:
-            print("|"+"-"*50+"|")
-            print("| Cataloging Local Data...                         |")
-            if args.useNet:
-                stalcllist = utils.list_local_data_stn(
-                    lcldrs=args.localdata,
-                    sta=sta.station,
-                    net=sta.network,
-                    dtype=args.dtype,
-                    altnet=sta.altnet)
-                print("|   {0:>2s}.{1:5s}: {2:6d} files              ".format(
-                          sta.network, sta.station, len(stalcllist)))
-            else:
-                stalcllist = utils.list_local_data_stn(
-                    lcldrs=args.localdata,
-                    dtype=args.dtype,
-                    sta=sta.station)
-                print("|   {0:5s}: {1:6d} files                      ".format(
-                          sta.station, len(stalcllist)))
-        else:
-            stalcllist = []
-        print("|"+"="*50+"|")
-
         # Select order of processing
         if args.reverse:
             ievs = range(0, nevtT)
@@ -631,7 +607,7 @@ def main(args=None):
             ev = cat[iev]
 
             # Initialize Split object with station info
-            split = Split(sta)
+            split = Split(sta, zcomp=args.zcomp)
 
             # Add event to split object
             accept = split.add_event(
