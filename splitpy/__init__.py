@@ -20,11 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 __author__ = 'Pascal Audet & Andrew Schaeffer'
 
 # -*- coding: utf-8 -*-
-from . import utils, calc, arguments
+from . import utils, calc
 from .classes import Split, PickPlot, DiagPlot
 from .gui import Pick, Keep, Save, Repeat

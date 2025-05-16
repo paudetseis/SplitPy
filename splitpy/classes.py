@@ -78,10 +78,30 @@ class Meta(object):
         Back-azimuth - pointing to earthquake from station (degrees)
     az : float
         Azimuth - pointing to station from earthquake (degrees)
+    ttime : float
+        Predicted arrival time (sec)
+    ph : str
+        Phase name
     slow : float
         Horizontal slowness of phase
     inc : float
         Incidence angle of phase at surface
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
+    align : str
+        Alignment of coordinate system for rotation
+        ('ZRT', 'LQT', or 'PVH')
+    rotated : bool
+        Whether or not data have been rotated to ``align``
+        coordinate system
+    zcomp : str
+        Vertical Component Identifier. Should be a single character.
+        This is different then 'Z' only for fully unknown component
+        orientation (i.e., components are 1, 2, 3)
 
     """
 
@@ -142,9 +162,9 @@ class Meta(object):
             self.phase = phase
             self.accept = True
         else:
-            self.ttime = None
-            self.slow = None
-            self.inc = None
+            self.ttime = np.nan
+            self.slow = np.nan
+            self.inc = np.nan
             self.phase = None
             self.accept = False
 
@@ -232,7 +252,7 @@ class Split(object):
 
     """
 
-    def __init__(self, sta):
+    def __init__(self, sta, zcomp='Z'):
 
         # # Load example data if initializing empty object
         # if sta == 'demo' or sta == 'Demo':
@@ -251,6 +271,7 @@ class Split(object):
         self.meta = None
         self.dataZNE = None
         self.dataLQT = None
+        self.zcomp = zcomp
 
     def add_event(self, event, gacmin=85., gacmax=120., phase='SKS',
                   returned=False):
@@ -294,7 +315,7 @@ class Split(object):
 
     def add_data(self, stream, returned=False, new_sr=5.):
         """
-        Adds stream of raw data as object attribute
+        Adds stream as object attribute
 
         Parameters
         ----------
@@ -302,6 +323,11 @@ class Split(object):
             Stream container for NEZ seismograms
         returned : bool
             Whether or not to return the ``accept`` attribute
+
+        Attributes
+        ----------
+        dataZNE : :class:`~obspy.core.Stream`
+            Stream container for NEZ seismograms
 
         Returns
         -------
@@ -311,7 +337,7 @@ class Split(object):
         """
 
         if not self.meta:
-            raise(Exception("No meta data available - aborting"))
+            raise Exception("No meta data available - aborting")
 
         if not self.meta.accept:
             return
@@ -327,7 +353,7 @@ class Split(object):
         #     print(stream)
 
         if not isinstance(stream, Stream):
-            raise(Exception("Event has incorrect type"))
+            raise Exception("Event has incorrect type")
 
         try:
             self.dataZNE = stream
@@ -337,19 +363,26 @@ class Split(object):
                 self.meta.accept = False
 
             # Filter Traces
-            self.dataZNE.filter('lowpass', freq=0.5*new_sr,
-                                corners=2, zerophase=True)
-            self.dataZNE.resample(new_sr, no_filter=False)
+            if not stream[0].stats.sampling_rate == new_sr:
+                self.dataZNE.filter(
+                    'lowpass',
+                    freq=0.5*new_sr,
+                    corners=2,
+                    zerophase=True)
+                self.dataZNE.resample(
+                    new_sr,
+                    no_filter=True)
 
-        except:
+        except Exception as e:
             print("Error: Not all channels are available")
             self.meta.accept = False
 
         if returned:
             return self.meta.accept
 
-    def download_data(self, client, stdata=[], dtype='SAC', ndval=np.nan,
-                      new_sr=5., dts=120., returned=False, verbose=False):
+    def download_data(self, client, new_sr=5., dts=120.,
+                      returned=False, verbose=False,
+                      remove_response=False):
         """
         Downloads seismograms based on event origin time and
         P phase arrival and adds as object attribute.
@@ -358,26 +391,35 @@ class Split(object):
         ----------
         client : :class:`~obspy.client.fdsn.Client`
             Client object
-        ndval : float
-            Fill in value for missing data
         new_sr : float
             New sampling rate (Hz)
         dts : float
             Time duration (sec)
-        stdata : List
-            Station list
+        remove_response : bool
+            Remove instrument response from seismogram and resitute to true ground
+            velocity (m/s) using obspy.core.trace.Trace.remove_response()
         returned : bool
             Whether or not to return the ``accept`` attribute
+        verbose : bool
+            Output diagnostics to screen
 
         Returns
         -------
         accept : bool
             Whether or not the object is accepted for further analysis
 
+        Attributes
+        ----------
+        dataZNE : :class:`~obspy.core.Stream`
+            Stream containing ZNE :class:`~obspy.core.Trace` objects
+        dataZ12 : :class:`~obspy.core.Stream`
+            Stream containing Z12 :class:`~obspy.core.Trace` objects
+            (for un-oriented data)
+
         """
 
         if self.meta is None:
-            raise(Exception("Requires event data as attribute - aborting"))
+            raise Exception("Requires event data as attribute - aborting")
 
         if not self.meta.accept:
             return
@@ -394,14 +436,15 @@ class Split(object):
         # Download data
         err, stream = utils.download_data(
             client=client, sta=self.sta, start=tstart, end=tend,
-            stdata=stdata, dtype=dtype, ndval=ndval, new_sr=new_sr,
-            verbose=verbose)
+            new_sr=new_sr, verbose=verbose, remove_response=remove_response,
+            zcomp=self.zcomp)
 
         # Store as attributes with traces in dictionary
         try:
             trE = stream.select(component='E')[0]
             trN = stream.select(component='N')[0]
             trZ = stream.select(component='Z')[0]
+
             self.dataZNE = Stream(traces=[trZ, trN, trE])
 
             # Filter Traces and resample
@@ -409,24 +452,32 @@ class Split(object):
                                 corners=2, zerophase=True)
             self.dataZNE.resample(new_sr, no_filter=False)
 
-        # If there is no ZNE, perhaps there is Z12?
-        except:
+        # If there is no ZNE, perhaps there is Z12 (or zcomp12)?
+        except Exception as e:
 
             try:
                 tr1 = stream.select(component='1')[0]
                 tr2 = stream.select(component='2')[0]
-                trZ = stream.select(component='Z')[0]
-                self.dataZ12 = Stream(traces=[trZ, tr1, tr2])
+                trZ = stream.select(component=self.zcomp)[0]
 
-                # Rotate from Z12 to ZNE using StDb azcorr attribute
-                self.rotate(align='ZNE')
+                # Force channel name to 'Z' if zcomp is not 'Z''
+                if not self.zcomp == 'Z':
+                    trZ.stats.channel = trZ.stats.channel[:-1] + 'Z'
+
+                self.dataZNE = Stream(traces=[trZ, tr1, tr2])
 
                 # Filter Traces and resample
                 self.dataZNE.filter('lowpass', freq=0.5*new_sr,
                                     corners=2, zerophase=True)
-                self.dataZNE.resample(new_sr, no_filter=False)
+                self.dataZNE.resample(new_sr, no_filter=True)
 
-            except:
+                # Save Z12 components in case it's necessary for later
+                self.dataZ12 = self.dataZNE.copy()
+
+                # Rotate from Z12 to ZNE using StDb azcorr attribute
+                self.rotate(align='ZNE')
+
+            except Exception as e:
                 self.meta.accept = False
 
         if returned:
@@ -438,9 +489,9 @@ class Split(object):
         east (E) and north (N) to longitudinal (L),
         radial (Q) and tangential (T) components of motion.
         Note that the method 'rotate' from ``obspy.core.stream.Stream``
-        is used for the rotation ``'ZNE->ZRT'`` and ``'ZNE->LQT'``.
-        Rotation ``'ZNE->PVH'`` is implemented separately here
-        due to different conventions.
+        is used for the rotation ``'ZNE->LQT'``.
+
+        Can also rotate Z12 to ZNE.
 
         Parameters
         ----------
@@ -448,9 +499,18 @@ class Split(object):
             Alignment of coordinate system for rotation
             ('ZNE' or 'LQT')
 
+        Returns
+        -------
+        rotated : bool
+            Whether or not the object has been rotated
+
         """
 
         if not self.meta.accept:
+            return
+
+        if self.meta.rotated:
+            print("Data have been rotated already - continuing")
             return
 
         # Use default values from meta data if arguments are not specified
@@ -458,20 +518,23 @@ class Split(object):
             align = self.meta.align
 
         if align == 'ZNE':
-            # Rotating from 1,2 to N,E is the negative of
-            # rotation from RT to NE, with
-            # baz corresponding to azim of component 1
-            from obspy.signal.rotate import rotate_rt_ne
+            from obspy.signal.rotate import rotate2zne
 
             # Copy traces
-            trZ = self.dataZ12.select(component='Z')[0].copy()
-            trN = self.dataZ12.select(component='1')[0].copy()
-            trE = self.dataZ12.select(component='2')[0].copy()
+            trZ = self.dataZNE.select(component='Z')[0].copy()
+            trN = self.dataZNE.select(component='1')[0].copy()
+            trE = self.dataZNE.select(component='2')[0].copy()
 
             azim = self.sta.azcorr
-            N, E = rotate_rt_ne(trN.data, trE.data, azim)
-            trN.data = -1.*N
-            trE.data = -1.*E
+
+            # Try with left handed system
+            Z, N, E = rotate2zne(trZ.data, 0., -90., trN.data,
+                                 azim, 0., trE.data, azim+90., 0.)
+
+            # Z, N, E = rotate2zne(trZ.data, 0., -90., trN.data,
+            #                      azim, 0., trE.data, azim+90., 0.)
+            trN.data = N
+            trE.data = E
 
             # Update stats of streams
             trN.stats.channel = trN.stats.channel[:-1] + 'N'
@@ -494,7 +557,7 @@ class Split(object):
         else:
             raise(Exception("incorrect 'align' argument"))
 
-    def calc_snr(self, t1=None, dt=30.):
+    def calc_snr(self, t1=None, dt=30., fmin=0.02, fmax=0.5):
         """
         Calculates signal-to-noise ratio on either Z, L or P component
 
@@ -535,6 +598,16 @@ class Split(object):
         trSigT.detrend().taper(max_percentage=0.05)
         trNzeT.detrend().taper(max_percentage=0.05)
 
+        # Filter between 0.1 and 1.0 (dominant P wave frequencies)
+        trSigQ.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+        trSigT.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+        trNzeQ.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+        trNzeT.filter('bandpass', freqmin=fmin, freqmax=fmax,
+                      corners=2, zerophase=True)
+
         # Trim around S-wave arrival
         trSigQ.trim(t1, t1 + dt)
         trNzeQ.trim(t1 - dt, t1)
@@ -563,6 +636,8 @@ class Split(object):
             Start time of picking window
         t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`
             End time of picking window
+        verbose : bool
+            Output diagnostics to screen
 
         Attributes
         ----------
@@ -622,8 +697,8 @@ class Split(object):
         ----------
         snrTlim : float
             Threshold for snr on T component
-        ds : int
-            Number of spaces to print out to screen (verbiage)
+        verbose : bool
+            Output diagnostics to screen
 
         Attributes
         ----------
@@ -675,8 +750,8 @@ class Split(object):
 
         Parameters
         ----------
-        ds : int
-            Number of spaces to print out to screen (verbiage)
+        verbose : bool
+            Output diagnostics to screen
 
         Attributes
         ----------
@@ -1335,7 +1410,7 @@ class DiagPlot(object):
             0.5, 0.9, 'Event: ' + self.split.meta.time.ctime() + '     ' +
             str(self.split.meta.lat) + 'N  ' +
             str(self.split.meta.lon) + 'E   ' +
-            str(np.int(self.split.meta.dep)) + 'km   ' + 'Mw=' +
+            str(int(self.split.meta.dep)) + 'km   ' + 'Mw=' +
             str(self.split.meta.mag), horizontalalignment='center')
         self.axes[2].text(
             0.5, 0.7, 'Station: ' + self.split.sta.station +
@@ -1345,7 +1420,7 @@ class DiagPlot(object):
             horizontalalignment='center')
         self.axes[2].text(
             0.5, 0.5, r'Best fit RC values: $\phi$=' +
-            str(np.int(self.split.RC_res.phi)) + r'$\pm$' +
+            str(int(self.split.RC_res.phi)) + r'$\pm$' +
             str("{:.2f}").format(self.split.RC_res.ephi) +
             r'   $\delta t$=' +
             str(self.split.RC_res.dtt) + r'$\pm$' +
@@ -1353,7 +1428,7 @@ class DiagPlot(object):
             's', horizontalalignment='center')
         self.axes[2].text(
             0.5, 0.3, r'Best fit SC values: $\phi$=' +
-            str(np.int(self.split.SC_res.phi)) + r'$\pm$' +
+            str(int(self.split.SC_res.phi)) + r'$\pm$' +
             str("{:.2f}").format(self.split.SC_res.ephi) +
             r'   $\delta t$=' +
             str(self.split.SC_res.dtt) + r'$\pm$' +
@@ -1411,7 +1486,7 @@ class DiagPlot(object):
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
-        E2 = np.roll(self.split.RC_res.Emat, np.int(
+        E2 = np.roll(self.split.RC_res.Emat, int(
             self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
 
         Emin = self.split.RC_res.Emat.min()
@@ -1470,7 +1545,7 @@ class DiagPlot(object):
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
 
-        E2 = np.roll(self.split.SC_res.Emat, np.int(
+        E2 = np.roll(self.split.SC_res.Emat, int(
             self.split.SC_res.phi-self.split.SC_res.phi_min), axis=0)
 
         Emin = self.split.SC_res.Emat.min()

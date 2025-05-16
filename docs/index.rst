@@ -18,8 +18,8 @@ teleseismic shear-wave splitting analysis in two different modes:
 Once the splitting analysis has been done, the results can be 
 aggregated to produce averaged splitting parameters and plotted 
 (:ref:`splitaverage`). The tutorials below show an example using data
-from `one station <http://ds.iris.edu/mda/TA/EPYK/>`_ of the 
-USArray Transportable Array network.
+from `one station <http://ds.iris.edu/mda/NY/TGTN/>`_ of the 
+Yukon-Northwest Seismograph Network.
 
 .. note::
 
@@ -31,8 +31,6 @@ USArray Transportable Array network.
     :target: https://zenodo.org/badge/latestdoi/211722700
 .. image:: https://travis-ci.org/paudetseis/SplitPy.svg?branch=master
     :target: https://travis-ci.org/paudetseis/
-.. image:: https://codecov.io/gh/paudetseis/SplitPy/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/paudetseis/SplitPy
 
 .. toctree::
    :maxdepth: 1

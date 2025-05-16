@@ -1,7 +1,6 @@
 import stdb
 import numpy as np
 from pkg_resources import resource_filename
-from obspy.clients.fdsn import Client
 
 
 def get_stdb():

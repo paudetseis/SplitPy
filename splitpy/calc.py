@@ -43,6 +43,12 @@ def split_SilverChan(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
         Start time of picking window
     t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`
         End time of picking window
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
 
     Returns
     -------
@@ -166,6 +172,12 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
         Start time of picking window
     t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`
         End time of picking window
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
 
     Returns
     -------
@@ -391,6 +403,12 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
         Confidence level
     Emat : :class:`~numpy.ndarray`
         Energy minimization matrix
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
 
     Returns
     -------
@@ -461,6 +479,12 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
         Confidence level
     Emat : :class:`~numpy.ndarray`
         Energy minimization matrix
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
 
     Returns
     -------

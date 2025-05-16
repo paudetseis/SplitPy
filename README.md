@@ -53,4 +53,4 @@ Examples of straightforward contributions include notebooks that describe publis
 
 #### Use Cases
 
-- Esteve, C., Audet, P., Schaeffer, A.J., Schutt, D.L., Aster, R.A., and Cubley, J. (2020). Seismic evidence for craton chiseling and displacement of lithospheric mantle by the Tintina Fault in the Northern Canadian Cordilleras, Geology, in press.
+- Esteve, C., Audet, P., Schaeffer, A.J., Schutt, D.L., Aster, R.A., and Cubley, J. (2020). Seismic evidence for craton chiseling and displacement of lithospheric mantle by the Tintina Fault in the Northern Canadian Cordilleras, Geology, 48, 1120–1125, https://doi.org/10.1130/G47688.1
