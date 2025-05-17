@@ -442,7 +442,6 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
 
     # Error contour
     vmin = Emat.min()
-    vmax = Emat.max()
     err_contour = vmin*(1. + n_par/(dof - n_par) *
                         stats.f.ppf(1. - q, n_par, dof - n_par))
 
@@ -527,6 +526,64 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
 
     # Estimate uncertainty (q confidence interval)
     err = np.where(Emat < err_contour)
+    err_phi = max(
+        0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
+    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)
+
+    return err_dtt, err_phi, err_contour
+
+def split_error_average(q, Emat, maxdt, ddt, dphi):
+    """
+    Calculate error bars based on a F-test and 
+    a given confidence interval q
+
+    Parameters
+    ----------
+    q : float
+        Confidence level
+    Emat : :class:`~numpy.ndarray`
+        Error surface matrix
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
+
+    Returns
+    -------
+    err_dtt : float
+        Error in dt estimate (sec)
+    err_phi : float
+        Error in phi estimate (degrees)
+    err_contour : :class:`~numpy.ndarray`
+        Error contour for plotting
+
+    """
+
+    from scipy import stats
+
+    # Bounds on search
+    phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
+    dtt = np.arange(0., maxdt, ddt)
+
+    # Get degrees of freedom
+    dof = 10 # To be conservative - see Frederiksen et al. (2025)
+    n_par = 2
+
+    # Error contour
+    Emin = Emat.min()
+    if Emin < 0:
+        err_contour = Emin*(1. - n_par/(dof - n_par) *
+                            stats.f.ppf(q, n_par, dof - n_par))
+    else:
+        err_contour = Emin*(1. + n_par/(dof - n_par) *
+                            stats.f.ppf(q, n_par, dof - n_par))
+
+    # Estimate uncertainty (q confidence interval)
+    err = np.where(Emat < err_contour)
+    if len(err) == 0:
+        return False, False, False
     err_phi = max(
         0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
     err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)
