@@ -33,7 +33,7 @@ import matplotlib
 from math import ceil
 from scipy import stats
 
-from splitpy import Split
+from splitpy import Split, calc
 
 from argparse import ArgumentParser
 from os.path import exists as exist
@@ -101,6 +101,14 @@ def get_arguments_average(argv=None):
         default=False,
         help="Specify to use automatically processed split results. "+
         "[Default uses refined ('manual') split results]")
+    parser.add_argument(
+        "--conf",
+        action="store",
+        dest="conf",
+        type=float,
+        default="0.95",
+        help="Specify the confidence level for the uncertainty " +
+        "estimates on the mean error surfaces. [Default 0.95]")
 
     # Null Settings
     NullGroup = parser.add_argument_group(
@@ -149,26 +157,6 @@ def get_arguments_average(argv=None):
         help="Specify to include 'Poor' measurements in the average " +
         "[Default No Poors]")
 
-    # Split Type Settings
-    SpTypGroup = parser.add_argument_group(
-        title="Split Type Settings",
-        description="Settings to Select "
-        "which Split types are included in the selection.")
-    SpTypGroup.add_argument(
-        "--RC-only",
-        action="store_false",
-        dest="SCinc",
-        default=True,
-        help="Specify to only include RC splits in the average. " +
-        "[Default RC + SC]")
-    SpTypGroup.add_argument(
-        "--SC-only",
-        action="store_false",
-        dest="RCinc",
-        default=True,
-        help="Specify to only include SC splits in the average. " +
-        "[Default RC + SC]")
-
     args = parser.parse_args(argv)
 
     # Check inputs
@@ -179,6 +167,9 @@ def get_arguments_average(argv=None):
     if len(args.stkeys) > 0:
         args.stkeys = args.stkeys.split(',')
 
+    # Significance level
+    args.q = 1. - args.conf
+
     # Check Nulls
     if not args.nons and not args.nulls:
         parser.error("One of Non-Nulls or Nulls must be included.")
@@ -186,10 +177,6 @@ def get_arguments_average(argv=None):
     # Check Quality
     if not args.goods and not args.fairs and not args.poors:
         parser.error("At least one Quality must be included.")
-
-    # Check Types
-    if not args.RCinc and not args.SCinc:
-        parser.error("At leat one Splitting Tyhpe must be included.")
 
     # Construct Null FileName Components
     NullName = ""
@@ -219,16 +206,6 @@ def get_arguments_average(argv=None):
             if args.poors:
                 QualName = "_P"
     args.QualName = QualName
-
-    # Construct Type FileName Components
-    TypeName = ""
-    if args.RCinc and args.SCinc:
-        TypeName = "_RC-SC"
-    elif args.RCinc and not args.SCinc:
-        TypeName = "_RC"
-    elif not args.RCinc and args.SCinc:
-        TypeName = "_SC"
-    args.TypeName = TypeName
 
     return args
 
@@ -330,7 +307,6 @@ def main(args=None):
             print("  Checking 'manual' results...")
 
         # Loop over Pickle Files and read in required data
-        ic = 0
         for iev in ievs:
 
             # Event Name
@@ -384,7 +360,6 @@ def main(args=None):
                 Qaccept = True
 
             # Accept Event?
-            accept = False
             if Qaccept and Naccept:
 
                 if args.verb:
@@ -441,6 +416,16 @@ def main(args=None):
             print("  No splitting results to average")
             return
 
+        # Save plot
+        plotdir = Path("PLOTS")
+        if not plotdir.is_dir():
+            plotdir.mkdir(parents=True)
+
+        # Save results
+        resultdir = Path("RESULTS")
+        if not resultdir.is_dir():
+            resultdir.mkdir(parents=True)
+
         #########################
         # FIRST FIGURE
 
@@ -452,89 +437,52 @@ def main(args=None):
         X, Y = np.meshgrid(dt, phi)
         cmap = plt.cm.RdYlBu_r
 
-        # RC analysis
-        if args.RCinc:
+        EmatRC_mean = 0.
+        for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
+            E2 = np.roll(E, int(pRC - pRC_min), axis=0)
+            EmatRC_mean += E2
 
-            EmatRC_ = []
-            for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
-                E2 = np.roll(E, int(pRC - pRC_min), axis=0)
-                EmatRC_.append(E2)
+        EmatRC_mean = np.array(EmatRC_mean)/len(EmatRC)
 
-            EmatRC_ = np.array(EmatRC_)
-            EmatRC_mean = np.mean(EmatRC_, axis=0)
+        # Find indices of minimum value of Energy matrix
+        ind = np.where(EmatRC_mean == EmatRC_mean.min())
+        ind_phi = ind[0][0]
+        ind_dtt = ind[1][0]
 
-            # Find indices of minimum value of Energy matrix
-            ind = np.where(EmatRC_mean == EmatRC_mean.min())
-            ind_phi = ind[0][0]
-            ind_dtt = ind[1][0]
+        # Get best-fit phi and dt
+        dtt_bestRC = dt[ind_dtt]
+        phi_bestRC = phi[ind_phi]
 
-            # Get best-fit phi and dt
-            dtt_bestRC = dt[ind_dtt]
-            phi_bestRC = phi[ind_phi]
+        Emin = EmatRC_mean.min()
+        Emax = EmatRC_mean.max()
+        levelsRC = np.linspace(Emin, Emax, 20)
 
-            Emin = EmatRC_mean.min()
-            Emax = EmatRC_mean.max()
-            levelsRC = np.linspace(Emin, Emax, 20)
+        err_dttRC, err_phiRC, err_contourRC = calc.split_error_average(
+            args.q, EmatRC_mean, maxdt, ddt, dphi, len(EmatRC))
 
-            # Error contour
-            dof = 10.*len(baz)
-            n_par = 2.
-            q = 0.05
-            if Emin < 0:
-                err_contour = Emin*(1. - n_par/(dof - n_par) *
-                                    stats.f.ppf(1. - q, n_par, dof - n_par))
-            else:
-                err_contour = Emin*(1. + n_par/(dof - n_par) *
-                                    stats.f.ppf(1. - q, n_par, dof - n_par))
+        # SC analysis
+        EmatSC_mean = 0.
+        for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
+            E2 = np.roll(E, int(pSC - pSC_min), axis=0)
+            EmatSC_mean += E2
 
-            # Estimate uncertainty (q confidence interval)
-            err = np.where(EmatRC_mean < err_contour)
-            print(Emin, err_contour, err)
-            err_phiRC = max(
-                0.25*(phi[max(err[0])] - phi[min(err[0])]), 0.25*dphi)
-            err_dttRC = max(0.25*(dt[max(err[1])] - dt[min(err[1])]), 0.25*ddt)
-            print('Error RC', err_dttRC, err_phiRC)
+        EmatSC_mean = EmatSC_mean/len(EmatSC)
 
-        if args.SCinc:
-            # SC analysis
-            EmatSC_mean = 0.
-            for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
-                E2 = np.roll(E, int(pSC - pSC_min), axis=0)
-                EmatSC_mean += E2
+        # Find indices of minimum value of Energy matrix
+        ind = np.where(EmatSC_mean == EmatSC_mean.min())
+        ind_phi = ind[0][0]
+        ind_dtt = ind[1][0]
 
-            EmatSC_mean = EmatSC_mean/len(EmatSC)
+        # Get best-fit phi and dt
+        dtt_bestSC = dt[ind_dtt]
+        phi_bestSC = phi[ind_phi]
 
-            # Find indices of minimum value of Energy matrix
-            ind = np.where(EmatSC_mean == EmatSC_mean.min())
-            ind_phi = ind[0][0]
-            ind_dtt = ind[1][0]
+        Emin = EmatSC_mean.min()
+        Emax = EmatSC_mean.max()
+        levelsSC = np.linspace(Emin, Emax, 20)
 
-            # Get best-fit phi and dt
-            dtt_bestSC = dt[ind_dtt]
-            phi_bestSC = phi[ind_phi]
-
-            Emin = EmatSC_mean.min()
-            Emax = EmatSC_mean.max()
-            levelsSC = np.linspace(Emin, Emax, 20)
-
-            # Error contour
-            vmin = EmatSC_mean.min()
-            vmax = EmatSC_mean.max()
-            dof = 10.*len(baz)
-            n_par = 2.
-            if Emin < 0:
-                err_contour = Emin*(1. - n_par/(dof - n_par) *
-                                    stats.f.ppf(1. - q, n_par, dof - n_par))
-            else:
-                err_contour = Emin*(1. + n_par/(dof - n_par) *
-                                    stats.f.ppf(1. - q, n_par, dof - n_par))
-
-            # Estimate uncertainty (q confidence interval)
-            err = np.where(EmatSC_mean < err_contour)
-            err_phiSC = max(
-                0.25*(phi[max(err[0])] - phi[min(err[0])]), 0.25*dphi)
-            err_dttSC = max(0.25*(dt[max(err[1])] - dt[min(err[1])]), 0.25*ddt)
-            print('Error SC', err_dttSC, err_phiSC)
+        err_dttSC, err_phiSC, err_contourSC = calc.split_error_average(
+            args.q, EmatSC_mean, maxdt, ddt, dphi, len(EmatSC))
 
         # Plot
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
@@ -542,6 +490,9 @@ def main(args=None):
         ax1.contour(
             X, Y, EmatSC_mean, levelsSC,
             cmap=plt.cm.get_cmap(cmap, len(levelsSC)))
+        ax1.contour(
+            X, Y, EmatSC_mean, (err_contourSC,),
+            colors='magenta', linewidths=2)
         ax1.axvline(dtt_bestSC)
         ax1.axhline(phi_bestSC)
         ax1.set_title('Silver-Chan')
@@ -550,11 +501,42 @@ def main(args=None):
         ax2.contour(
             X, Y, EmatRC_mean, levelsRC,
             cmap=plt.cm.get_cmap(cmap, len(levelsRC)))
+        ax2.contour(
+            X, Y, EmatRC_mean, (err_contourRC,),
+            colors='magenta', linewidths=2)
         ax2.axvline(dtt_bestRC)
         ax2.axhline(phi_bestRC)
         ax2.set_title('Rotation-Correlation')
         ax2.set_xlabel(r'$\delta t$ (sec)')
         plt.tight_layout()
+
+        # Final estimates (average of SC and RC)
+        PHI = (phi_bestRC + phi_bestSC)/2.
+        DT = (dtt_bestRC + dtt_bestSC)/2.
+        dPHI = (err_phiRC + err_phiSC)/2.
+        dDT = (err_dttRC + err_dttSC)/2.
+
+        # Output Names
+        outavRC = resultdir / (stkey + args.NullName + \
+            args.QualName + "_RC_ES_average.dat")
+        outavSC = resultdir / (stkey + args.NullName + \
+            args.QualName + "_SC_ES_average.dat")
+        outplot = plotdir / (stkey + args.NullName + \
+            args.QualName + "_ES_results.png")
+
+        if args.verb:
+            print()
+            print("*** Estimates from averaging {0} error surfaces ***".format(len(baz)))
+            print("   PHI (RC): {0:7.1f} d +/- {1:.2f}".format(phi_bestRC, err_phiRC))
+            print("   DT (RC):    {0:5.1f} s +/- {1:.2f}".format(dtt_bestRC, err_dttRC))
+            print("   PHI (SC): {0:7.1f} d +/- {1:.2f}".format(phi_bestSC, err_phiSC))
+            print("   DT (SC):    {0:5.1f} s +/- {1:.2f}".format(dtt_bestSC, err_dttSC))
+            print("   PHI (mean): {0:7.1f} d +/- {1:.2f}".format(PHI, dPHI))
+            print("   DT (mean):    {0:5.1f} s +/- {1:.2f}".format(DT, dDT))
+            print("   Saved to: "+str(outavRC)+' & '+str(outavRC))
+
+        # Save Plot
+        plt.savefig(outplot)
 
         # Display Plot
         if args.showfig:
@@ -562,12 +544,21 @@ def main(args=None):
         else:
             plt.close()
 
-        if args.verb:
-            print('\n*** Estimates from averaging {0} error surfaces ***'.format(len(baz)))
-            print("   PHI: {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
-            print("   DT:    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
-            print('   Best dt RC: {0:.1f} sec; Best phi RC: {1:.1f} deg'.format(dtt_bestRC, phi_bestRC))
-            print('   Best dt SC: {0:.1f} sec; Best phi SC: {1:.1f} deg'.format(dtt_bestSC, phi_bestSC))
+        # Write out Final Results
+        fid = open(outavRC, 'w')
+        fid.writelines(
+            "sta_lon, sta_lat, PHI (deg), dPHI (deg), DT (s), dDT (s) \n")
+        line = "{0:8.4f},{1:7.4f},{2:7.3f},{3:7.3f},{4:5.3f},{5:5.3f}\n".format(
+                stlon, stlat, phi_bestRC, err_phiRC, dtt_bestRC, err_dttRC)
+        fid.writelines(line.replace(" ",""))
+        fid.close()
+        fid = open(outavSC, 'w')
+        fid.writelines(
+            "sta_lon, sta_lat, PHI (deg), dPHI (deg), DT (s), dDT (s) \n")
+        line = "{0:8.4f},{1:7.4f},{2:7.3f},{3:7.3f},{4:5.3f},{5:5.3f}\n".format(
+                stlon, stlat, phi_bestSC, err_phiSC, dtt_bestSC, err_dttSC)
+        fid.writelines(line.replace(" ",""))
+        fid.close()
 
         #########################
         # SECOND FIGURE
@@ -599,10 +590,9 @@ def main(args=None):
         # ax1.plot(baz*np.pi/180., np.ones(len(baz))*dtmax, 'co', alpha=0.5)
 
         # Add RC results to plot
-        if args.RCinc:
-            ax1.scatter(phi*np.pi/180., dt, c='b', alpha=0.5)
-            ax1.plot(np.array([meanphiRC, meanphiRC])*np.pi /
-                     180., [0, meandtRC], 'b', linewidth=2)
+        ax1.scatter(phi*np.pi/180., dt, c='b', alpha=0.5)
+        ax1.plot(np.array([meanphiRC, meanphiRC])*np.pi /
+                 180., [0, meandtRC], 'b', linewidth=2)
 
         # Convert SC results to floats
         phi = np.array([float(i) for i in phiSC])
@@ -614,10 +604,9 @@ def main(args=None):
         meanphiSC, stdphiSC, meandtSC, stddtSC = angle_mean(dt, phi, Ddt, Dphi)
 
         # Add SC results to plot
-        if args.SCinc:
-            ax1.scatter(phi*np.pi/180., dt, c='orange', alpha=0.5)
-            ax1.plot(np.array([meanphiSC, meanphiSC])*np.pi /
-                     180., [0, meandtSC], 'coral', linewidth=2)
+        ax1.scatter(phi*np.pi/180., dt, c='orange', alpha=0.5)
+        ax1.plot(np.array([meanphiSC, meanphiSC])*np.pi /
+                 180., [0, meandtSC], 'coral', linewidth=2)
 
         ax1.set_rmax(dtmax)
 
@@ -634,27 +623,23 @@ def main(args=None):
         Dphi = np.array([float(i) for i in DphiRC])
 
         # Plot shaded box with RC uncertainty
-        if args.RCinc:
+        ax2.axhspan(meanphiRC + stdphiRC, meanphiRC -
+                    stdphiRC, facecolor='b', alpha=0.2)
+        ax2.axhline(meanphiRC, c='b')
 
-            ax2.axhspan(meanphiRC + stdphiRC, meanphiRC -
-                        stdphiRC, facecolor='b', alpha=0.2)
-            ax2.axhline(meanphiRC, c='b')
-
-            # Plot individual RC results
-            ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='b', label='RC', alpha=0.5)
+        # Plot individual RC results
+        ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='b', label='RC', alpha=0.5)
 
         phi = np.array([float(i) for i in phiSC])
         Dphi = np.array([float(i) for i in DphiSC])
 
         # Plot shaded box with SC uncertainty
-        if args.SCinc:
+        ax2.axhspan(meanphiSC + stdphiSC, meanphiSC -
+                    stdphiSC, facecolor='orange', alpha=0.2)
+        ax2.axhline(meanphiSC, c='coral')
 
-            ax2.axhspan(meanphiSC + stdphiSC, meanphiSC -
-                        stdphiSC, facecolor='orange', alpha=0.2)
-            ax2.axhline(meanphiSC, c='coral')
-
-            # Plot individual SC results
-            ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='orange', label='SC', alpha=0.5)
+        # Plot individual SC results
+        ax2.errorbar(baz, phi, yerr=Dphi, fmt='o', c='orange', label='SC', alpha=0.5)
 
         ax2.set_title('Station: ' + stkey)
         ax2.set_ylabel(r'Fast axis, $\phi$ (degree)')
@@ -667,27 +652,23 @@ def main(args=None):
         Ddt = np.array([float(i) for i in DdtRC])
 
         # Plot shaded box with RC uncertainty
-        if args.RCinc:
+        ax3.axhspan(meandtRC + stddtRC, meandtRC -
+                    stddtRC, facecolor='b', alpha=0.2)
+        ax3.axhline(meandtRC, c='b')
 
-            ax3.axhspan(meandtRC + stddtRC, meandtRC -
-                        stddtRC, facecolor='b', alpha=0.2)
-            ax3.axhline(meandtRC, c='b')
-
-            # Plot individual RC results
-            ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='b', label='RC', alpha=0.5)
+        # Plot individual RC results
+        ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='b', label='RC', alpha=0.5)
 
         dt = np.array([float(i) for i in dtSC])
         Ddt = np.array([float(i) for i in DdtSC])
 
         # Plot shaded box with SC uncertainty
-        if args.SCinc:
+        ax3.axhspan(meandtSC + stddtSC, meandtSC -
+                    stddtSC, facecolor='orange', alpha=0.2)
+        ax3.axhline(meandtSC, c='coral')
 
-            ax3.axhspan(meandtSC + stddtSC, meandtSC -
-                        stddtSC, facecolor='orange', alpha=0.2)
-            ax3.axhline(meandtSC, c='coral')
-
-            # Plot individual SC results
-            ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='orange', label='SC', alpha=0.5)
+        # Plot individual SC results
+        ax3.errorbar(baz, dt, yerr=Ddt, fmt='o', c='orange', label='SC', alpha=0.5)
 
         ax3.set_ylabel(r'Delay time, $\delta t$ (seconds)')
         ax3.set_ylim(0, dtmax)
@@ -700,70 +681,65 @@ def main(args=None):
         plt.figtext(0.015, 0.48, 'B', fontweight='bold')
         plt.figtext(0.6, 0.7, 'C', fontweight='bold')
 
-        # Save plot
-        plotdir = Path("PLOTS")
-        if not plotdir.is_dir():
-            plotdir.mkdir(parents=True)
-
         # Output Names
-        outav = plotdir / (stkey+args.TypeName + args.NullName +
-                           args.QualName + "_results.dat")
-        outev = plotdir / (stkey+args.TypeName + args.NullName +
-                           args.QualName + "_events.dat")
-        outplot = plotdir / (stkey+args.TypeName + args.NullName +
-                             args.QualName + "_results.png")
+        outavRC = resultdir / (stkey + args.NullName + \
+            args.QualName + "_RC_ind_average.dat")
+        outavSC = resultdir / (stkey + args.NullName + \
+            args.QualName + "_SC_ind_average.dat")
+        outev = resultdir / (stkey + args.NullName + \
+            args.QualName + "_events.dat")
+        outplot = plotdir / (stkey + args.NullName + \
+            args.QualName + "_ind_results.png")
 
         # Final estimates (average of SC and RC)
-        if args.RCinc and args.SCinc:
-            PHI = (meanphiRC + meanphiSC)/2.
-            DT = (meandtRC + meandtSC)/2.
-            dPHI = (stdphiRC + stdphiSC)/2.
-            dDT = (stddtRC + stddtSC)/2.
-            ax1.plot(np.array([PHI, PHI])*np.pi/180.,
-                     [0, DT], 'r', linewidth=2, alpha=0.8)
-            ax2.axhline(PHI, c='coral', alpha=0.5, linewidth=2)
-            ax2.axhline(PHI - dPHI, c='coral', linestyle='--',
-                        linewidth=1, alpha=0.5)
-            ax2.axhline(PHI + dPHI, c='coral', linestyle='--',
-                        linewidth=1, alpha=0.5)
-            ax3.axhline(DT, c='coral', alpha=0.5, linewidth=2)
-            ax3.axhline(DT - dDT, c='coral', linestyle='--',
-                        linewidth=1, alpha=0.5)
-            ax3.axhline(DT + dDT, c='coral', linestyle='--',
-                        linewidth=1, alpha=0.5)
+        PHI = (meanphiRC + meanphiSC)/2.
+        DT = (meandtRC + meandtSC)/2.
+        dPHI = (stdphiRC + stdphiSC)/2.
+        dDT = (stddtRC + stddtSC)/2.
 
-        elif not args.RCinc and args.SCinc:
-            PHI = meanphiSC
-            DT = meandtSC
-            dPHI = stdphiSC
-            dDT = stddtSC
-        else:
-            PHI = meanphiRC
-            DT = meandtRC
-            dPHI = stdphiRC
-            dDT = stddtRC
+        ax1.plot(np.array([PHI, PHI])*np.pi/180.,
+                 [0, DT], 'r', linewidth=2, alpha=0.8)
+        ax2.axhline(PHI, c='coral', alpha=0.5, linewidth=2)
+        ax2.axhline(PHI - dPHI, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
+        ax2.axhline(PHI + dPHI, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
+        ax3.axhline(DT, c='coral', alpha=0.5, linewidth=2)
+        ax3.axhline(DT - dDT, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
+        ax3.axhline(DT + dDT, c='coral', linestyle='--',
+                    linewidth=1, alpha=0.5)
 
         if args.verb:
-            print("")
+            print()
             print(
                 "*** Estimates from averaging {0} individual measurements ***".format(
                     len(baz)))
-            print("   Loc: {0:8.4f}, {1:7.4f}".format(stlon, stlat))
-            print("   PHI: {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
-            print("   DT:    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
-            print("   Saved to: "+str(outav))
-            print("")
-            print(
-                "*** Catalogue of events and results ***")
+            print("   PHI (RC): {0:7.1f} d +/- {1:.2f}".format(meanphiRC, stdphiRC))
+            print("   DT (RC):    {0:5.1f} s +/- {1:.2f}".format(meandtRC, stddtRC))
+            print("   PHI (SC): {0:7.1f} d +/- {1:.2f}".format(meanphiSC, stdphiSC))
+            print("   DT (SC):    {0:5.1f} s +/- {1:.2f}".format(meandtSC, stddtSC))
+            print("   PHI (mean): {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
+            print("   DT (mean):    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
+            print("   Saved to: "+str(outavRC)+' & '+str(outavRC))
+            print()
+            print("*** Catalogue of events and individual results ***")
             print("   Saved to: "+str(outev))
-            print("")
 
         # Write out Final Results
-        fid = open(outav, 'w')
+        # Write out Final Results
+        fid = open(outavRC, 'w')
         fid.writelines(
             "sta_lon, sta_lat, PHI (deg), dPHI (deg), DT (s), dDT (s) \n")
         line = "{0:8.4f},{1:7.4f},{2:7.3f},{3:7.3f},{4:5.3f},{5:5.3f}\n".format(
-                stlon, stlat, PHI, dPHI, DT, dDT)
+                stlon, stlat, meanphiRC, stdphiRC, meandtRC, stddtRC)
+        fid.writelines(line.replace(" ",""))
+        fid.close()
+        fid = open(outavSC, 'w')
+        fid.writelines(
+            "sta_lon, sta_lat, PHI (deg), dPHI (deg), DT (s), dDT (s) \n")
+        line = "{0:8.4f},{1:7.4f},{2:7.3f},{3:7.3f},{4:5.3f},{5:5.3f}\n".format(
+                stlon, stlat, meanphiSC, stdphiSC, meandtSC, stddtSC)
         fid.writelines(line.replace(" ",""))
         fid.close()
 
