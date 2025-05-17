@@ -532,7 +532,7 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
 
     return err_dtt, err_phi, err_contour
 
-def split_error_average(q, Emat, maxdt, ddt, dphi):
+def split_error_average(q, Emat, maxdt, ddt, dphi, n):
     """
     Calculate error bars based on a F-test and 
     a given confidence interval q
@@ -568,17 +568,17 @@ def split_error_average(q, Emat, maxdt, ddt, dphi):
     dtt = np.arange(0., maxdt, ddt)
 
     # Get degrees of freedom
-    dof = 10 # To be conservative - see Frederiksen et al. (2025)
+    dof = 10*n # To be conservative - see Frederiksen et al. (2025)
     n_par = 2
 
     # Error contour
     Emin = Emat.min()
     if Emin < 0:
         err_contour = Emin*(1. - n_par/(dof - n_par) *
-                            stats.f.ppf(q, n_par, dof - n_par))
+                            stats.f.ppf(1. - q, n_par, dof - n_par))
     else:
         err_contour = Emin*(1. + n_par/(dof - n_par) *
-                            stats.f.ppf(q, n_par, dof - n_par))
+                            stats.f.ppf(1. - q, n_par, dof - n_par))
 
     # Estimate uncertainty (q confidence interval)
     err = np.where(Emat < err_contour)
