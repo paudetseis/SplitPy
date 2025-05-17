@@ -31,6 +31,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gspec
 import matplotlib
 from math import ceil
+from scipy import stats
 
 from splitpy import Split
 
@@ -452,46 +453,88 @@ def main(args=None):
         cmap = plt.cm.RdYlBu_r
 
         # RC analysis
-        # EmatRC_ = []
-        # for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
-        #     E2 = np.roll(E, int(pRC - pRC_min), axis=0)
-        #     EmatRC_.append(E2)
+        if args.RCinc:
 
-        # EmatRC_ = np.array(EmatRC)
-        EmatRC_mean = np.mean(EmatRC, axis=0)
+            EmatRC_ = []
+            for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
+                E2 = np.roll(E, int(pRC - pRC_min), axis=0)
+                EmatRC_.append(E2)
 
-        # Find indices of minimum value of Energy matrix
-        ind = np.where(EmatRC_mean == EmatRC_mean.min())
-        ind_phi = ind[0][0]
-        ind_dtt = ind[1][0]
+            EmatRC_ = np.array(EmatRC_)
+            EmatRC_mean = np.mean(EmatRC_, axis=0)
 
-        # Get best-fit phi and dt
-        dtt_bestRC = dt[ind_dtt]
-        phi_bestRC = phi[ind_phi]
+            # Find indices of minimum value of Energy matrix
+            ind = np.where(EmatRC_mean == EmatRC_mean.min())
+            ind_phi = ind[0][0]
+            ind_dtt = ind[1][0]
 
-        Emin = EmatRC_mean.min()
-        Emax = EmatRC_mean.max()
-        levelsRC = np.linspace(Emin, Emax, 20)
+            # Get best-fit phi and dt
+            dtt_bestRC = dt[ind_dtt]
+            phi_bestRC = phi[ind_phi]
 
-        # SC analysis
-        # for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
-        #     E2 = np.roll(E, int(pSC - pSC_min), axis=0)
-        #     EmatSC_mean += E2
+            Emin = EmatRC_mean.min()
+            Emax = EmatRC_mean.max()
+            levelsRC = np.linspace(Emin, Emax, 20)
 
-        EmatSC_mean = np.mean(EmatSC, axis=0)
+            # Error contour
+            dof = 10.*len(baz)
+            n_par = 2.
+            q = 0.05
+            if Emin < 0:
+                err_contour = Emin*(1. - n_par/(dof - n_par) *
+                                    stats.f.ppf(1. - q, n_par, dof - n_par))
+            else:
+                err_contour = Emin*(1. + n_par/(dof - n_par) *
+                                    stats.f.ppf(1. - q, n_par, dof - n_par))
 
-        # Find indices of minimum value of Energy matrix
-        ind = np.where(EmatSC_mean == EmatSC_mean.min())
-        ind_phi = ind[0][0]
-        ind_dtt = ind[1][0]
+            # Estimate uncertainty (q confidence interval)
+            err = np.where(EmatRC_mean < err_contour)
+            print(Emin, err_contour, err)
+            err_phiRC = max(
+                0.25*(phi[max(err[0])] - phi[min(err[0])]), 0.25*dphi)
+            err_dttRC = max(0.25*(dt[max(err[1])] - dt[min(err[1])]), 0.25*ddt)
+            print('Error RC', err_dttRC, err_phiRC)
 
-        # Get best-fit phi and dt
-        dtt_bestSC = dt[ind_dtt]
-        phi_bestSC = phi[ind_phi]
+        if args.SCinc:
+            # SC analysis
+            EmatSC_mean = 0.
+            for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
+                E2 = np.roll(E, int(pSC - pSC_min), axis=0)
+                EmatSC_mean += E2
 
-        Emin = EmatSC_mean.min()
-        Emax = EmatSC_mean.max()
-        levelsSC = np.linspace(Emin, Emax, 20)
+            EmatSC_mean = EmatSC_mean/len(EmatSC)
+
+            # Find indices of minimum value of Energy matrix
+            ind = np.where(EmatSC_mean == EmatSC_mean.min())
+            ind_phi = ind[0][0]
+            ind_dtt = ind[1][0]
+
+            # Get best-fit phi and dt
+            dtt_bestSC = dt[ind_dtt]
+            phi_bestSC = phi[ind_phi]
+
+            Emin = EmatSC_mean.min()
+            Emax = EmatSC_mean.max()
+            levelsSC = np.linspace(Emin, Emax, 20)
+
+            # Error contour
+            vmin = EmatSC_mean.min()
+            vmax = EmatSC_mean.max()
+            dof = 10.*len(baz)
+            n_par = 2.
+            if Emin < 0:
+                err_contour = Emin*(1. - n_par/(dof - n_par) *
+                                    stats.f.ppf(1. - q, n_par, dof - n_par))
+            else:
+                err_contour = Emin*(1. + n_par/(dof - n_par) *
+                                    stats.f.ppf(1. - q, n_par, dof - n_par))
+
+            # Estimate uncertainty (q confidence interval)
+            err = np.where(EmatSC_mean < err_contour)
+            err_phiSC = max(
+                0.25*(phi[max(err[0])] - phi[min(err[0])]), 0.25*dphi)
+            err_dttSC = max(0.25*(dt[max(err[1])] - dt[min(err[1])]), 0.25*ddt)
+            print('Error SC', err_dttSC, err_phiSC)
 
         # Plot
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
@@ -521,6 +564,8 @@ def main(args=None):
 
         if args.verb:
             print('\n*** Estimates from averaging {0} error surfaces ***'.format(len(baz)))
+            print("   PHI: {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
+            print("   DT:    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
             print('   Best dt RC: {0:.1f} sec; Best phi RC: {1:.1f} deg'.format(dtt_bestRC, phi_bestRC))
             print('   Best dt SC: {0:.1f} sec; Best phi SC: {1:.1f} deg'.format(dtt_bestSC, phi_bestSC))
 

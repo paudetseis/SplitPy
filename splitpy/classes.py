@@ -1486,17 +1486,15 @@ class DiagPlot(object):
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
-        # E2 = np.roll(self.split.RC_res.Emat, int(
-        #     self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
+        E2 = np.roll(self.split.RC_res.Emat, int(
+            self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
 
         Emin = self.split.RC_res.Emat.min()
         Emax = self.split.RC_res.Emat.max()
         dE = (Emax - Emin)/16.
         levels = np.arange(Emin, Emax, dE)
         cmap = plt.cm.RdYlBu_r
-        # cset1 = plt.contour(X, Y, E2, levels,
-        #                     cmap=plt.cm.get_cmap(cmap, len(levels)))
-        cset1 = plt.contour(X, Y, Emat, levels,
+        cset1 = plt.contour(X, Y, E2, levels,
                             cmap=plt.cm.get_cmap(cmap, len(levels)))
 
         matplotlib.rcParams['contour.negative_linestyle'] = 'solid'
@@ -1547,17 +1545,15 @@ class DiagPlot(object):
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
 
-        # E2 = np.roll(self.split.SC_res.Emat, int(
-        #     self.split.SC_res.phi-self.split.SC_res.phi_min), axis=0)
+        E2 = np.roll(self.split.SC_res.Emat, int(
+            self.split.SC_res.phi-self.split.SC_res.phi_min), axis=0)
 
         Emin = self.split.SC_res.Emat.min()
         Emax = self.split.SC_res.Emat.max()
         dE = (Emax - Emin)/16.
         levels = np.arange(Emin, Emax, dE)
         cmap = plt.cm.RdYlBu_r
-        # cset1 = plt.contour(X, Y, E2, levels,
-                            # cmap=plt.cm.get_cmap(cmap, len(levels)))
-        cset1 = plt.contour(X, Y, Emat, levels,
+        cset1 = plt.contour(X, Y, E2, levels,
                             cmap=plt.cm.get_cmap(cmap, len(levels)))
 
         errc = self.split.SC_res.errc
