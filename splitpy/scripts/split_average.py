@@ -533,7 +533,9 @@ def main(args=None):
             print("   DT (SC):    {0:5.1f} s +/- {1:.2f}".format(dtt_bestSC, err_dttSC))
             print("   PHI (mean): {0:7.1f} d +/- {1:.2f}".format(PHI, dPHI))
             print("   DT (mean):    {0:5.1f} s +/- {1:.2f}".format(DT, dDT))
-            print("   Saved to: "+str(outavRC)+' & '+str(outavRC))
+            print("   Saved to: ")
+            print("      "+str(outavRC))
+            print("      "+str(outavSC))
 
         # Save Plot
         plt.savefig(outplot)
@@ -721,10 +723,13 @@ def main(args=None):
             print("   DT (SC):    {0:5.1f} s +/- {1:.2f}".format(meandtSC, stddtSC))
             print("   PHI (mean): {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
             print("   DT (mean):    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
-            print("   Saved to: "+str(outavRC)+' & '+str(outavRC))
+            print("   Saved to: ")
+            print("      "+str(outavRC))
+            print("      "+str(outavSC))
             print()
             print("*** Catalogue of events and individual results ***")
             print("   Saved to: "+str(outev))
+            print()
 
         # Write out Final Results
         # Write out Final Results
