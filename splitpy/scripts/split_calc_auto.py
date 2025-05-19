@@ -88,9 +88,7 @@ def get_arguments_calc_auto(argv=None):
         default=False,
         help="Force the overwriting of pre-existing Split results. " +
         "Default behaviour prompts for those that " +
-        "already exist. Selecting overwrite and skip (ie, both flags) " +
-        "negate each other, and both are set to " +
-        "false (every repeat is prompted). [Default False]")
+        "already exist. [Default False]")
     parser.add_argument(
         "--zcomp", 
         dest="zcomp",
@@ -98,16 +96,6 @@ def get_arguments_calc_auto(argv=None):
         default="Z",
         help="Specify the Vertical Component Channel Identifier. "+
         "[Default Z].")
-    parser.add_argument(
-        "--skip-existing",
-        action="store_true",
-        dest="skip",
-        default=False,
-        help="Skip any event for which existing splitting results are " +
-        "saved to disk. Default behaviour prompts for " +
-        "each event. Selecting skip and overwrite (ie, both flags) " +
-        "negate each other, and both are set to " +
-        "False (every repeat is prompted). [Default False]")
     parser.add_argument(
         "--calc",
         action="store_true",
@@ -418,11 +406,6 @@ def get_arguments_calc_auto(argv=None):
         else:
             args.userauth = [None, None]
 
-    # Check existing file behaviour
-    if args.skip and args.ovr:
-        args.skip = False
-        args.ovr = False
-
     # Check Datatype specification
     if args.dtype.upper() not in ['MSEED', 'SAC']:
         parser.error(
@@ -670,10 +653,6 @@ def main(args=None):
                     if np.sum([file.exists() for file in
                                [ZNEfile, metafile, stafile]]) < 3:
                         continue
-                    sta = pickle.load(open(stafile, "rb"))
-                    split = Split(sta, zcomp=args.zcomp)
-                    meta = pickle.load(open(metafile, "rb"))
-                    split.meta = meta
                     dataZNE = pickle.load(open(ZNEfile, "rb"))
                     split.dataZNE = dataZNE
 
@@ -750,7 +729,11 @@ def main(args=None):
                 if args.calc or args.recalc:
 
                     # Analyze
-                    split.analyze(verbose=args.verb)
+                    split.analyze(
+                        maxdt=args.maxdt,
+                        ddt=args.ddt,
+                        dphi=args.dphi,
+                        verbose=args.verb)
 
                     # Continue if problem with analysis
                     if split.RC_res.edtt is None or split.SC_res.edtt is None:

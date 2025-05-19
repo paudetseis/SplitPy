@@ -623,7 +623,7 @@ class Split(object):
         nrms = np.sqrt(np.mean(np.square(trNzeT.data)))
         self.meta.snrt = 10*np.log10(srms*srms/nrms/nrms)
 
-    def analyze(self, t1=None, t2=None, verbose=False):
+    def analyze(self, t1=None, t2=None, maxdt=4., ddt=0.1, dphi=1., verbose=False):
         """
         Calculates the shear-wave splitting parameters based
         on two alternative method: the Rotation-Correlation (RC)
@@ -648,6 +648,10 @@ class Split(object):
 
         """
 
+        self.meta.maxdt = maxdt
+        self.meta.ddt = ddt
+        self.meta.dphi = dphi
+
         if t1 is None and t2 is None:
             t1 = self.meta.time + self.meta.ttime - 5.
             t2 = self.meta.time + self.meta.ttime + 25.
@@ -662,12 +666,12 @@ class Split(object):
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
             calc.split_RotCorr(
                 trQ, trT, self.meta.baz, t1, t2,
-                self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+                maxdt, ddt, dphi)
 
         # Calculate error
         edtt, ephi, errc = calc.split_errorRC(
             trT_c, t1, t2, 0.05, Emat,
-            self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+            maxdt, ddt, dphi)
 
         # Store dictionary as attribute
         self.RC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
@@ -679,12 +683,12 @@ class Split(object):
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
             calc.split_SilverChan(
                 trQ, trT, self.meta.baz, t1, t2,
-                self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+                maxdt, ddt, dphi)
 
         # Calculate errors
         edtt, ephi, errc = calc.split_errorSC(
             trT_c, t1, t2, 0.05, Emat,
-            self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+            maxdt, ddt, dphi)
 
         self.SC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
                              phi, dtt, phi_min, edtt, ephi, errc)
@@ -1486,8 +1490,10 @@ class DiagPlot(object):
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
-        E2 = np.roll(self.split.RC_res.Emat, int(
-            self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
+        E2 = np.roll(
+            self.split.RC_res.Emat,
+            int((self.split.RC_res.phi - self.split.RC_res.phi_min)/self.split.meta.dphi),
+            axis=0)
 
         Emin = self.split.RC_res.Emat.min()
         Emax = self.split.RC_res.Emat.max()
@@ -1545,8 +1551,10 @@ class DiagPlot(object):
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
 
-        E2 = np.roll(self.split.SC_res.Emat, int(
-            self.split.SC_res.phi-self.split.SC_res.phi_min), axis=0)
+        E2 = np.roll(
+            self.split.SC_res.Emat,
+            int((self.split.SC_res.phi-self.split.SC_res.phi_min)/self.split.meta.dphi),
+            axis=0)
 
         Emin = self.split.SC_res.Emat.min()
         Emax = self.split.SC_res.Emat.max()

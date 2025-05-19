@@ -439,7 +439,7 @@ def main(args=None):
 
         EmatRC_mean = 0.
         for E, pRC, pRC_min in zip(EmatRC, phiRC, phiRC_min):
-            E2 = np.roll(E, int(pRC - pRC_min), axis=0)
+            E2 = np.roll(E, int((pRC - pRC_min)/dphi), axis=0)
             EmatRC_mean += E2
 
         EmatRC_mean = np.array(EmatRC_mean)/len(EmatRC)
@@ -463,7 +463,7 @@ def main(args=None):
         # SC analysis
         EmatSC_mean = 0.
         for E, pSC, pSC_min in zip(EmatRC, phiSC, phiSC_min):
-            E2 = np.roll(E, int(pSC - pSC_min), axis=0)
+            E2 = np.roll(E, int((pSC - pSC_min)/dphi), axis=0)
             EmatSC_mean += E2
 
         EmatSC_mean = EmatSC_mean/len(EmatSC)
@@ -524,18 +524,18 @@ def main(args=None):
         outplot = plotdir / (stkey + args.NullName + \
             args.QualName + "_ES_results.png")
 
+        print()
+        print("*** Estimates from averaging {0} error surfaces ***".format(len(baz)))
         if args.verb:
-            print()
-            print("*** Estimates from averaging {0} error surfaces ***".format(len(baz)))
             print("   PHI (RC): {0:7.1f} d +/- {1:.2f}".format(phi_bestRC, err_phiRC))
             print("   DT (RC):    {0:5.1f} s +/- {1:.2f}".format(dtt_bestRC, err_dttRC))
             print("   PHI (SC): {0:7.1f} d +/- {1:.2f}".format(phi_bestSC, err_phiSC))
             print("   DT (SC):    {0:5.1f} s +/- {1:.2f}".format(dtt_bestSC, err_dttSC))
             print("   PHI (mean): {0:7.1f} d +/- {1:.2f}".format(PHI, dPHI))
             print("   DT (mean):    {0:5.1f} s +/- {1:.2f}".format(DT, dDT))
-            print("   Saved to: ")
-            print("      "+str(outavRC))
-            print("      "+str(outavSC))
+        print("   Saved to: ")
+        print("      "+str(outavRC))
+        print("      "+str(outavSC))
 
         # Save Plot
         plt.savefig(outplot)
@@ -575,10 +575,10 @@ def main(args=None):
         dtmax = ceil(max([max(dtRC), max(dtSC), 3]))
 
         # Convert RC results to floats
-        phi = np.array([float(i) for i in phiRC])
-        Dphi = np.array([float(i) for i in DphiRC])
-        dt = np.array([float(i) for i in dtRC])
-        Ddt = np.array([float(i) for i in DdtRC])
+        phi = np.array(phiRC).astype('float')#[float(i) for i in phiRC])
+        Dphi = np.array(DphiRC).astype('float')#[float(i) for i in DphiRC])
+        dt = np.array(dtRC).astype('float')#[float(i) for i in dtRC])
+        Ddt = np.array(DdtRC).astype('float')#[float(i) for i in DdtRC])
 
         # Calculate average and STD for RC technique
         meanphiRC, stdphiRC, meandtRC, stddtRC = angle_mean(dt, phi, Ddt, Dphi)
@@ -597,10 +597,10 @@ def main(args=None):
                  180., [0, meandtRC], 'b', linewidth=2)
 
         # Convert SC results to floats
-        phi = np.array([float(i) for i in phiSC])
-        Dphi = np.array([float(i) for i in DphiSC])
-        dt = np.array([float(i) for i in dtSC])
-        Ddt = np.array([float(i) for i in DdtSC])
+        phi = np.array(phiSC).astype('float')#[float(i) for i in phiSC])
+        Dphi = np.array(DphiSC).astype('float')#[float(i) for i in DphiSC])
+        dt = np.array(dtSC).astype('float')#[float(i) for i in dtSC])
+        Ddt = np.array(DdtSC).astype('float')#[float(i) for i in DdtSC])
 
         # Calculate average and STD for SC technique
         meanphiSC, stdphiSC, meandtSC, stddtSC = angle_mean(dt, phi, Ddt, Dphi)
@@ -712,24 +712,25 @@ def main(args=None):
         ax3.axhline(DT + dDT, c='coral', linestyle='--',
                     linewidth=1, alpha=0.5)
 
+        print()
+        print(
+            "*** Estimates from averaging {0} individual measurements ***".format(
+                len(baz)))
         if args.verb:
-            print()
-            print(
-                "*** Estimates from averaging {0} individual measurements ***".format(
-                    len(baz)))
             print("   PHI (RC): {0:7.1f} d +/- {1:.2f}".format(meanphiRC, stdphiRC))
             print("   DT (RC):    {0:5.1f} s +/- {1:.2f}".format(meandtRC, stddtRC))
             print("   PHI (SC): {0:7.1f} d +/- {1:.2f}".format(meanphiSC, stdphiSC))
             print("   DT (SC):    {0:5.1f} s +/- {1:.2f}".format(meandtSC, stddtSC))
             print("   PHI (mean): {0:7.3f} d +/- {1:.3f}".format(PHI, dPHI))
             print("   DT (mean):    {0:5.3f} s +/- {1:.3f}".format(DT, dDT))
-            print("   Saved to: ")
-            print("      "+str(outavRC))
-            print("      "+str(outavSC))
-            print()
-            print("*** Catalogue of events and individual results ***")
-            print("   Saved to: "+str(outev))
-            print()
+        print("   Saved to: ")
+        print("      "+str(outavRC))
+        print("      "+str(outavSC))
+        print()
+        print("*** Catalogue of events and individual results ***")
+        print("   Saved to: ")
+        print("      "+str(outev))
+        print()
 
         # Write out Final Results
         # Write out Final Results
@@ -751,12 +752,12 @@ def main(args=None):
         # Write out events
         fid = open(outev, 'w')
         fid.writelines(
-            "eq_time (UTC), eq_lon, eq_lat, eq_mag, PHI_RC (deg), " +
-            "dPHI_RC (deg), DT_RC (s), dDT_RC (s), " +
+            "eq_time (UTC), eq_lon, eq_lat, eq_mag, eq_baz, " +
+            "PHI_RC (deg), dPHI_RC (deg), DT_RC (s), dDT_RC (s), " +
             "PHI_SC (deg), dPHI_SC (deg), DT_SC (s), dDT_SC (s)\n")
         for i in range(len(evlon)):
-            line1 = "{0},{1:8.4f},{2:7.4f},{3:3.1f},".format(
-                    evtime[i], evlon[i], evlat[i], evmag[i])
+            line1 = "{0},{1:8.4f},{2:7.4f},{3:3.1f},{4:4.1f},".format(
+                    evtime[i], evlon[i], evlat[i], evmag[i], baz[i])
             line2 = "{0:7.3f},{1:7.3f},{2:5.3f},{3:5.3f},".format(
                     phiRC[i], DphiRC[i], dtRC[i], DdtRC[i])
             line3 = "{0:7.3f},{1:7.3f},{2:5.3f},{3:5.3f}\n".format(
