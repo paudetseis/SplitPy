@@ -64,8 +64,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.meta"><code class="docutils literal notranslate"><span class="pre">Split.meta</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.dataZNE"><code class="docutils literal notranslate"><span class="pre">Split.dataZNE</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.dataLQT"><code class="docutils literal notranslate"><span class="pre">Split.dataLQT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.dataZ12"><code class="docutils literal notranslate"><span class="pre">Split.dataZ12</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.add_event"><code class="docutils literal notranslate"><span class="pre">Split.add_event()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.add_data"><code class="docutils literal notranslate"><span class="pre">Split.add_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.download_data"><code class="docutils literal notranslate"><span class="pre">Split.download_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.rotate"><code class="docutils literal notranslate"><span class="pre">Split.rotate()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#splitpy.classes.Split.calc_snr"><code class="docutils literal notranslate"><span class="pre">Split.calc_snr()</span></code></a></li>
@@ -241,10 +241,11 @@ other attributes are added to the object as the analysis proceeds.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="splitpy.classes.Split.sta">
 <span class="sig-name descname"><span class="pre">sta</span></span><a class="headerlink" href="#splitpy.classes.Split.sta" title="Link to this definition"></a></dt>
-<dd><p>Object containing station information - from <code class="xref py py-mod docutils literal notranslate"><span class="pre">stdb</span></code> database.</p>
+<dd><p>Object containing station information
+from a <code class="xref py py-mod docutils literal notranslate"><span class="pre">stdb</span></code> database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>object</p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">StDbElement</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -263,10 +264,10 @@ other attributes are added to the object as the analysis proceeds.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="splitpy.classes.Split.dataZNE">
 <span class="sig-name descname"><span class="pre">dataZNE</span></span><a class="headerlink" href="#splitpy.classes.Split.dataZNE" title="Link to this definition"></a></dt>
-<dd><p>Object containing raw trace data in <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> format</p>
+<dd><p>Object containing raw ZNE trace data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -274,10 +275,22 @@ other attributes are added to the object as the analysis proceeds.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="splitpy.classes.Split.dataLQT">
 <span class="sig-name descname"><span class="pre">dataLQT</span></span><a class="headerlink" href="#splitpy.classes.Split.dataLQT" title="Link to this definition"></a></dt>
-<dd><p>Object containing rotated trace data in <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> format</p>
+<dd><p>Object containing rotated trace data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Data</span></code></p>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="splitpy.classes.Split.dataZ12">
+<span class="sig-name descname"><span class="pre">dataZ12</span></span><a class="headerlink" href="#splitpy.classes.Split.dataZ12" title="Link to this definition"></a></dt>
+<dd><p>Object containing (resampled) Z12 trace data
+(for un-oriented data; optional)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></p>
 </dd>
 </dl>
 </dd></dl>
@@ -294,43 +307,10 @@ other attributes are added to the object as the analysis proceeds.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="splitpy.classes.Split.add_data">
-<span class="sig-name descname"><span class="pre">add_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_sr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.add_data" title="Link to this definition"></a></dt>
-<dd><p>Adds stream as object attribute</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>stream</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code>) – Stream container for NEZ seismograms</p></li>
-<li><p><strong>returned</strong> (<em>bool</em>) – Whether or not to return the <code class="docutils literal notranslate"><span class="pre">accept</span></code> attribute</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">dataZNE</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
-<dd><p>Stream container for NEZ seismograms</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>accept</strong> – Whether or not the object is accepted for further analysis</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="splitpy.classes.Split.download_data">
 <span class="sig-name descname"><span class="pre">download_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_sr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">120.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returned</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.classes.Split.download_data" title="Link to this definition"></a></dt>
 <dd><p>Downloads seismograms based on event origin time and
-P phase arrival and adds as object attribute.</p>
+P phase arrival and adds as object attributes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -350,29 +330,6 @@ velocity (m/s) using obspy.core.trace.Trace.remove_response()</p></li>
 <dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="id1">
-<span class="sig-name descname"><span class="pre">dataZNE</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
-<dd><p>Stream containing ZNE <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> objects</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="splitpy.classes.Split.dataZ12">
-<span class="sig-name descname"><span class="pre">dataZ12</span></span><a class="headerlink" href="#splitpy.classes.Split.dataZ12" title="Link to this definition"></a></dt>
-<dd><p>Stream containing Z12 <code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code> objects
-(for un-oriented data)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Stream</span></code></p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="py method">
@@ -388,12 +345,6 @@ is used for the rotation <code class="docutils literal notranslate"><span class=
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>align</strong> (<em>str</em>) – Alignment of coordinate system for rotation
 (‘ZNE’ or ‘LQT’)</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>rotated</strong> – Whether or not the object has been rotated</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1223,17 +1174,17 @@ Azimuth of fast axis (deg)</p></li>
 <dt class="sig sig-object py" id="splitpy.calc.split_dof">
 <span class="sig-prename descclassname"><span class="pre">splitpy.calc.</span></span><span class="sig-name descname"><span class="pre">split_dof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_dof" title="Link to this definition"></a></dt>
 <dd><p>Determines the degrees of freedom to calculate the
-confidence region of the misfit function</p>
+confidence region of the misfit function.
+From Walsh, JGR, (2013)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>tr</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Seismogram</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>dof</strong> (<em>float</em>) – Degrees of freedom</p></li>
-<li><p><em>From Walsh, JGR, 2013</em></p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>dof</strong> – Degrees of freedom</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1314,7 +1265,7 @@ a given confidence level q</p>
 <li><p><strong>maxdt</strong> (<em>float</em>) – Maximum delay time considered in grid search (sec)</p></li>
 <li><p><strong>ddt</strong> (<em>float</em>) – Delay time interval in grid search (sec)</p></li>
 <li><p><strong>dphi</strong> (<em>float</em>) – Angular interval in grid search (deg)</p></li>
-<li><p><strong>n</strong> (<em>int</em>) – Number of measurement</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of measurements</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1353,7 +1304,7 @@ a given confidence level q</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="splitpy.utils.download_data">
-<span class="sig-prename descclassname"><span class="pre">splitpy.utils.</span></span><span class="sig-name descname"><span class="pre">download_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">5,</span> <span class="pre">36,</span> <span class="pre">36,</span> <span class="pre">224307)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">5,</span> <span class="pre">36,</span> <span class="pre">36,</span> <span class="pre">224314)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_sr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zcomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.download_data" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">splitpy.utils.</span></span><span class="sig-name descname"><span class="pre">download_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">5,</span> <span class="pre">56,</span> <span class="pre">53,</span> <span class="pre">526492)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">5,</span> <span class="pre">56,</span> <span class="pre">53,</span> <span class="pre">526499)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_sr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zcomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.download_data" title="Link to this definition"></a></dt>
 <dd><p>Function to build a stream object for a seismogram in a given time window
 by getting data from a client object, either from a local SDS archive or
 from an FDSN web-service. The function performs sanity checks for
