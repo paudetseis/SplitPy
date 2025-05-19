@@ -186,22 +186,6 @@ def get_arguments_calc_auto(argv=None):
         "SAC files. Local archive files must have extensions of " +
         "'.SAC'  or '.MSEED'. These are case dependent, so specify " +
         "the correct case here.")
-    # DataGroup.add_argument(
-    #     "--no-data-zero",
-    #     action="store_true",
-    #     dest="ndval",
-    #     default=False,
-    #     help="Specify to force missing data to be set as zero, rather " +
-    #     "than default behaviour which sets to nan.")
-    # DataGroup.add_argument(
-    #     "--no-local-net",
-    #     action="store_false",
-    #     dest="useNet",
-    #     default=True,
-    #     help="Specify to prevent using the Network code in the " +
-    #     "search for local data (sometimes for CN stations " +
-    #     "the dictionary name for a station may disagree with that " +
-    #     "in the filename. [Default Network used]")
 
     # Constants Settings
     ConstGroup = parser.add_argument_group(

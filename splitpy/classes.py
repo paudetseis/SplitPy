@@ -254,16 +254,6 @@ class Split(object):
 
     def __init__(self, sta, zcomp='Z'):
 
-        # # Load example data if initializing empty object
-        # if sta == 'demo' or sta == 'Demo':
-        #     print("Uploading demo data - station NY.MMPY")
-        #     import os
-        #     import pickle
-        #     sta = pickle.load(
-        #         open(os.path.join(
-        #             os.path.dirname(__file__),
-        #             "examples/data", "MMPY.pkl"), 'rb'))['NY.MMPY']
-
         # Attributes from parameters
         self.sta = sta
 
@@ -289,18 +279,6 @@ class Split(object):
         from obspy.geodetics import kilometer2degrees as k2d
         from obspy.taup import TauPyModel
         from obspy.core.event.event import Event
-
-        # if event == 'demo' or event == 'Demo':
-        #     from obspy.clients.fdsn import Client
-        #     from obspy.core import UTCDateTime
-        #     client = Client()
-        #     # Get catalogue using deployment start and end
-        #     event = client.get_events(
-        #         starttime=UTCDateTime('2015-07-03T06:00:00'),
-        #         endtime=UTCDateTime('2015-07-03T07:00:00'),
-        #         minmagnitude=6.0,
-        #         maxmagnitude=6.5)[0]
-        #     print(event.short_str())
 
         if not isinstance(event, Event):
             raise(Exception("Event has incorrect type"))
@@ -341,16 +319,6 @@ class Split(object):
 
         if not self.meta.accept:
             return
-
-        # # Load demo data
-        # if stream == 'demo' or stream == 'Demo':
-        #     import os
-        #     import pickle
-        #     file = open(os.path.join(
-        #         os.path.dirname(__file__),
-        #         "examples/data", "ZNE_Data.pkl"), "rb")
-        #     stream = pickle.load(file)
-        #     print(stream)
 
         if not isinstance(stream, Stream):
             raise Exception("Event has incorrect type")
