@@ -1271,7 +1271,7 @@ a given confidence interval q</p>
 <dt class="sig sig-object py" id="splitpy.calc.split_errorRC">
 <span class="sig-prename descclassname"><span class="pre">splitpy.calc.</span></span><span class="sig-name descname"><span class="pre">split_errorRC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Emat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dphi</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_errorRC" title="Link to this definition"></a></dt>
 <dd><p>Calculates error bars based on a F-test and
-a given confidence interval q.</p>
+a given confidence level q.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This version uses a Fisher transformation for
@@ -1305,7 +1305,7 @@ correlation-type misfit.</p>
 <dt class="sig sig-object py" id="splitpy.calc.split_error_average">
 <span class="sig-prename descclassname"><span class="pre">splitpy.calc.</span></span><span class="sig-name descname"><span class="pre">split_error_average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Emat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxdt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dphi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.calc.split_error_average" title="Link to this definition"></a></dt>
 <dd><p>Calculate error bars based on a F-test and
-a given confidence interval q</p>
+a given confidence level q</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1314,6 +1314,7 @@ a given confidence interval q</p>
 <li><p><strong>maxdt</strong> (<em>float</em>) – Maximum delay time considered in grid search (sec)</p></li>
 <li><p><strong>ddt</strong> (<em>float</em>) – Delay time interval in grid search (sec)</p></li>
 <li><p><strong>dphi</strong> (<em>float</em>) – Angular interval in grid search (deg)</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Number of measurement</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1334,11 +1335,25 @@ a given confidence interval q</p>
 <dt class="sig sig-object py" id="splitpy.utils.traceshift">
 <span class="sig-prename descclassname"><span class="pre">splitpy.utils.</span></span><span class="sig-name descname"><span class="pre">traceshift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trace</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.traceshift" title="Link to this definition"></a></dt>
 <dd><p>Function to shift traces in time given travel time</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trace</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code>) – Seismogram</p></li>
+<li><p><strong>tt</strong> (<em>float</em>) – Time delay (sec)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rtrace</strong> – Shifted copy of the input trace</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Trace</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="splitpy.utils.download_data">
-<span class="sig-prename descclassname"><span class="pre">splitpy.utils.</span></span><span class="sig-name descname"><span class="pre">download_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">4,</span> <span class="pre">23,</span> <span class="pre">16,</span> <span class="pre">711530)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">4,</span> <span class="pre">23,</span> <span class="pre">16,</span> <span class="pre">711536)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_sr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zcomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.download_data" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">splitpy.utils.</span></span><span class="sig-name descname"><span class="pre">download_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">client</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">5,</span> <span class="pre">36,</span> <span class="pre">36,</span> <span class="pre">224307)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">UTCDateTime(2025,</span> <span class="pre">5,</span> <span class="pre">19,</span> <span class="pre">5,</span> <span class="pre">36,</span> <span class="pre">36,</span> <span class="pre">224314)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_sr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_response</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zcomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Z'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#splitpy.utils.download_data" title="Link to this definition"></a></dt>
 <dd><p>Function to build a stream object for a seismogram in a given time window
 by getting data from a client object, either from a local SDS archive or
 from an FDSN web-service. The function performs sanity checks for
