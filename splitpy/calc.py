@@ -358,7 +358,8 @@ def tshift(trace, tt):
 def split_dof(tr):
     """
     Determines the degrees of freedom to calculate the
-    confidence region of the misfit function
+    confidence region of the misfit function. 
+    From Walsh, JGR, (2013)
 
     Parameters
     ----------
@@ -369,8 +370,6 @@ def split_dof(tr):
     -------
     dof : float
         Degrees of freedom
-
-    From Walsh, JGR, 2013
 
     """
 
@@ -558,7 +557,7 @@ def split_error_average(q, Emat, maxdt, ddt, dphi, n):
     dphi : float
         Angular interval in grid search (deg)
     n : int
-        Number of measurement
+        Number of measurements
 
     Returns
     -------
