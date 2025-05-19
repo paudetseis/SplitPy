@@ -104,18 +104,18 @@ def get_arguments_calc_auto(argv=None):
         help="Analyze data for shear-wave splitting. [Default saves data "+
         "to folders for subsequent analysis]")
     parser.add_argument(
-        "--plot-diagnostic",
-        action="store_true",
-        dest="diagplot",
-        default=False,
-        help="Plot diagnostic window at end of process. [Default False]")
-    parser.add_argument(
         "--recalc",
         action="store_true",
         dest="recalc",
         default=False,
         help="Re-calculate estimates and overwrite existing splitting "+
         "results without re-downloading data. [Default False]")
+    parser.add_argument(
+        "--plot-diagnostic",
+        action="store_true",
+        dest="diagplot",
+        default=False,
+        help="Plot diagnostic window at end of process. [Default False]")
 
     # Server Settings
     ServerGroup = parser.add_argument_group(
