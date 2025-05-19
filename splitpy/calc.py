@@ -436,7 +436,7 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
         dof = 3
         print(
             "Degrees of freedom < 3. Fixing to DOF = 3, which may " +
-            "result in accurate errors")
+            "result in inaccurate errors")
     n_par = 2
 
     # Error contour
@@ -463,7 +463,7 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
 def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     """
     Calculates error bars based on a F-test and 
-    a given confidence interval q.
+    a given confidence level q.
 
     Note
     ----
@@ -543,7 +543,7 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
 def split_error_average(q, Emat, maxdt, ddt, dphi, n):
     """
     Calculate error bars based on a F-test and 
-    a given confidence interval q
+    a given confidence level q
 
     Parameters
     ----------
@@ -557,6 +557,8 @@ def split_error_average(q, Emat, maxdt, ddt, dphi, n):
         Delay time interval in grid search (sec)
     dphi : float
         Angular interval in grid search (deg)
+    n : int
+        Number of measurement
 
     Returns
     -------
