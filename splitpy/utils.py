@@ -15,6 +15,18 @@ def traceshift(trace, tt):
     """
     Function to shift traces in time given travel time
 
+    Parameters
+    ----------
+    trace : :class:`~obspy.core.Trace`
+        Seismogram 
+    tt : float
+        Time delay (sec)
+
+    Returns
+    -------
+    rtrace : :class:`~obspy.core.Trace`
+        Shifted copy of the input trace
+
     """
 
     # Define frequencies
@@ -81,10 +93,6 @@ def download_data(client=None, sta=None, start=UTCDateTime(),
         Trace of Vertical component of motion
 
     """
-
-    # # Output
-    # print(("*     {0:s}.{1:2s} - ZNE:".format(sta.station,
-    #                                           sta.channel.upper())))
 
     for loc in sta.location:
 

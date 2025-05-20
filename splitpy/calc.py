@@ -21,7 +21,9 @@
 # SOFTWARE.
 
 # -*- coding: utf-8 -*-
+import copy
 import numpy as np
+from scipy import stats
 from obspy.core import Trace, Stream
 from numpy.linalg import inv
 
@@ -321,7 +323,6 @@ def split_RotCorr(trQ, trT, baz, t1, t2, maxdt, ddt, dphi):
     return Cmap, trQ_c, trT_c, trFast, trSlow, \
         phiRC, dtRC, phiRC_max
 
-
 def tshift(trace, tt):
     """
     Shifts a :class:`~obspy.core.Trace` object
@@ -357,7 +358,8 @@ def tshift(trace, tt):
 def split_dof(tr):
     """
     Determines the degrees of freedom to calculate the
-    confidence region of the misfit function
+    confidence region of the misfit function. 
+    From Walsh, JGR, (2013)
 
     Parameters
     ----------
@@ -368,8 +370,6 @@ def split_dof(tr):
     -------
     dof : float
         Degrees of freedom
-
-    From Walsh, JGR, 2013
 
     """
 
@@ -421,8 +421,6 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
 
     """
 
-    from scipy import stats
-
     # Bounds on search
     phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
     dtt = np.arange(0., maxdt, ddt)
@@ -437,17 +435,21 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
         dof = 3
         print(
             "Degrees of freedom < 3. Fixing to DOF = 3, which may " +
-            "result in accurate errors")
+            "result in inaccurate errors")
     n_par = 2
 
     # Error contour
     vmin = Emat.min()
-    vmax = Emat.max()
     err_contour = vmin*(1. + n_par/(dof - n_par) *
                         stats.f.ppf(1. - q, n_par, dof - n_par))
 
+    # Roll copy of Emat to center
+    ind = np.where(Emat == Emat.min())
+    ind_phi = ind[0][0]
+    E2 = np.roll(Emat, len(phi)//2-ind_phi, axis=0)
+
     # Estimate uncertainty (q confidence interval)
-    err = np.where(Emat < err_contour)
+    err = np.where(E2 < err_contour)
     if len(err) == 0:
         return False, False, False
     err_phi = max(
@@ -460,7 +462,7 @@ def split_errorSC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
 def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     """
     Calculates error bars based on a F-test and 
-    a given confidence interval q.
+    a given confidence level q.
 
     Note
     ----
@@ -496,7 +498,6 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
         Error contour for plotting
 
     """
-    from scipy import stats
 
     phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
     dtt = np.arange(0., maxdt, ddt)
@@ -525,8 +526,76 @@ def split_errorRC(tr, t1, t2, q, Emat, maxdt, ddt, dphi):
     # Back transformation
     err_contour = np.tanh(zrr_contour)
 
+    # Roll copy of Emat to center
+    ind = np.where(Emat == Emat.min())
+    ind_phi = ind[0][0]
+    E2 = np.roll(Emat, len(phi)//2-ind_phi, axis=0)
+
     # Estimate uncertainty (q confidence interval)
-    err = np.where(Emat < err_contour)
+    err = np.where(E2 < err_contour)
+    err_phi = max(
+        0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
+    err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)
+
+    return err_dtt, err_phi, err_contour
+
+def split_error_average(q, Emat, maxdt, ddt, dphi, n):
+    """
+    Calculate error bars based on a F-test and 
+    a given confidence level q
+
+    Parameters
+    ----------
+    q : float
+        Confidence level
+    Emat : :class:`~numpy.ndarray`
+        Error surface matrix
+    maxdt : float
+        Maximum delay time considered in grid search (sec)
+    ddt : float
+        Delay time interval in grid search (sec)
+    dphi : float
+        Angular interval in grid search (deg)
+    n : int
+        Number of measurements
+
+    Returns
+    -------
+    err_dtt : float
+        Error in dt estimate (sec)
+    err_phi : float
+        Error in phi estimate (degrees)
+    err_contour : :class:`~numpy.ndarray`
+        Error contour for plotting
+
+    """
+
+    # Bounds on search
+    phi = np.arange(-90.0, 90.0, dphi)*np.pi/180.
+    dtt = np.arange(0., maxdt, ddt)
+
+    # Get degrees of freedom
+    dof = 10*n # To be conservative - see Frederiksen et al. (2025)
+    n_par = 2
+
+    # Error contour
+    Emin = Emat.min()
+    if Emin < 0:
+        err_contour = Emin*(1. - n_par/(dof - n_par) *
+                            stats.f.ppf(1. - q, n_par, dof - n_par))
+    else:
+        err_contour = Emin*(1. + n_par/(dof - n_par) *
+                            stats.f.ppf(1. - q, n_par, dof - n_par))
+
+    # Roll copy of Emat to center
+    ind = np.where(Emat == Emat.min())
+    ind_phi = ind[0][0]
+    E2 = np.roll(Emat, len(phi)//2-ind_phi, axis=0)
+
+    # Estimate uncertainty (q confidence interval)
+    err = np.where(E2 < err_contour)
+    if len(err) == 0:
+        return False, False, False
     err_phi = max(
         0.25*(phi[max(err[0])] - phi[min(err[0])])*180./np.pi, 0.25*dphi)
     err_dtt = max(0.25*(dtt[max(err[1])] - dtt[min(err[1])]), 0.25*ddt)

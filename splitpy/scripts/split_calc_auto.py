@@ -88,9 +88,7 @@ def get_arguments_calc_auto(argv=None):
         default=False,
         help="Force the overwriting of pre-existing Split results. " +
         "Default behaviour prompts for those that " +
-        "already exist. Selecting overwrite and skip (ie, both flags) " +
-        "negate each other, and both are set to " +
-        "false (every repeat is prompted). [Default False]")
+        "already exist. [Default False]")
     parser.add_argument(
         "--zcomp", 
         dest="zcomp",
@@ -99,16 +97,6 @@ def get_arguments_calc_auto(argv=None):
         help="Specify the Vertical Component Channel Identifier. "+
         "[Default Z].")
     parser.add_argument(
-        "--skip-existing",
-        action="store_true",
-        dest="skip",
-        default=False,
-        help="Skip any event for which existing splitting results are " +
-        "saved to disk. Default behaviour prompts for " +
-        "each event. Selecting skip and overwrite (ie, both flags) " +
-        "negate each other, and both are set to " +
-        "False (every repeat is prompted). [Default False]")
-    parser.add_argument(
         "--calc",
         action="store_true",
         dest="calc",
@@ -116,18 +104,18 @@ def get_arguments_calc_auto(argv=None):
         help="Analyze data for shear-wave splitting. [Default saves data "+
         "to folders for subsequent analysis]")
     parser.add_argument(
-        "--plot-diagnostic",
-        action="store_true",
-        dest="diagplot",
-        default=False,
-        help="Plot diagnostic window at end of process. [Default False]")
-    parser.add_argument(
         "--recalc",
         action="store_true",
         dest="recalc",
         default=False,
         help="Re-calculate estimates and overwrite existing splitting "+
         "results without re-downloading data. [Default False]")
+    parser.add_argument(
+        "--plot-diagnostic",
+        action="store_true",
+        dest="diagplot",
+        default=False,
+        help="Plot diagnostic window at end of process. [Default False]")
 
     # Server Settings
     ServerGroup = parser.add_argument_group(
@@ -198,22 +186,6 @@ def get_arguments_calc_auto(argv=None):
         "SAC files. Local archive files must have extensions of " +
         "'.SAC'  or '.MSEED'. These are case dependent, so specify " +
         "the correct case here.")
-    # DataGroup.add_argument(
-    #     "--no-data-zero",
-    #     action="store_true",
-    #     dest="ndval",
-    #     default=False,
-    #     help="Specify to force missing data to be set as zero, rather " +
-    #     "than default behaviour which sets to nan.")
-    # DataGroup.add_argument(
-    #     "--no-local-net",
-    #     action="store_false",
-    #     dest="useNet",
-    #     default=True,
-    #     help="Specify to prevent using the Network code in the " +
-    #     "search for local data (sometimes for CN stations " +
-    #     "the dictionary name for a station may disagree with that " +
-    #     "in the filename. [Default Network used]")
 
     # Constants Settings
     ConstGroup = parser.add_argument_group(
@@ -417,11 +389,6 @@ def get_arguments_calc_auto(argv=None):
                 args.userauth = tt
         else:
             args.userauth = [None, None]
-
-    # Check existing file behaviour
-    if args.skip and args.ovr:
-        args.skip = False
-        args.ovr = False
 
     # Check Datatype specification
     if args.dtype.upper() not in ['MSEED', 'SAC']:
@@ -670,14 +637,11 @@ def main(args=None):
                     if np.sum([file.exists() for file in
                                [ZNEfile, metafile, stafile]]) < 3:
                         continue
-                    sta = pickle.load(open(stafile, "rb"))
-                    split = Split(sta)
-                    meta = pickle.load(open(metafile, "rb"))
-                    split.meta = meta
                     dataZNE = pickle.load(open(ZNEfile, "rb"))
                     split.dataZNE = dataZNE
 
                     # Rotate from ZNE to 'LQT'
+                    split.meta.rotated = False
                     split.rotate(align='LQT')
 
                     # Filter rotated traces
@@ -749,7 +713,11 @@ def main(args=None):
                 if args.calc or args.recalc:
 
                     # Analyze
-                    split.analyze(verbose=args.verb)
+                    split.analyze(
+                        maxdt=args.maxdt,
+                        ddt=args.ddt,
+                        dphi=args.dphi,
+                        verbose=args.verb)
 
                     # Continue if problem with analysis
                     if split.RC_res.edtt is None or split.SC_res.edtt is None:

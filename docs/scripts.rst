@@ -71,13 +71,10 @@ Usage
                             negate each other, and both are set to false (every
                             repeat is prompted). [Default False]
       --zcomp ZCOMP         Specify the Vertical Component Channel Identifier. [Default Z].
-      --skip-existing       Skip any event for which existing splitting results
-                            are saved to disk. Default behaviour prompts for each
-                            event. Selecting skip and overwrite (ie, both flags)
-                            negate each other, and both are set to False (every
-                            repeat is prompted). [Default False]
       --calc                Analyze data for shear-wave splitting. [Default saves
                             data to folders for subsequent analysis]
+      --recalc              Re-calculate estimates and overwrite existing splitting results
+                            without re-downloading data. [Default False]
       --plot-diagnostic
                             Plot diagnostic window at end of process. [Default
                             False]
@@ -321,9 +318,3 @@ Usage
       --no-fair      Specify to exclude 'Fair' measurements from the average [Default Good +
                      Fair]
       --poor         Specify to include 'Poor' measurements in the average [Default No Poors]
-
-    Split Type Settings:
-      Settings to Select which Split types are included in the selection.
-
-      --RC-only      Specify to only include RC splits in the average. [Default RC + SC]
-      --SC-only      Specify to only include SC splits in the average. [Default RC + SC]

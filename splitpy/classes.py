@@ -241,28 +241,22 @@ class Split(object):
 
     Attributes
     ----------
-    sta : object
-        Object containing station information - from :mod:`~stdb` database.
+    sta : :class:`~stdb.StDbElement`
+        Object containing station information 
+        from a :mod:`~stdb` database.
     meta : :class:`~splitpy.classes.Meta`
         Object of metadata information for single event.
-    dataZNE : :class:`~splitpy.classes.Data`
-        Object containing raw trace data in :class:`~obspy.core.Trace` format
-    dataLQT : :class:`~splitpy.classes.Data`
-        Object containing rotated trace data in :class:`~obspy.core.Trace` format
+    dataZNE : :class:`~obspy.core.Stream`
+        Object containing raw ZNE trace data
+    dataLQT : :class:`~obspy.core.Stream`
+        Object containing rotated trace data
+    dataZ12 : :class:`~obspy.core.Stream`
+        Object containing (resampled) Z12 trace data
+        (for un-oriented data; optional)
 
     """
 
     def __init__(self, sta, zcomp='Z'):
-
-        # # Load example data if initializing empty object
-        # if sta == 'demo' or sta == 'Demo':
-        #     print("Uploading demo data - station NY.MMPY")
-        #     import os
-        #     import pickle
-        #     sta = pickle.load(
-        #         open(os.path.join(
-        #             os.path.dirname(__file__),
-        #             "examples/data", "MMPY.pkl"), 'rb'))['NY.MMPY']
 
         # Attributes from parameters
         self.sta = sta
@@ -290,18 +284,6 @@ class Split(object):
         from obspy.taup import TauPyModel
         from obspy.core.event.event import Event
 
-        # if event == 'demo' or event == 'Demo':
-        #     from obspy.clients.fdsn import Client
-        #     from obspy.core import UTCDateTime
-        #     client = Client()
-        #     # Get catalogue using deployment start and end
-        #     event = client.get_events(
-        #         starttime=UTCDateTime('2015-07-03T06:00:00'),
-        #         endtime=UTCDateTime('2015-07-03T07:00:00'),
-        #         minmagnitude=6.0,
-        #         maxmagnitude=6.5)[0]
-        #     print(event.short_str())
-
         if not isinstance(event, Event):
             raise(Exception("Event has incorrect type"))
 
@@ -313,79 +295,12 @@ class Split(object):
         if returned:
             return self.meta.accept
 
-    def add_data(self, stream, returned=False, new_sr=5.):
-        """
-        Adds stream as object attribute
-
-        Parameters
-        ----------
-        stream : :class:`~obspy.core.Stream`
-            Stream container for NEZ seismograms
-        returned : bool
-            Whether or not to return the ``accept`` attribute
-
-        Attributes
-        ----------
-        dataZNE : :class:`~obspy.core.Stream`
-            Stream container for NEZ seismograms
-
-        Returns
-        -------
-        accept : bool
-            Whether or not the object is accepted for further analysis
-
-        """
-
-        if not self.meta:
-            raise Exception("No meta data available - aborting")
-
-        if not self.meta.accept:
-            return
-
-        # # Load demo data
-        # if stream == 'demo' or stream == 'Demo':
-        #     import os
-        #     import pickle
-        #     file = open(os.path.join(
-        #         os.path.dirname(__file__),
-        #         "examples/data", "ZNE_Data.pkl"), "rb")
-        #     stream = pickle.load(file)
-        #     print(stream)
-
-        if not isinstance(stream, Stream):
-            raise Exception("Event has incorrect type")
-
-        try:
-            self.dataZNE = stream
-
-            if not np.allclose(
-                    [t.stats.npts for t in stream[1:]], stream[0].stats.npts):
-                self.meta.accept = False
-
-            # Filter Traces
-            if not stream[0].stats.sampling_rate == new_sr:
-                self.dataZNE.filter(
-                    'lowpass',
-                    freq=0.5*new_sr,
-                    corners=2,
-                    zerophase=True)
-                self.dataZNE.resample(
-                    new_sr,
-                    no_filter=True)
-
-        except Exception as e:
-            print("Error: Not all channels are available")
-            self.meta.accept = False
-
-        if returned:
-            return self.meta.accept
-
     def download_data(self, client, new_sr=5., dts=120.,
                       returned=False, verbose=False,
                       remove_response=False):
         """
         Downloads seismograms based on event origin time and
-        P phase arrival and adds as object attribute.
+        P phase arrival and adds as object attributes.
 
         Parameters
         ----------
@@ -407,14 +322,6 @@ class Split(object):
         -------
         accept : bool
             Whether or not the object is accepted for further analysis
-
-        Attributes
-        ----------
-        dataZNE : :class:`~obspy.core.Stream`
-            Stream containing ZNE :class:`~obspy.core.Trace` objects
-        dataZ12 : :class:`~obspy.core.Stream`
-            Stream containing Z12 :class:`~obspy.core.Trace` objects
-            (for un-oriented data)
 
         """
 
@@ -498,11 +405,6 @@ class Split(object):
         align : str
             Alignment of coordinate system for rotation
             ('ZNE' or 'LQT')
-
-        Returns
-        -------
-        rotated : bool
-            Whether or not the object has been rotated
 
         """
 
@@ -623,7 +525,7 @@ class Split(object):
         nrms = np.sqrt(np.mean(np.square(trNzeT.data)))
         self.meta.snrt = 10*np.log10(srms*srms/nrms/nrms)
 
-    def analyze(self, t1=None, t2=None, verbose=False):
+    def analyze(self, t1=None, t2=None, maxdt=4., ddt=0.1, dphi=1., verbose=False):
         """
         Calculates the shear-wave splitting parameters based
         on two alternative method: the Rotation-Correlation (RC)
@@ -648,6 +550,10 @@ class Split(object):
 
         """
 
+        self.meta.maxdt = maxdt
+        self.meta.ddt = ddt
+        self.meta.dphi = dphi
+
         if t1 is None and t2 is None:
             t1 = self.meta.time + self.meta.ttime - 5.
             t2 = self.meta.time + self.meta.ttime + 25.
@@ -662,12 +568,12 @@ class Split(object):
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
             calc.split_RotCorr(
                 trQ, trT, self.meta.baz, t1, t2,
-                self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+                maxdt, ddt, dphi)
 
         # Calculate error
         edtt, ephi, errc = calc.split_errorRC(
             trT_c, t1, t2, 0.05, Emat,
-            self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+            maxdt, ddt, dphi)
 
         # Store dictionary as attribute
         self.RC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
@@ -679,12 +585,12 @@ class Split(object):
         Emat, trQ_c, trT_c, trFast, trSlow, phi, dtt, phi_min = \
             calc.split_SilverChan(
                 trQ, trT, self.meta.baz, t1, t2,
-                self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+                maxdt, ddt, dphi)
 
         # Calculate errors
         edtt, ephi, errc = calc.split_errorSC(
             trT_c, t1, t2, 0.05, Emat,
-            self.meta.maxdt, self.meta.ddt, self.meta.dphi)
+            maxdt, ddt, dphi)
 
         self.SC_res = Result(Emat, trQ_c, trT_c, trFast, trSlow,
                              phi, dtt, phi_min, edtt, ephi, errc)
@@ -1486,8 +1392,10 @@ class DiagPlot(object):
 
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
-        E2 = np.roll(self.split.RC_res.Emat, int(
-            self.split.RC_res.phi - self.split.RC_res.phi_min), axis=0)
+        E2 = np.roll(
+            self.split.RC_res.Emat,
+            int((self.split.RC_res.phi - self.split.RC_res.phi_min)/self.split.meta.dphi),
+            axis=0)
 
         Emin = self.split.RC_res.Emat.min()
         Emax = self.split.RC_res.Emat.max()
@@ -1545,8 +1453,10 @@ class DiagPlot(object):
         extent = [phi.min(), phi.max(), dt.min(), dt.max()]
         X, Y = np.meshgrid(dt, phi)
 
-        E2 = np.roll(self.split.SC_res.Emat, int(
-            self.split.SC_res.phi-self.split.SC_res.phi_min), axis=0)
+        E2 = np.roll(
+            self.split.SC_res.Emat,
+            int((self.split.SC_res.phi-self.split.SC_res.phi_min)/self.split.meta.dphi),
+            axis=0)
 
         Emin = self.split.SC_res.Emat.min()
         Emax = self.split.SC_res.Emat.max()

@@ -49,12 +49,11 @@ seismic data suitable for shear-wave splitting analysis.
 
 .. code-block::
 
-   $ split_calc_auto --keys=NY.TGTN --local-data=/mnt/datadisk/DaySac/ --start=2020-01-01 --end=2020-05-20 TGTN.pkl
+   $ split_calc_auto --keys=NY.TGTN --start=2020-01-01 --end=2020-05-20 TGTN.pkl
 
 This uses all default settings for window lengths, magnitude criteria, etc. 
 In this example, the program will search on the specific data server
-(through ``obspy`` clients) to download the waveforms. In this
-example, only events that occurred between January 1, 2020 and May 20, 2020 will 
+(through ``obspy`` clients) to download the waveforms. Here, only events that occurred between January 1, 2020 and May 20, 2020 will 
 be considered. Based on the criteria specified (see :ref:`splitauto`), seismograms will be 
 downloaded where the minimum SNR threshold is exceeded. All data will be saved in separate 
 time-key folders to ``PATH/NY.TGTN/YYYYMMDD_HRMNSC/*``. 
@@ -334,7 +333,7 @@ can specify to use the ``auto`` results with the argument ``--auto``. The final
 average splits are then saved in a text file for future use.
 
 For example, after running the refined processing for 4 years of data for station
-TGTN (i.e., typing ``split_calc_auto --start=2016-01-01 -V --calc TGTN.pkl``, which will 
+TGTN (i.e., typing ``split_calc_auto --start=2016-01-01 --end=2020-06-01 -V --calc TGTN.pkl``, which will 
 take a long time to run and process all the data), we can visualize the results
 by typing in a terminal:
 
@@ -375,14 +374,35 @@ by typing in a terminal:
           20160527_040843 Good Non-Null -> Retained
           ...
           
-    *** Station Average from 41 measurements ***
-       Loc: -128.2727, 61.5267
-       PHI: -81.802 d +- 3.080
-       DT:    0.921 s +- 0.071
-       Saved to: PLOTS/NY.TGTN_RC-SC_Nons_G-F_results.dat
+    *** Estimates from averaging 41 error surfaces ***
+       PHI (RC):   -84.0 d +/- 3.75
+       DT (RC):      1.1 s +/- 0.08
+       PHI (SC):   -76.0 d +/- 6.75
+       DT (SC):      1.3 s +/- 0.07
+       PHI (mean):   -80.0 d +/- 5.25
+       DT (mean):      1.2 s +/- 0.07
+       Saved to: 
+          RESULTS/NY.TGTN_Nons_G-F_RC_ES_average.dat
+          RESULTS/NY.TGTN_Nons_G-F_SC_ES_average.dat
+    2025-05-19 16:14:07.247 python3.12[48658:4945516] The class 'NSSavePanel' overrides the method identifier.  This method is implemented by class 'NSWindow'
 
-    *** Catalogue of events and results ***
-       Saved to: PLOTS/NY.TGTN_RC-SC_Nons_G-F_events.dat
+    *** Estimates from averaging 41 individual measurements ***
+       PHI (RC):   -79.1 d +/- 17.16
+       DT (RC):      0.9 s +/- 0.38
+       PHI (SC):   -84.4 d +/- 21.77
+       DT (SC):      0.9 s +/- 0.52
+       PHI (mean): -81.8 d +/- 19.5
+       DT (mean):    0.9 s +/- 0.5
+       Saved to: 
+          RESULTS/NY.TGTN_Nons_G-F_RC_ind_average.dat
+          RESULTS/NY.TGTN_Nons_G-F_SC_ind_average.dat
 
-.. figure:: ../splitpy/examples/figures/Figure_3.png
+    *** Catalogue of events and individual results ***
+       Saved to: 
+          RESULTS/NY.TGTN_Nons_G-F_events.dat
+
+.. figure:: ../splitpy/examples/figures/Figure_3a.png
+   :align: center
+
+.. figure:: ../splitpy/examples/figures/Figure_3b.png
    :align: center
