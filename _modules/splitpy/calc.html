@@ -1,0 +1,745 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>splitpy.calc &mdash; SplitPy 0.2.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=37f418d5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SplitPy
+              <img src="../../_static/SplitPy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../links.html">GitHub Repositories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../links.html#references">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../links.html#citing-splitpy">Citing SplitPy</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../splitpy.html">Licence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../splitpy.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../splitpy.html#using-local-data">Using local data</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-splitpy.gui">GUI classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#modules">Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Scripts &amp; Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SplitPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">splitpy.calc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for splitpy.calc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright 2019 Pascal Audet &amp; Andrew Schaeffer</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of SplitPy.</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c1"># all copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">stats</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Trace</span><span class="p">,</span> <span class="n">Stream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">inv</span>
+
+
+<div class="viewcode-block" id="split_SilverChan">
+<a class="viewcode-back" href="../../api.html#splitpy.calc.split_SilverChan">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_SilverChan</span><span class="p">(</span><span class="n">trQ</span><span class="p">,</span> <span class="n">trT</span><span class="p">,</span> <span class="n">baz</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">,</span> <span class="n">dphi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates splitting based on the minimization of energy on </span>
+<span class="sd">    the corrected transverse component (Silver and Chan, 1990)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trQ : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Radial component seismogram</span>
+<span class="sd">    trT : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Tangential component seismogram</span>
+<span class="sd">    baz : float</span>
+<span class="sd">        Back-azimuth - pointing to earthquake from station (degrees)</span>
+<span class="sd">    t1 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        Start time of picking window</span>
+<span class="sd">    t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        End time of picking window</span>
+<span class="sd">    maxdt : float</span>
+<span class="sd">        Maximum delay time considered in grid search (sec)</span>
+<span class="sd">    ddt : float</span>
+<span class="sd">        Delay time interval in grid search (sec)</span>
+<span class="sd">    dphi : float</span>
+<span class="sd">        Angular interval in grid search (deg)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Ematrix : :class:`~numpy.ndarray`</span>
+<span class="sd">        Matrix of T component energy</span>
+<span class="sd">    trQ_c : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected radial component of motion</span>
+<span class="sd">    trT_c : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected tangential component of motion</span>
+<span class="sd">    trFast : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected fast direction of motion</span>
+<span class="sd">    trSlow : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected slow direction of motion\</span>
+<span class="sd">    phiSC : float</span>
+<span class="sd">        Azimuth of fast axis (deg)</span>
+<span class="sd">    dttSC : foat</span>
+<span class="sd">        Delay time between fast and slow axes (sec)</span>
+<span class="sd">    phi_min : float </span>
+<span class="sd">        Azimuth used in plotting routine</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="n">dphi</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span>
+    <span class="n">dtt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">)</span>
+
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)))</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+
+    <span class="n">Ematrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtt</span><span class="p">)))</span>
+
+    <span class="n">trQ_tmp</span> <span class="o">=</span> <span class="n">trQ</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">trT_tmp</span> <span class="o">=</span> <span class="n">trT</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">trQ_tmp</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+    <span class="n">trT_tmp</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+
+    <span class="n">trQ_tmp</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">max_percentage</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;hann&#39;</span><span class="p">)</span>
+    <span class="n">trT_tmp</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">max_percentage</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;hann&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Rotation loop</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)):</span>
+
+        <span class="c1"># Test fast/slow direction</span>
+        <span class="n">FS_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">p</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">trT_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">]))</span>
+
+        <span class="c1"># Compile into traces</span>
+        <span class="n">F0</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+        <span class="n">F1</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+        <span class="c1"># Time shift loop</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dtt</span><span class="p">)):</span>
+
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">dtt</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+            <span class="c1"># Shift by dtt/2. each component (+/-)</span>
+            <span class="n">tmpFast</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">F0</span><span class="p">,</span> <span class="o">-</span><span class="n">shift</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+            <span class="n">tmpSlow</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">F1</span><span class="p">,</span> <span class="n">shift</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+
+            <span class="c1"># Rotate back to Q and T system</span>
+            <span class="n">corrected_QT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                <span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">p</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">tmpFast</span><span class="p">,</span> <span class="n">tmpSlow</span><span class="p">]))</span>
+            <span class="n">trQ_c</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">corrected_QT</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+            <span class="n">trT_c</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">corrected_QT</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+            <span class="c1">#plot_cmp(trQ_c, trT_c,&#39;phi=&#39;+str(phi[p]*180./np.pi)+&#39;dt=&#39;+str(shift))</span>
+
+            <span class="c1"># Energy on transverse component (component 1)</span>
+            <span class="n">Ematrix</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">corrected_QT</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="c1"># Find indices of minimum value of Energy matrix</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Ematrix</span> <span class="o">==</span> <span class="n">Ematrix</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="n">ind_phi</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ind_dtt</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Get best-fit phi and dt</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">dtt</span><span class="p">[</span><span class="n">ind_dtt</span><span class="p">]</span>
+    <span class="n">phiSC_min</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="n">ind_phi</span><span class="p">]</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+    <span class="n">phiSC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">((</span><span class="n">phiSC_min</span> <span class="o">+</span> <span class="n">baz</span><span class="p">),</span> <span class="mf">180.</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">phiSC</span> <span class="o">&gt;</span> <span class="mf">90.</span><span class="p">:</span>
+        <span class="n">phiSC</span> <span class="o">=</span> <span class="n">phiSC</span> <span class="o">-</span> <span class="mf">180.</span>
+
+    <span class="n">FS_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">ind_phi</span><span class="p">]),</span>
+                     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">trT_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">]))</span>
+
+    <span class="n">F0</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">F1</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="n">tmpFast</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">F0</span><span class="p">,</span> <span class="o">-</span><span class="n">shift</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">tmpSlow</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">F1</span><span class="p">,</span> <span class="n">shift</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+
+    <span class="n">corrected_QT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+        <span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">ind_phi</span><span class="p">])),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">tmpFast</span><span class="p">,</span> <span class="n">tmpSlow</span><span class="p">]))</span>
+
+    <span class="n">trQ_c</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">corrected_QT</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">trT_c</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">corrected_QT</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="n">trFast</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tmpFast</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">trSlow</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tmpSlow</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Ematrix</span><span class="p">,</span> <span class="n">trQ_c</span><span class="p">,</span> <span class="n">trT_c</span><span class="p">,</span> <span class="n">trFast</span><span class="p">,</span> <span class="n">trSlow</span><span class="p">,</span> \
+        <span class="n">phiSC</span><span class="p">,</span> <span class="n">shift</span><span class="p">,</span> <span class="n">phiSC_min</span></div>
+
+
+
+<div class="viewcode-block" id="split_RotCorr">
+<a class="viewcode-back" href="../../api.html#splitpy.calc.split_RotCorr">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_RotCorr</span><span class="p">(</span><span class="n">trQ</span><span class="p">,</span> <span class="n">trT</span><span class="p">,</span> <span class="n">baz</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">,</span> <span class="n">dphi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates splitting based on the maximum correlation between corrected </span>
+<span class="sd">    radial and tangential components of motion </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trQ : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Radial component seismogram</span>
+<span class="sd">    trT : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Tangential component seismogram</span>
+<span class="sd">    baz : float</span>
+<span class="sd">        Back-azimuth - pointing to earthquake from station (degrees)</span>
+<span class="sd">    t1 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        Start time of picking window</span>
+<span class="sd">    t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        End time of picking window</span>
+<span class="sd">    maxdt : float</span>
+<span class="sd">        Maximum delay time considered in grid search (sec)</span>
+<span class="sd">    ddt : float</span>
+<span class="sd">        Delay time interval in grid search (sec)</span>
+<span class="sd">    dphi : float</span>
+<span class="sd">        Angular interval in grid search (deg)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Ematrix : :class:`~numpy.ndarray`</span>
+<span class="sd">        Matrix of T component energy</span>
+<span class="sd">    trQ_c : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected radial component of motion</span>
+<span class="sd">    trT_c : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected tangential component of motion</span>
+<span class="sd">    trFast : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected fast direction of motion</span>
+<span class="sd">    trSlow : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of corrected slow direction of motion\</span>
+<span class="sd">    phiSC : float</span>
+<span class="sd">        Azimuth of fast axis (deg)</span>
+<span class="sd">    dttSC : foat</span>
+<span class="sd">        Delay time between fast and slow axes (sec)</span>
+<span class="sd">    phi_min : float </span>
+<span class="sd">        Azimuth used in plotting routine</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="n">dphi</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span>
+    <span class="n">dtt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">)</span>
+
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)))</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">M</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+
+    <span class="n">Cmatrix_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtt</span><span class="p">)))</span>
+    <span class="n">Cmatrix_neg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtt</span><span class="p">)))</span>
+
+    <span class="n">trQ_tmp</span> <span class="o">=</span> <span class="n">trQ</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">trT_tmp</span> <span class="o">=</span> <span class="n">trT</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">trQ_tmp</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+    <span class="n">trT_tmp</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+    <span class="n">npts</span> <span class="o">=</span> <span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span>
+
+    <span class="n">trQ_tmp</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">max_percentage</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;hann&#39;</span><span class="p">)</span>
+    <span class="n">trT_tmp</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span><span class="n">max_percentage</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;hann&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Rotation loop</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)):</span>
+
+        <span class="c1"># Test fast/slow direction</span>
+        <span class="n">FS_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">M</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">p</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">trT_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">]))</span>
+
+        <span class="c1"># Compile into traces</span>
+        <span class="n">F0</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+        <span class="n">F1</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+        <span class="c1"># Cross-correlate Fast with Slow</span>
+        <span class="n">ns0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F0</span><span class="o">.</span><span class="n">data</span><span class="o">*</span><span class="n">F0</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">ns1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F1</span><span class="o">.</span><span class="n">data</span><span class="o">*</span><span class="n">F1</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">ns0</span><span class="o">*</span><span class="n">ns1</span><span class="p">)</span>
+
+        <span class="n">cor</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">correlate</span><span class="p">(</span>
+            <span class="n">F0</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">F1</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;same&#39;</span><span class="p">)</span><span class="o">/</span><span class="n">norm</span><span class="p">),</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+        <span class="c1"># Time shift loop</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dtt</span><span class="p">)):</span>
+
+            <span class="n">shift</span> <span class="o">=</span> <span class="n">dtt</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+
+            <span class="c1"># Shift by dtt each component (+/-)</span>
+            <span class="n">cor_pos</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">cor</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+            <span class="n">cor_neg</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">cor</span><span class="p">,</span> <span class="o">-</span><span class="n">shift</span><span class="p">)</span>
+            <span class="n">Cmatrix_pos</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">cor_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">Cmatrix_neg</span><span class="p">[</span><span class="n">p</span><span class="p">,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">cor_neg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Time shift is positive: fast axis arrives after slow axis</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Cmatrix_pos</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="nb">abs</span><span class="p">(</span><span class="n">Cmatrix_neg</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">():</span>
+
+        <span class="c1"># print &#39;Cmatrix_pos is max&#39;</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Cmatrix_pos</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">Cmatrix_pos</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">Cmatrix_pos</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="nb">abs</span><span class="p">))</span>
+        <span class="n">ind_phi</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ind_dtt</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Get best-fit phi and dt</span>
+        <span class="n">dtRC</span> <span class="o">=</span> <span class="n">dtt</span><span class="p">[</span><span class="n">ind_dtt</span><span class="p">]</span>
+        <span class="n">phiRC_max</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="n">ind_phi</span><span class="p">]</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">phiRC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">((</span><span class="n">phiRC_max</span> <span class="o">+</span> <span class="n">baz</span> <span class="o">-</span> <span class="mf">90.</span><span class="p">),</span> <span class="mf">180.</span><span class="p">)</span>
+        <span class="n">Cmap</span> <span class="o">=</span> <span class="n">Cmatrix_pos</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="n">phiRC_max</span> <span class="o">-</span> <span class="mf">90.</span><span class="p">)</span><span class="o">/</span><span class="mf">180.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">Cmatrix_pos</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">Cmatrix_pos</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="nb">abs</span><span class="p">))</span>
+
+    <span class="c1"># Time shift is negative: fast axis arrives before slow axis</span>
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Cmatrix_neg</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">Cmatrix_neg</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">Cmatrix_neg</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="nb">abs</span><span class="p">))</span>
+        <span class="n">ind_phi</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ind_dtt</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Get best-fit phi and dt</span>
+        <span class="n">dtRC</span> <span class="o">=</span> <span class="n">dtt</span><span class="p">[</span><span class="n">ind_dtt</span><span class="p">]</span>
+        <span class="n">phiRC_max</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="n">ind_phi</span><span class="p">]</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">phiRC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">((</span><span class="n">phiRC_max</span> <span class="o">+</span> <span class="n">baz</span><span class="p">),</span> <span class="mf">180.</span><span class="p">)</span>
+        <span class="n">Cmap</span> <span class="o">=</span> <span class="n">Cmatrix_neg</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="n">phiRC_max</span><span class="p">)</span><span class="o">/</span><span class="mf">180.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">Cmatrix_neg</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">Cmatrix_neg</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="nb">abs</span><span class="p">))</span>
+
+    <span class="n">Cmap</span> <span class="o">=</span> <span class="n">Cmap</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">S</span><span class="p">)</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">dtRC</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">2.</span>
+
+    <span class="k">if</span> <span class="n">phiRC</span> <span class="o">&gt;</span> <span class="mf">90.</span><span class="p">:</span>
+        <span class="n">phiRC</span> <span class="o">=</span> <span class="n">phiRC</span> <span class="o">-</span> <span class="mf">180.</span>
+
+    <span class="n">M2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">M2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">M2</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">M2</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">M2</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+    <span class="n">FS_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">M2</span><span class="p">[:,</span> <span class="p">:]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">trT_tmp</span><span class="o">.</span><span class="n">data</span><span class="p">]))</span>
+
+    <span class="n">F0</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">F1</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">FS_test</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="n">tmpFast</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">F0</span><span class="p">,</span> <span class="n">shift</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+    <span class="n">tmpSlow</span> <span class="o">=</span> <span class="n">tshift</span><span class="p">(</span><span class="n">F1</span><span class="p">,</span> <span class="o">-</span><span class="n">shift</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span>
+
+    <span class="n">trFast</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tmpFast</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">trSlow</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">tmpSlow</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="n">corrected_QT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+        <span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">M2</span><span class="p">[:,</span> <span class="p">:])),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">tmpFast</span><span class="p">,</span> <span class="n">tmpSlow</span><span class="p">]))</span>
+
+    <span class="n">trQ_c</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">corrected_QT</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trQ_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">trT_c</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">corrected_QT</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="n">trT_tmp</span><span class="o">.</span><span class="n">stats</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Cmap</span><span class="p">,</span> <span class="n">trQ_c</span><span class="p">,</span> <span class="n">trT_c</span><span class="p">,</span> <span class="n">trFast</span><span class="p">,</span> <span class="n">trSlow</span><span class="p">,</span> \
+        <span class="n">phiRC</span><span class="p">,</span> <span class="n">dtRC</span><span class="p">,</span> <span class="n">phiRC_max</span></div>
+
+
+<div class="viewcode-block" id="tshift">
+<a class="viewcode-back" href="../../api.html#splitpy.calc.tshift">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tshift</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">tt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shifts a :class:`~obspy.core.Trace` object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trace : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Seismogram to apply shift</span>
+<span class="sd">    tt : float</span>
+<span class="sd">        Lag time for shifting </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rtrace: :class:`~obspy.core.Trace`</span>
+<span class="sd">        Shifted version of trace</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">nt</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+
+    <span class="n">ftrace</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">freq</span><span class="p">)):</span>
+        <span class="n">ftrace</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ftrace</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">freq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">tt</span><span class="p">)</span>
+
+    <span class="n">rtrace</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">ftrace</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">rtrace</span></div>
+
+
+
+<div class="viewcode-block" id="split_dof">
+<a class="viewcode-back" href="../../api.html#splitpy.calc.split_dof">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_dof</span><span class="p">(</span><span class="n">tr</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determines the degrees of freedom to calculate the</span>
+<span class="sd">    confidence region of the misfit function. </span>
+<span class="sd">    From Walsh, JGR, (2013)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tr : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Seismogram </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dof : float</span>
+<span class="sd">        Degrees of freedom</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">E2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">F</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">E2</span> <span class="o">-=</span> <span class="p">(</span><span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">F</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="n">E4</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">F</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span> <span class="o">+</span> <span class="n">F</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">E4</span> <span class="o">+=</span> <span class="p">(</span><span class="mf">4.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span><span class="o">*</span><span class="n">F</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span>
+
+    <span class="n">dof</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">4.</span><span class="o">*</span><span class="n">E2</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="n">E4</span> <span class="o">-</span> <span class="mf">2.</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dof</span></div>
+
+
+
+<div class="viewcode-block" id="split_errorSC">
+<a class="viewcode-back" href="../../api.html#splitpy.calc.split_errorSC">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_errorSC</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">Emat</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">,</span> <span class="n">dphi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate error bars based on a F-test and </span>
+<span class="sd">    a given confidence interval q</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tr : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Seismogram </span>
+<span class="sd">    t1 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        Start time of picking window</span>
+<span class="sd">    t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        End time of picking window</span>
+<span class="sd">    q : float</span>
+<span class="sd">        Confidence level</span>
+<span class="sd">    Emat : :class:`~numpy.ndarray`</span>
+<span class="sd">        Energy minimization matrix</span>
+<span class="sd">    maxdt : float</span>
+<span class="sd">        Maximum delay time considered in grid search (sec)</span>
+<span class="sd">    ddt : float</span>
+<span class="sd">        Delay time interval in grid search (sec)</span>
+<span class="sd">    dphi : float</span>
+<span class="sd">        Angular interval in grid search (deg)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    err_dtt : float</span>
+<span class="sd">        Error in dt estimate (sec)</span>
+<span class="sd">    err_phi : float</span>
+<span class="sd">        Error in phi estimate (degrees)</span>
+<span class="sd">    err_contour : :class:`~numpy.ndarray`</span>
+<span class="sd">        Error contour for plotting</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Bounds on search</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="n">dphi</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span>
+    <span class="n">dtt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">)</span>
+
+    <span class="c1"># Copy trace to avoid overriding</span>
+    <span class="n">tr_tmp</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">tr_tmp</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+
+    <span class="c1"># Get degrees of freedom</span>
+    <span class="n">dof</span> <span class="o">=</span> <span class="n">split_dof</span><span class="p">(</span><span class="n">tr_tmp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dof</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">dof</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Degrees of freedom &lt; 3. Fixing to DOF = 3, which may &quot;</span> <span class="o">+</span>
+            <span class="s2">&quot;result in inaccurate errors&quot;</span><span class="p">)</span>
+    <span class="n">n_par</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Error contour</span>
+    <span class="n">vmin</span> <span class="o">=</span> <span class="n">Emat</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">err_contour</span> <span class="o">=</span> <span class="n">vmin</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">n_par</span><span class="o">/</span><span class="p">(</span><span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">)</span> <span class="o">*</span>
+                        <span class="n">stats</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">q</span><span class="p">,</span> <span class="n">n_par</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">))</span>
+
+    <span class="c1"># Roll copy of Emat to center</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Emat</span> <span class="o">==</span> <span class="n">Emat</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="n">ind_phi</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">E2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">Emat</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="o">-</span><span class="n">ind_phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Estimate uncertainty (q confidence interval)</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">E2</span> <span class="o">&lt;</span> <span class="n">err_contour</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="n">err_phi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="mf">0.25</span><span class="o">*</span><span class="p">(</span><span class="n">phi</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">-</span> <span class="n">phi</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">0.25</span><span class="o">*</span><span class="n">dphi</span><span class="p">)</span>
+    <span class="n">err_dtt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.25</span><span class="o">*</span><span class="p">(</span><span class="n">dtt</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">-</span> <span class="n">dtt</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">1</span><span class="p">])]),</span> <span class="mf">0.25</span><span class="o">*</span><span class="n">ddt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">err_dtt</span><span class="p">,</span> <span class="n">err_phi</span><span class="p">,</span> <span class="n">err_contour</span></div>
+
+
+
+<div class="viewcode-block" id="split_errorRC">
+<a class="viewcode-back" href="../../api.html#splitpy.calc.split_errorRC">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_errorRC</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">Emat</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">,</span> <span class="n">dphi</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates error bars based on a F-test and </span>
+<span class="sd">    a given confidence level q.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    This version uses a Fisher transformation for </span>
+<span class="sd">    correlation-type misfit.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tr : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Seismogram </span>
+<span class="sd">    t1 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        Start time of picking window</span>
+<span class="sd">    t2 : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        End time of picking window</span>
+<span class="sd">    q : float</span>
+<span class="sd">        Confidence level</span>
+<span class="sd">    Emat : :class:`~numpy.ndarray`</span>
+<span class="sd">        Energy minimization matrix</span>
+<span class="sd">    maxdt : float</span>
+<span class="sd">        Maximum delay time considered in grid search (sec)</span>
+<span class="sd">    ddt : float</span>
+<span class="sd">        Delay time interval in grid search (sec)</span>
+<span class="sd">    dphi : float</span>
+<span class="sd">        Angular interval in grid search (deg)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    err_dtt : float</span>
+<span class="sd">        Error in dt estimate (sec)</span>
+<span class="sd">    err_phi : float</span>
+<span class="sd">        Error in phi estimate (degrees)</span>
+<span class="sd">    err_contour : :class:`~numpy.ndarray`</span>
+<span class="sd">        Error contour for plotting</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="n">dphi</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span>
+    <span class="n">dtt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">)</span>
+
+    <span class="c1"># Copy trace to avoid overriding</span>
+    <span class="n">tr_tmp</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">tr_tmp</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">)</span>
+
+    <span class="c1"># Get degrees of freedom</span>
+    <span class="n">dof</span> <span class="o">=</span> <span class="n">split_dof</span><span class="p">(</span><span class="n">tr_tmp</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dof</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">dof</span> <span class="o">=</span> <span class="mf">3.01</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Degrees of freedom &lt; 3. Fixing to DOF = 3, which may &quot;</span> <span class="o">+</span>
+            <span class="s2">&quot;result in inaccurate errors&quot;</span><span class="p">)</span>
+    <span class="n">n_par</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Fisher transformation</span>
+    <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctanh</span><span class="p">(</span><span class="n">Emat</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+
+    <span class="c1"># Error contour</span>
+    <span class="n">zrr_contour</span> <span class="o">=</span> <span class="n">vmin</span> <span class="o">+</span> <span class="p">(</span><span class="n">vmin</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">vmin</span><span class="p">)</span><span class="o">*</span><span class="n">n_par</span><span class="o">/</span><span class="p">(</span><span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">)</span> <span class="o">*</span>
+                          <span class="n">stats</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">q</span><span class="p">,</span> <span class="n">n_par</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">))</span> <span class="o">*</span>\
+        <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">dof</span><span class="o">-</span><span class="mi">3</span><span class="p">))</span>
+
+    <span class="c1"># Back transformation</span>
+    <span class="n">err_contour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">zrr_contour</span><span class="p">)</span>
+
+    <span class="c1"># Roll copy of Emat to center</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Emat</span> <span class="o">==</span> <span class="n">Emat</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="n">ind_phi</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">E2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">Emat</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="o">-</span><span class="n">ind_phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Estimate uncertainty (q confidence interval)</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">E2</span> <span class="o">&lt;</span> <span class="n">err_contour</span><span class="p">)</span>
+    <span class="n">err_phi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="mf">0.25</span><span class="o">*</span><span class="p">(</span><span class="n">phi</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">-</span> <span class="n">phi</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">0.25</span><span class="o">*</span><span class="n">dphi</span><span class="p">)</span>
+    <span class="n">err_dtt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.25</span><span class="o">*</span><span class="p">(</span><span class="n">dtt</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">-</span> <span class="n">dtt</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">1</span><span class="p">])]),</span> <span class="mf">0.25</span><span class="o">*</span><span class="n">ddt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">err_dtt</span><span class="p">,</span> <span class="n">err_phi</span><span class="p">,</span> <span class="n">err_contour</span></div>
+
+
+<div class="viewcode-block" id="split_error_average">
+<a class="viewcode-back" href="../../api.html#splitpy.calc.split_error_average">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_error_average</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">Emat</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">,</span> <span class="n">dphi</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate error bars based on a F-test and </span>
+<span class="sd">    a given confidence level q</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    q : float</span>
+<span class="sd">        Confidence level</span>
+<span class="sd">    Emat : :class:`~numpy.ndarray`</span>
+<span class="sd">        Error surface matrix</span>
+<span class="sd">    maxdt : float</span>
+<span class="sd">        Maximum delay time considered in grid search (sec)</span>
+<span class="sd">    ddt : float</span>
+<span class="sd">        Delay time interval in grid search (sec)</span>
+<span class="sd">    dphi : float</span>
+<span class="sd">        Angular interval in grid search (deg)</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of measurements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    err_dtt : float</span>
+<span class="sd">        Error in dt estimate (sec)</span>
+<span class="sd">    err_phi : float</span>
+<span class="sd">        Error in phi estimate (degrees)</span>
+<span class="sd">    err_contour : :class:`~numpy.ndarray`</span>
+<span class="sd">        Error contour for plotting</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Bounds on search</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">90.0</span><span class="p">,</span> <span class="n">dphi</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mf">180.</span>
+    <span class="n">dtt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">maxdt</span><span class="p">,</span> <span class="n">ddt</span><span class="p">)</span>
+
+    <span class="c1"># Get degrees of freedom</span>
+    <span class="n">dof</span> <span class="o">=</span> <span class="mi">10</span><span class="o">*</span><span class="n">n</span> <span class="c1"># To be conservative - see Frederiksen et al. (2025)</span>
+    <span class="n">n_par</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># Error contour</span>
+    <span class="n">Emin</span> <span class="o">=</span> <span class="n">Emat</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">Emin</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">err_contour</span> <span class="o">=</span> <span class="n">Emin</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">n_par</span><span class="o">/</span><span class="p">(</span><span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">)</span> <span class="o">*</span>
+                            <span class="n">stats</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">q</span><span class="p">,</span> <span class="n">n_par</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">err_contour</span> <span class="o">=</span> <span class="n">Emin</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">n_par</span><span class="o">/</span><span class="p">(</span><span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">)</span> <span class="o">*</span>
+                            <span class="n">stats</span><span class="o">.</span><span class="n">f</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">q</span><span class="p">,</span> <span class="n">n_par</span><span class="p">,</span> <span class="n">dof</span> <span class="o">-</span> <span class="n">n_par</span><span class="p">))</span>
+
+    <span class="c1"># Roll copy of Emat to center</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">Emat</span> <span class="o">==</span> <span class="n">Emat</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+    <span class="n">ind_phi</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">E2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">roll</span><span class="p">(</span><span class="n">Emat</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span><span class="o">-</span><span class="n">ind_phi</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Estimate uncertainty (q confidence interval)</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">E2</span> <span class="o">&lt;</span> <span class="n">err_contour</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span>
+    <span class="n">err_phi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="mf">0.25</span><span class="o">*</span><span class="p">(</span><span class="n">phi</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">-</span> <span class="n">phi</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])])</span><span class="o">*</span><span class="mf">180.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">0.25</span><span class="o">*</span><span class="n">dphi</span><span class="p">)</span>
+    <span class="n">err_dtt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.25</span><span class="o">*</span><span class="p">(</span><span class="n">dtt</span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span> <span class="o">-</span> <span class="n">dtt</span><span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">err</span><span class="p">[</span><span class="mi">1</span><span class="p">])]),</span> <span class="mf">0.25</span><span class="o">*</span><span class="n">ddt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">err_dtt</span><span class="p">,</span> <span class="n">err_phi</span><span class="p">,</span> <span class="n">err_contour</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Pascal Audet &amp; Andrew Schaeffer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

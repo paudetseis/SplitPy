@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>splitpy.utils &mdash; SplitPy 0.2.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=37f418d5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SplitPy
+              <img src="../../_static/SplitPy_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Quick Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../links.html">GitHub Repositories</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../links.html#references">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../links.html#citing-splitpy">Citing SplitPy</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../splitpy.html">Licence</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../splitpy.html#installation">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../splitpy.html#using-local-data">Using local data</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#module-splitpy.gui">GUI classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html#modules">Modules</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Scripts &amp; Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../scripts.html">Scripts</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SplitPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">splitpy.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for splitpy.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy</span><span class="w"> </span><span class="kn">import</span> <span class="n">UTCDateTime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">nan</span><span class="p">,</span> <span class="n">isnan</span><span class="p">,</span> <span class="nb">abs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">obspy.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stream</span><span class="p">,</span> <span class="n">read</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">floor_decimal</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">multiplier</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">decimals</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">)</span> <span class="o">/</span> <span class="n">multiplier</span>
+
+
+<div class="viewcode-block" id="traceshift">
+<a class="viewcode-back" href="../../api.html#splitpy.utils.traceshift">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">traceshift</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">tt</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to shift traces in time given travel time</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    trace : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Seismogram </span>
+<span class="sd">    tt : float</span>
+<span class="sd">        Time delay (sec)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rtrace : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Shifted copy of the input trace</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Define frequencies</span>
+    <span class="n">nt</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftfreq</span><span class="p">(</span><span class="n">nt</span><span class="p">,</span> <span class="n">d</span><span class="o">=</span><span class="n">dt</span><span class="p">)</span>
+
+    <span class="c1"># Fourier transform</span>
+    <span class="n">ftrace</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># Shift</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">freq</span><span class="p">)):</span>
+        <span class="n">ftrace</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ftrace</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">freq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">tt</span><span class="p">)</span>
+
+    <span class="c1"># Back Fourier transform and return as trace</span>
+    <span class="n">rtrace</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">rtrace</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">ftrace</span><span class="p">))</span>
+
+    <span class="c1"># Update start time</span>
+    <span class="n">rtrace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">-=</span> <span class="n">tt</span>
+
+    <span class="k">return</span> <span class="n">rtrace</span></div>
+
+
+<div class="viewcode-block" id="download_data">
+<a class="viewcode-back" href="../../api.html#splitpy.utils.download_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">download_data</span><span class="p">(</span><span class="n">client</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(),</span>
+                  <span class="n">end</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(),</span> <span class="n">new_sr</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">remove_response</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">zcomp</span><span class="o">=</span><span class="s1">&#39;Z&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to build a stream object for a seismogram in a given time window</span>
+<span class="sd">    by getting data from a client object, either from a local SDS archive or</span>
+<span class="sd">    from an FDSN web-service. The function performs sanity checks for</span>
+<span class="sd">    the start times, sampling rates and window lengths.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : :class:`~obspy.client.fdsn.Client`</span>
+<span class="sd">        Client object</span>
+<span class="sd">    sta : Dict</span>
+<span class="sd">        Station metadata from :mod:`~StDb` data base</span>
+<span class="sd">    start : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        Start time for request</span>
+<span class="sd">    end : :class:`~obspy.core.utcdatetime.UTCDateTime`</span>
+<span class="sd">        End time for request</span>
+<span class="sd">    new_sr : float</span>
+<span class="sd">        New sampling rate (Hz)</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Whether or not to print messages to screen during run-time</span>
+<span class="sd">    remove_response : bool</span>
+<span class="sd">        Remove instrument response from seismogram and resitute to true ground</span>
+<span class="sd">        velocity (m/s) using obspy.core.trace.Trace.remove_response()</span>
+<span class="sd">    zcomp: str</span>
+<span class="sd">        Vertical Component Identifier. Should be a single character.</span>
+<span class="sd">        This is different then &#39;Z&#39; only for fully unknown component</span>
+<span class="sd">        orientation (i.e., components are 1, 2, 3)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    err : bool</span>
+<span class="sd">        Boolean for error handling (`False` is associated with success)</span>
+<span class="sd">    trN : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of North component of motion</span>
+<span class="sd">    trE : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of East component of motion</span>
+<span class="sd">    trZ : :class:`~obspy.core.Trace`</span>
+<span class="sd">        Trace of Vertical component of motion</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">sta</span><span class="o">.</span><span class="n">location</span><span class="p">:</span>
+
+        <span class="c1"># Construct location name</span>
+        <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s2">&quot;--&quot;</span><span class="p">:</span>
+            <span class="n">tloc</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tloc</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
+
+        <span class="c1"># Construct Channel List</span>
+        <span class="n">cha</span> <span class="o">=</span> <span class="n">sta</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;?&#39;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;*     </span><span class="si">{0:s}</span><span class="s2">.</span><span class="si">{1:2s}</span><span class="s2">?.</span><span class="si">{2:2s}</span><span class="s2"> - Checking Network&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">sta</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">sta</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">loc</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># Get waveforms, with extra 1 second to avoid</span>
+        <span class="c1"># traces cropped too short - traces are trimmed later</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span>
+                <span class="n">network</span><span class="o">=</span><span class="n">sta</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+                <span class="n">station</span><span class="o">=</span><span class="n">sta</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                <span class="n">location</span><span class="o">=</span><span class="n">tloc</span><span class="p">,</span>
+                <span class="n">channel</span><span class="o">=</span><span class="n">cha</span><span class="p">,</span>
+                <span class="n">starttime</span><span class="o">=</span><span class="n">start</span><span class="p">,</span>
+                <span class="n">endtime</span><span class="o">=</span><span class="n">end</span><span class="o">+</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Met exception:&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">())</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="c1"># It&#39;s possible if len(st)==1 that data is Z12</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*                  - Data Downloaded&quot;</span><span class="p">)</span>
+                <span class="c1"># break</span>
+
+    <span class="c1"># Check the correct 3 components exist</span>
+    <span class="k">if</span> <span class="n">st</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Error retrieving waveforms&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************************************&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># Three components successfully retrieved</span>
+    <span class="k">if</span> <span class="n">remove_response</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">remove_response</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Restituted stream to true ground velocity.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;* Cannot remove response, moving on.&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Detrend and apply taper</span>
+    <span class="n">st</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;demean&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">taper</span><span class="p">(</span>
+        <span class="n">max_percentage</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mf">5.</span><span class="p">)</span>
+
+    <span class="c1"># Check start times</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">([</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">==</span> <span class="n">start</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Start times are not all close to true start: &quot;</span><span class="p">)</span>
+            <span class="p">[</span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*   &quot;</span><span class="o">+</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="o">+</span><span class="s2">&quot; &quot;</span> <span class="o">+</span>
+                   <span class="nb">str</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot; &quot;</span> <span class="o">+</span>
+                   <span class="nb">str</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">))</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">]</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*   True start: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">start</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*   -&gt; Shifting traces to true start&quot;</span><span class="p">)</span>
+        <span class="n">delay</span> <span class="o">=</span> <span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">-</span> <span class="n">start</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">]</span>
+        <span class="n">st_shifted</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">(</span>
+            <span class="n">traces</span><span class="o">=</span><span class="p">[</span><span class="n">traceshift</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span> <span class="k">for</span> <span class="n">tr</span><span class="p">,</span> <span class="n">dt</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">delay</span><span class="p">)])</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">st_shifted</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Check sampling rate</span>
+    <span class="n">sr</span> <span class="o">=</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span>
+    <span class="n">sr_round</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">floor_decimal</span><span class="p">(</span><span class="n">sr</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">sr</span> <span class="o">==</span> <span class="n">sr_round</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Sampling rate is not an integer value: &quot;</span><span class="p">,</span> <span class="n">sr</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* -&gt; Resampling&quot;</span><span class="p">)</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="n">sr_round</span><span class="p">,</span> <span class="n">no_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># Try trimming</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">st</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Unable to trim&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* -&gt; Skipping&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************************************&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># Check final lengths - they should all be equal if start times</span>
+    <span class="c1"># and sampling rates are all equal and traces have been trimmed</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">([</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">[</span><span class="mi">1</span><span class="p">:]],</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Lengths are incompatible: &quot;</span><span class="p">)</span>
+        <span class="p">[</span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*     &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">))</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* -&gt; Skipping&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************************************&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">([</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">],</span> <span class="nb">int</span><span class="p">((</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">*</span><span class="n">sr</span><span class="p">),</span>
+                         <span class="n">atol</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Length is too short: &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*    &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">)</span> <span class="o">+</span>
+              <span class="s2">&quot; ~= &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span><span class="o">*</span><span class="n">sr</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* -&gt; Skipping&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;**************************************************&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;* Waveforms Retrieved...&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">st</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Pascal Audet &amp; Andrew Schaeffer.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
